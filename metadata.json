@@ -1,0 +1,7 @@
+{
+  "name": "Gestão Esporte Gov",
+  "description": "Sistema de Gestão Esportiva e Prestação de Contas - Padrão Gov.br",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
