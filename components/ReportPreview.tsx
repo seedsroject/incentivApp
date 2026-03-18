@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, StudentDraft, EvidenceLog, DocumentLog } from '../types';
-import leiDocImg from '../dist/lei_do_incentivo.png';
+import leiDocImg from '../assets/lei_do_incentivo.png';
 import { PenSquare, Save, X } from 'lucide-react';
 
 interface ReportPreviewProps {
