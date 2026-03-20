@@ -108,6 +108,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
     const [selectedInventoryItems, setSelectedInventoryItems] = useState<string[]>([]);
     const [distributeItem, setDistributeItem] = useState(false);
     const [selectedTurmaFilter, setSelectedTurmaFilter] = useState(''); // '' = todas as turmas
+    const [showMissingDocsModal, setShowMissingDocsModal] = useState(false);
 
     // Turma filter - filteredByTurma (safe - only depends on students/selectedTurmaFilter)
     const filteredByTurma = useMemo(() =>
@@ -778,7 +779,129 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                         <h1 className="font-bold text-lg text-gray-800">Chamada Digital</h1>
                         {nucleoData?.nome && <p className="text-xs text-gray-400">{nucleoData.nome}</p>}
                     </div>
+                    {/* PULSATING NOTIFICATION BADGE */}
+                    {(() => {
+                        if (!nucleoData?.dataInicio) return null;
+                        const hoje = new Date();
+                        const inicio = new Date(nucleoData.dataInicio);
+                        const m5 = new Date(inicio); m5.setMonth(m5.getMonth() + 5);
+                        const m6 = new Date(inicio); m6.setMonth(m6.getMonth() + 6);
+                        const m11 = new Date(inicio); m11.setMonth(m11.getMonth() + 11);
+                        const m12 = new Date(inicio); m12.setMonth(m12.getMonth() + 12);
+
+                        let level: 'FINAL' | 'PARCIAL' | null = null;
+                        let deadline = '';
+                        if (hoje >= m11) { level = 'FINAL'; deadline = m12.toLocaleDateString('pt-BR'); }
+                        else if (hoje >= m5) { level = 'PARCIAL'; deadline = m6.toLocaleDateString('pt-BR'); }
+
+                        if (!level) return null;
+                        const isFinal = level === 'FINAL';
+                        return (
+                            <button
+                                onClick={() => setShowMissingDocsModal(true)}
+                                className={`relative flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black uppercase shadow-lg transition-all hover:scale-105 ${
+                                    isFinal
+                                        ? 'bg-red-600 text-white shadow-red-300 animate-pulse'
+                                        : 'bg-amber-500 text-white shadow-amber-300 animate-pulse'
+                                }`}
+                                title="Ver documentos faltantes"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                {level} — até {deadline}
+                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping"></span>
+                            </button>
+                        );
+                    })()}
                 </div>
+
+                {/* MISSING DOCS MODAL */}
+                {showMissingDocsModal && (() => {
+                    const nucleoStudents = (students || []).filter(s => s.nucleo_id === currentNucleoId);
+                    const DOC_CHECKS: { key: string; label: string; check: (s: StudentDraft) => boolean }[] = [
+                        { key: 'fichaUrl', label: 'Ficha de Inscrição', check: s => !!s.fichaUrl },
+                        { key: 'questionario_quantitativo', label: 'Questionário Quantitativo', check: s => !!s.questionario_quantitativo?.url },
+                        { key: 'pesquisa_socioeconomica', label: 'Pesquisa Socioeconômica', check: s => !!s.pesquisa_socioeconomica?.url },
+                        { key: 'boletim_escolar', label: 'Boletim Escolar', check: s => !!s.boletim_escolar?.url },
+                        { key: 'declaracao_uniformes', label: 'Declaração de Uniformes', check: s => !!s.declaracao_uniformes },
+                        { key: 'declaracao_prontidao', label: 'Declaração de Prontidão', check: s => !!s.declaracao_prontidao },
+                    ];
+                    const studentsWithMissing = nucleoStudents.map(s => {
+                        const missing = DOC_CHECKS.filter(d => !d.check(s)).map(d => d.label);
+                        return { student: s, missing };
+                    }).filter(x => x.missing.length > 0);
+
+                    const inicio = nucleoData?.dataInicio ? new Date(nucleoData.dataInicio) : null;
+                    let levelLabel = '';
+                    if (inicio) {
+                        const hoje = new Date();
+                        const m11 = new Date(inicio); m11.setMonth(m11.getMonth() + 11);
+                        const m5 = new Date(inicio); m5.setMonth(m5.getMonth() + 5);
+                        if (hoje >= m11) levelLabel = 'Dados Finais';
+                        else if (hoje >= m5) levelLabel = 'Dados Parciais';
+                    }
+
+                    return (
+                        <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+                                <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 flex items-center justify-between">
+                                    <div>
+                                        <h2 className="text-white font-black text-lg flex items-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                                            Documentos Faltantes
+                                        </h2>
+                                        {levelLabel && <p className="text-red-100 text-xs mt-0.5">Envio obrigatório: {levelLabel}</p>}
+                                    </div>
+                                    <button onClick={() => setShowMissingDocsModal(false)} className="text-white/80 hover:text-white p-1 rounded-full transition-colors">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                                    {studentsWithMissing.length === 0 ? (
+                                        <div className="text-center py-10">
+                                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                            <p className="text-green-700 font-bold">Todos os documentos estão em dia!</p>
+                                            <p className="text-gray-400 text-xs mt-1">Nenhum aluno com documentos pendentes.</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-700 font-bold flex items-center gap-2">
+                                                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                {studentsWithMissing.length} aluno{studentsWithMissing.length > 1 ? 's' : ''} com documentos pendentes
+                                            </div>
+                                            {studentsWithMissing.map(({ student, missing }) => (
+                                                <div key={student.id || student.nome} className="bg-gray-50 rounded-xl border border-gray-200 p-3">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 text-xs font-black">
+                                                            {student.nome.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-800 text-sm">{student.nome}</p>
+                                                            <p className="text-[10px] text-gray-400">{missing.length} documento{missing.length > 1 ? 's' : ''} pendente{missing.length > 1 ? 's' : ''}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {missing.map(doc => (
+                                                            <span key={doc} className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200">
+                                                                ✗ {doc}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+                                </div>
+                                <div className="p-4 border-t border-gray-100 bg-gray-50">
+                                    <button onClick={() => setShowMissingDocsModal(false)} className="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-200 hover:from-red-700 hover:to-red-600 transition-all">
+                                        Fechar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* SCHEDULE BANNER */}
                 {nucleoData && (nucleoData.dias_aulas || nucleoData.horario_aulas || nucleoData.turmas) && (

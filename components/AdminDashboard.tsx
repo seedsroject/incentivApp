@@ -552,7 +552,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                     <svg className="w-3 h-3 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                                     <span className="font-semibold">{nucleo.employees?.length || 0}</span> Funcionários
                                                 </div>
+                                                {nucleo.dataInicio && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                        <span className="font-semibold">{new Date(nucleo.dataInicio).toLocaleDateString('pt-BR')}</span>
+                                                        {nucleo.dataTermino && (
+                                                            <span className="text-gray-400">→ {new Date(nucleo.dataTermino).toLocaleDateString('pt-BR')}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
+
+                                            {/* Notification Badge */}
+                                            {(() => {
+                                                if (!nucleo.dataInicio) return null;
+                                                const hoje = new Date();
+                                                const inicio = new Date(nucleo.dataInicio);
+                                                const m5 = new Date(inicio); m5.setMonth(m5.getMonth() + 5);
+                                                const m6 = new Date(inicio); m6.setMonth(m6.getMonth() + 6);
+                                                const m11 = new Date(inicio); m11.setMonth(m11.getMonth() + 11);
+                                                const m12 = new Date(inicio); m12.setMonth(m12.getMonth() + 12);
+
+                                                let level: 'FINAL' | 'PARCIAL' | null = null;
+                                                let deadline = '';
+                                                if (hoje >= m11) { level = 'FINAL'; deadline = m12.toLocaleDateString('pt-BR'); }
+                                                else if (hoje >= m5) { level = 'PARCIAL'; deadline = m6.toLocaleDateString('pt-BR'); }
+
+                                                if (!level) return null;
+                                                const isFinal = level === 'FINAL';
+                                                return (
+                                                    <div className={`mt-2 rounded-lg px-3 py-2 flex items-center gap-2 text-xs font-bold ${isFinal ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                                                        <span className={`w-2 h-2 rounded-full ${isFinal ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                                                        {isFinal ? `FINAL — Enviar até ${deadline}` : `PARCIAL — Enviar até ${deadline}`}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     ))}
                                 </div>

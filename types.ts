@@ -41,6 +41,8 @@ export interface Nucleo {
   dias_aulas?: string[];     // Ex: ['Segunda', 'Quarta', 'Sexta']
   horario_aulas?: string;    // Ex: '07:00 - 09:00'
   durabilidade?: string;     // Ex: '12 meses (Jan - Dez 2025)'
+  dataInicio?: string;       // ISO date (YYYY-MM-DD) - Data de início do projeto
+  dataTermino?: string;      // ISO date (YYYY-MM-DD) - Data de término do projeto
   turmas?: NucleoTurma[];    // Lista de turmas do núcleo
 
   // Bens e Inventário (Aba Inventário)

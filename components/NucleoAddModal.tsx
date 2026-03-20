@@ -24,6 +24,8 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
     const [dias, setDias] = useState<string[]>([]);
     const [horario, setHorario] = useState('');
     const [durabilidade, setDurabilidade] = useState('');
+    const [dataInicio, setDataInicio] = useState('');
+    const [dataTermino, setDataTermino] = useState('');
     const [turmas, setTurmas] = useState<NucleoTurma[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -67,6 +69,8 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
             dias_aulas: dias.length > 0 ? dias : undefined,
             horario_aulas: horario || undefined,
             durabilidade: durabilidade || undefined,
+            dataInicio: dataInicio || undefined,
+            dataTermino: dataTermino || undefined,
             turmas: turmas.length > 0 ? turmas.map((t, i) => ({
                 ...t,
                 id: t.id || String.fromCharCode(65 + i),
@@ -78,7 +82,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
         onSave(newNucleo);
         // Reset
         setNome(''); setCnpj(''); setAddress(''); setCity('');
-        setDias([]); setHorario(''); setDurabilidade(''); setTurmas([]);
+        setDias([]); setHorario(''); setDurabilidade(''); setDataInicio(''); setDataTermino(''); setTurmas([]);
         onClose();
     };
 
@@ -175,28 +179,56 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
                                     ))}
                                 </div>
                             </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-600 mb-1">Horário das Aulas</label>
+                                <input
+                                    type="text"
+                                    value={horario}
+                                    onChange={e => setHorario(e.target.value)}
+                                    placeholder="Ex: 07:00 - 09:00"
+                                    className="w-full border border-gray-200 bg-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                />
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-600 mb-1">Horário das Aulas</label>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Data de Início do Projeto</label>
                                     <input
-                                        type="text"
-                                        value={horario}
-                                        onChange={e => setHorario(e.target.value)}
-                                        placeholder="Ex: 07:00 - 09:00"
+                                        type="date"
+                                        value={dataInicio}
+                                        onChange={e => {
+                                            setDataInicio(e.target.value);
+                                            if (e.target.value && dataTermino) {
+                                                const d1 = new Date(e.target.value); const d2 = new Date(dataTermino);
+                                                const m = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                                                setDurabilidade(`${m} meses`);
+                                            }
+                                        }}
                                         className="w-full border border-gray-200 bg-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-600 mb-1">Durabilidade do Projeto</label>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Data de Término do Projeto</label>
                                     <input
-                                        type="text"
-                                        value={durabilidade}
-                                        onChange={e => setDurabilidade(e.target.value)}
-                                        placeholder="Ex: 12 meses (Jan–Dez 2025)"
+                                        type="date"
+                                        value={dataTermino}
+                                        onChange={e => {
+                                            setDataTermino(e.target.value);
+                                            if (dataInicio && e.target.value) {
+                                                const d1 = new Date(dataInicio); const d2 = new Date(e.target.value);
+                                                const m = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                                                setDurabilidade(`${m} meses`);
+                                            }
+                                        }}
                                         className="w-full border border-gray-200 bg-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     />
                                 </div>
                             </div>
+                            {durabilidade && (
+                                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    <span className="text-xs font-bold text-blue-700">Durabilidade: {durabilidade}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

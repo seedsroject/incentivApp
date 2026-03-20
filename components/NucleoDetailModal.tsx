@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Nucleo, Employee, Contract } from '../types';
 import { extractContractData } from '../services/geminiService';
 import { ContractGenerationModal } from './ContractGenerationModal';
@@ -28,6 +28,8 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
         dias_aulas: nucleo.dias_aulas || [] as string[],
         horario_aulas: nucleo.horario_aulas || '',
         durabilidade: nucleo.durabilidade || '',
+        dataInicio: nucleo.dataInicio || '',
+        dataTermino: nucleo.dataTermino || '',
         turmas: nucleo.turmas ? [...nucleo.turmas] : [] as import('../types').NucleoTurma[],
     });
     const [saved, setSaved] = useState(false);
@@ -108,22 +110,90 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                             ))}
                         </div>
                     </div>
+                    <div>
+                        <label className="text-xs font-bold text-gray-500 block mb-1">Horário das Aulas</label>
+                        <input value={geralData.horario_aulas} onChange={e => setGeralData(p => ({ ...p, horario_aulas: e.target.value }))}
+                            placeholder="Ex: 07:00 - 09:00"
+                            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 block mb-1">Horário das Aulas</label>
-                            <input value={geralData.horario_aulas} onChange={e => setGeralData(p => ({ ...p, horario_aulas: e.target.value }))}
-                                placeholder="Ex: 07:00 - 09:00"
+                            <label className="text-xs font-bold text-gray-500 block mb-1">Data de Início do Projeto</label>
+                            <input type="date" value={geralData.dataInicio} onChange={e => {
+                                const di = e.target.value;
+                                setGeralData(p => {
+                                    let dur = p.durabilidade;
+                                    if (di && p.dataTermino) {
+                                        const d1 = new Date(di); const d2 = new Date(p.dataTermino);
+                                        const months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                                        dur = `${months} meses`;
+                                    }
+                                    return { ...p, dataInicio: di, durabilidade: dur };
+                                });
+                            }}
                                 className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                         </div>
                         <div>
-                            <label className="text-xs font-bold text-gray-500 block mb-1">Durabilidade do Projeto</label>
-                            <input value={geralData.durabilidade} onChange={e => setGeralData(p => ({ ...p, durabilidade: e.target.value }))}
-                                placeholder="Ex: 12 meses (Jan–Dez 2025)"
+                            <label className="text-xs font-bold text-gray-500 block mb-1">Data de Término do Projeto</label>
+                            <input type="date" value={geralData.dataTermino} onChange={e => {
+                                const dt = e.target.value;
+                                setGeralData(p => {
+                                    let dur = p.durabilidade;
+                                    if (p.dataInicio && dt) {
+                                        const d1 = new Date(p.dataInicio); const d2 = new Date(dt);
+                                        const months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                                        dur = `${months} meses`;
+                                    }
+                                    return { ...p, dataTermino: dt, durabilidade: dur };
+                                });
+                            }}
                                 className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                         </div>
                     </div>
+                    {geralData.durabilidade && (
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="text-xs font-bold text-blue-700">Durabilidade: {geralData.durabilidade}</span>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Notificação de Envio de Dados */}
+            {(() => {
+                if (!geralData.dataInicio) return null;
+                const hoje = new Date();
+                const inicio = new Date(geralData.dataInicio);
+                const marco5m = new Date(inicio); marco5m.setMonth(marco5m.getMonth() + 5);
+                const marco6m = new Date(inicio); marco6m.setMonth(marco6m.getMonth() + 6);
+                const marco11m = new Date(inicio); marco11m.setMonth(marco11m.getMonth() + 11);
+                const marco12m = new Date(inicio); marco12m.setMonth(marco12m.getMonth() + 12);
+
+                let level: 'FINAL' | 'PARCIAL' | null = null;
+                let deadline = '';
+                if (hoje >= marco11m) { level = 'FINAL'; deadline = marco12m.toLocaleDateString('pt-BR'); }
+                else if (hoje >= marco5m) { level = 'PARCIAL'; deadline = marco6m.toLocaleDateString('pt-BR'); }
+
+                if (!level) return null;
+                const isFinal = level === 'FINAL';
+                return (
+                    <div className={`rounded-xl border p-4 flex items-start gap-3 ${isFinal ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+                        <div className={`p-2 rounded-full ${isFinal ? 'bg-red-100 animate-pulse' : 'bg-amber-100'}`}>
+                            <svg className={`w-5 h-5 ${isFinal ? 'text-red-600' : 'text-amber-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        </div>
+                        <div>
+                            <p className={`text-sm font-black uppercase ${isFinal ? 'text-red-700' : 'text-amber-700'}`}>
+                                Envio de Dados {level}
+                            </p>
+                            <p className={`text-xs mt-0.5 ${isFinal ? 'text-red-600' : 'text-amber-600'}`}>
+                                {isFinal
+                                    ? `Prazo para enviar Dados Finais até ${deadline}`
+                                    : `Prazo para enviar Dados Parciais até ${deadline}`}
+                            </p>
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* Turmas */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
