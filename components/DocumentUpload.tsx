@@ -119,6 +119,8 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
     // Relatório Consolidado State
     const [viewMonth, setViewMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [expectedClasses, setExpectedClasses] = useState(8); // Default 8 aulas/mês
+    const [isEditingConsolidated, setIsEditingConsolidated] = useState(false);
+    const [consolidatedOverrides, setConsolidatedOverrides] = useState<Record<string, { presences: number, absences: number }>>({});
 
     const [processingIndex, setProcessingIndex] = useState<number>(-1);
     const [isUploading, setIsUploading] = useState(false);
@@ -345,10 +347,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
             doc.metaData.date.startsWith(viewMonth)
         ).sort((a, b) => (a.metaData.date || '').localeCompare(b.metaData.date || ''));
 
-        // Dias que tiveram aula (headers)
+        // Dias que tiveram aula (headers) - Apenas o dia para encurtar
         const classDates = monthDocs.map(d => {
             const parts = d.metaData.date.split('-');
-            return `${parts[2]}/${parts[1]}`;
+            return parts[2]; // Retorna apenas o dia (DD)
         });
 
         const rows = sortedStudents.map(student => {
@@ -358,8 +360,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                 return 'FF';
             });
 
-            const presences = daysStatus.filter(s => s === 'PP').length;
-            const absences = daysStatus.filter(s => s === 'FF').length;
+            // Se houver override manual, usar ele, senão usar o calculado
+            const override = consolidatedOverrides[student.nome];
+            const presences = override ? override.presences : daysStatus.filter(s => s === 'PP').length;
+            const absences = override ? override.absences : daysStatus.filter(s => s === 'FF').length;
 
             // Porcentagem baseada nas Aulas Previstas (input manual) ou nas Aulas Dadas (docs encontrados)
             const totalClassesConsidered = Math.max(monthDocs.length, expectedClasses);
@@ -369,7 +373,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
         });
 
         return { headers: classDates, rows };
-    }, [students, viewMonth, history, expectedClasses]);
+    }, [students, viewMonth, history, expectedClasses, consolidatedOverrides]);
 
     // Funções auxiliares para avaliar a nota (Escala 0 a 10)
     // Bom: 6 <= M <= 10
@@ -1212,6 +1216,18 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Aulas Previstas (Base %)</label>
                                 <input type="number" value={expectedClasses} onChange={e => setExpectedClasses(+e.target.value)} className="w-24 bg-gray-50 border border-gray-200 rounded px-3 py-2 text-sm text-gray-800 font-bold" min="1" />
                             </div>
+                            <div className="ml-auto">
+                                <button
+                                    onClick={() => setIsEditingConsolidated(!isEditingConsolidated)}
+                                    className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${isEditingConsolidated ? 'bg-green-600 text-white shadow-lg' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    {isEditingConsolidated ? (
+                                        <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Salvar Alterações</>
+                                    ) : (
+                                        <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> Editar Presenças/Faltas</>
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         {/* TABELA GRID */}
@@ -1220,23 +1236,23 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                             draggable
                             onDragStart={(e) => handleDragStart(e, 'TABLE_STUDENTS', consolidatedFrequencyData, `Frequência ${viewMonth}`)}
                         >
-                            <div className="bg-blue-50 p-2 text-center text-xs font-bold text-blue-600 border-b border-blue-100 mb-1">
-                                &#10021; ARRASTE A TABELA PARA O PDF
+                            <div className="bg-blue-50 p-2 text-center text-[10px] font-bold text-blue-600 border-b border-blue-100 mb-1">
+                                &#10021; ARRASTE A TABELA PARA O PDF (Tabela Otimizada para A4)
                             </div>
 
-                            <table className="w-full text-left border-collapse table-fixed min-w-[800px]">
+                            <table className="w-full text-left border-collapse table-fixed">
                                 <thead>
-                                    <tr className="bg-gray-100 border-b border-gray-300 text-xs text-gray-600 uppercase">
-                                        <th className="p-2 border-r border-gray-300 w-48 sticky left-0 bg-gray-100 z-10">Aluno</th>
+                                    <tr className="bg-gray-100 border-b border-gray-300 text-[10px] text-gray-600 uppercase">
+                                        <th className="p-2 border-r border-gray-300 w-32 sticky left-0 bg-gray-100 z-10">Aluno</th>
                                         {consolidatedFrequencyData.headers.map((day, i) => (
-                                            <th key={i} className="p-1 text-center border-r border-gray-300 w-10 text-[10px]">{day}</th>
+                                            <th key={i} className="p-1 text-center border-r border-gray-300 w-6 text-[8px]">{day}</th>
                                         ))}
-                                        <th className="p-2 text-center border-r border-gray-300 w-12 bg-green-50 text-green-800">P</th>
-                                        <th className="p-2 text-center border-r border-gray-300 w-12 bg-red-50 text-red-800">F</th>
-                                        <th className="p-2 text-center w-16 bg-blue-50 text-blue-800">%</th>
+                                        <th className="p-2 text-center border-r border-gray-300 w-8 bg-green-50 text-green-800">P</th>
+                                        <th className="p-2 text-center border-r border-gray-300 w-8 bg-red-50 text-red-800">F</th>
+                                        <th className="p-2 text-center w-10 bg-blue-50 text-blue-800">%</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-xs text-gray-800">
+                                <tbody className="text-[10px] text-gray-800">
                                     {consolidatedFrequencyData.rows.length === 0 ? (
                                         <tr><td colSpan={100} className="p-8 text-center text-gray-400">Nenhum registro encontrado neste mês.</td></tr>
                                     ) : (
@@ -1244,12 +1260,48 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                             <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                                                 <td className="p-2 border-r border-gray-300 font-bold truncate sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">{row.student.nome}</td>
                                                 {row.daysStatus.map((status, i) => (
-                                                    <td key={i} className="p-1 text-center border-r border-gray-300 font-bold">
-                                                        {status === 'PP' ? <span className="text-green-600">●</span> : <span className="text-red-300 text-[8px]">F</span>}
+                                                    <td key={i} className="p-1 text-center border-r border-gray-300 font-bold text-[8px]">
+                                                        {status === 'PP' ? <span className="text-green-600">●</span> : <span className="text-red-300 text-[7px]">F</span>}
                                                     </td>
                                                 ))}
-                                                <td className="p-2 text-center border-r border-gray-300 font-bold bg-green-50">{row.stats.presences}</td>
-                                                <td className="p-2 text-center border-r border-gray-300 font-bold bg-red-50">{row.stats.absences}</td>
+                                                <td className="p-1 text-center border-r border-gray-300 font-bold bg-green-50">
+                                                    {isEditingConsolidated ? (
+                                                        <input
+                                                            type="number"
+                                                            value={row.stats.presences}
+                                                            onChange={e => {
+                                                                const val = parseInt(e.target.value) || 0;
+                                                                setConsolidatedOverrides(prev => ({
+                                                                    ...prev,
+                                                                    [row.student.nome]: { ...prev[row.student.nome] || { presences: row.stats.presences, absences: row.stats.absences }, presences: val }
+                                                                }));
+                                                            }}
+                                                            className="w-full bg-white border border-green-200 rounded text-center py-1"
+                                                            min="0"
+                                                        />
+                                                    ) : (
+                                                        row.stats.presences
+                                                    )}
+                                                </td>
+                                                <td className="p-1 text-center border-r border-gray-300 font-bold bg-red-50">
+                                                    {isEditingConsolidated ? (
+                                                        <input
+                                                            type="number"
+                                                            value={row.stats.absences}
+                                                            onChange={e => {
+                                                                const val = parseInt(e.target.value) || 0;
+                                                                setConsolidatedOverrides(prev => ({
+                                                                    ...prev,
+                                                                    [row.student.nome]: { ...prev[row.student.nome] || { presences: row.stats.presences, absences: row.stats.absences }, absences: val }
+                                                                }));
+                                                            }}
+                                                            className="w-full bg-white border border-red-200 rounded text-center py-1"
+                                                            min="0"
+                                                        />
+                                                    ) : (
+                                                        row.stats.absences
+                                                    )}
+                                                </td>
                                                 <td className={`p-2 text-center font-black bg-blue-50 ${row.stats.freqPercent < 75 ? 'text-red-600' : 'text-blue-900'}`}>{row.stats.freqPercent}%</td>
                                             </tr>
                                         ))
