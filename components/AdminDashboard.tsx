@@ -466,30 +466,71 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {selectedNucleoId === nucleo.id && nucleoStudents.length > 0 && (
-                                                    <div className="mt-2 space-y-1 border-t border-gray-100 pt-2">
-                                                        {nucleoStudents.map((student, idx) => (
-                                                            <div key={student.id || idx} className="flex justify-between items-center text-xs group/student hover:bg-gray-50 p-1 rounded transition-colors">
-                                                                <div>
-                                                                    <span className="text-gray-600 truncate max-w-[150px] block">{student.nome}</span>
-                                                                    <span className="text-gray-400 text-[10px] block">{student.data_nascimento || '-'}</span>
-                                                                </div>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        if (window.confirm(`Deseja dar baixa no aluno ${student.nome}?`)) {
-                                                                            onDischargeStudent && onDischargeStudent(student.id || idx.toString(), nucleo.id);
-                                                                        }
-                                                                    }}
-                                                                    className="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded text-[10px] font-bold opacity-0 group-hover/student:opacity-100 transition-opacity"
-                                                                    title="Dar Baixa"
-                                                                >
-                                                                    Dar Baixa
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                {selectedNucleoId === nucleo.id && nucleoStudents.length > 0 && (() => {
+                                                    // Date-based deadline check for this nucleo
+                                                    let isInDeadline = false;
+                                                    let deadlineLevel: 'PARCIAL' | 'FINAL' | null = null;
+                                                    if (nucleo.dataInicio) {
+                                                        const hoje = new Date();
+                                                        const inicio = new Date(nucleo.dataInicio);
+                                                        const m5 = new Date(inicio); m5.setMonth(m5.getMonth() + 5);
+                                                        const m11 = new Date(inicio); m11.setMonth(m11.getMonth() + 11);
+                                                        if (hoje >= m11) { isInDeadline = true; deadlineLevel = 'FINAL'; }
+                                                        else if (hoje >= m5) { isInDeadline = true; deadlineLevel = 'PARCIAL'; }
+                                                    }
+
+                                                    return (
+                                                        <div className="mt-2 space-y-1 border-t border-gray-100 pt-2">
+                                                            {nucleoStudents.map((student, idx) => {
+                                                                // Check missing docs
+                                                                const missingDocs: string[] = [];
+                                                                if (!student.fichaUrl) missingDocs.push('Ficha');
+                                                                if (!student.questionario_quantitativo?.url) missingDocs.push('Questionário');
+                                                                if (!student.pesquisa_socioeconomica?.url) missingDocs.push('Pesq. Socioeconômica');
+                                                                if (!student.boletim_escolar?.url) missingDocs.push('Boletim');
+                                                                if (!student.declaracao_uniformes) missingDocs.push('Uniformes');
+                                                                if (!student.declaracao_prontidao) missingDocs.push('Prontidão');
+                                                                const hasMissing = missingDocs.length > 0;
+                                                                const isUrgent = hasMissing && isInDeadline;
+
+                                                                return (
+                                                                    <div key={student.id || idx} className={`flex justify-between items-center text-xs group/student p-1 rounded transition-colors ${isUrgent ? 'bg-red-50 hover:bg-red-100' : hasMissing ? 'bg-amber-50/50 hover:bg-amber-50' : 'hover:bg-gray-50'}`}>
+                                                                        <div className="flex items-center gap-1.5">
+                                                                            {/* Status indicator */}
+                                                                            {isUrgent ? (
+                                                                                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shrink-0" title={`⚠ ${deadlineLevel} - Faltam: ${missingDocs.join(', ')}`}></span>
+                                                                            ) : hasMissing ? (
+                                                                                <span className="w-2 h-2 bg-amber-400 rounded-full shrink-0" title={`Faltam: ${missingDocs.join(', ')}`}></span>
+                                                                            ) : (
+                                                                                <span className="w-2 h-2 bg-green-400 rounded-full shrink-0" title="Documentos em dia"></span>
+                                                                            )}
+                                                                            <div>
+                                                                                <span className={`truncate max-w-[130px] block ${isUrgent ? 'text-red-700 font-bold' : 'text-gray-600'}`}>{student.nome}</span>
+                                                                                {hasMissing && (
+                                                                                    <span className={`text-[8px] block ${isUrgent ? 'text-red-500' : 'text-amber-500'}`}>
+                                                                                        {missingDocs.length} doc{missingDocs.length > 1 ? 's' : ''} pendente{missingDocs.length > 1 ? 's' : ''}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                if (window.confirm(`Deseja dar baixa no aluno ${student.nome}?`)) {
+                                                                                    onDischargeStudent && onDischargeStudent(student.id || idx.toString(), nucleo.id);
+                                                                                }
+                                                                            }}
+                                                                            className="text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded text-[10px] font-bold opacity-0 group-hover/student:opacity-100 transition-opacity"
+                                                                            title="Dar Baixa"
+                                                                        >
+                                                                            Dar Baixa
+                                                                        </button>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         );
                                     })}

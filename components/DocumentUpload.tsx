@@ -1041,53 +1041,99 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                 filteredByTurma.map(student => {
                                     const status = digitalCallMap[student.nome] || { present: false, items: [] };
                                     const studentTurma = nucleoData?.turmas?.find(t => t.id === student.turma_id);
-                                    return (
-                                        <div key={student.nome} className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                                            <div className="flex flex-col flex-1 pl-1">
-                                                <span className="font-bold text-gray-800 text-sm whitespace-nowrap overflow-hidden text-ellipsis mr-4">{student.nome}</span>
-                                                {studentTurma && (
-                                                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full mt-0.5 w-fit">
-                                                        {studentTurma.nome} · {studentTurma.horario}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 pr-2">
-                                                {/* ITENS DISTRIBUÍDOS */}
-                                                {distributeItem && selectedInventoryItems.length > 0 && (
-                                                    <div className="flex gap-2 flex-wrap justify-end">
-                                                        {selectedInventoryItems.map(itemId => {
-                                                            const itemData = inventory.find(i => i.id === itemId);
-                                                            const hasItem = status.items.includes(itemId);
-                                                            return (
-                                                                <button
-                                                                    key={itemId}
-                                                                    onClick={() => toggleDigitalCall(student.nome, 'item', itemId)}
-                                                                    disabled={!status.present}
-                                                                    title={itemData?.name}
-                                                                    className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase rounded transition-all ${
-                                                                        hasItem
-                                                                            ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400 shadow-inner'
-                                                                            : !status.present 
-                                                                                ? 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-50' 
-                                                                                : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
-                                                                    }`}
-                                                                >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                                                                    <span className="max-w-[80px] truncate">{itemData?.name || 'Item'}</span>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
 
-                                                {/* PRESENÇA */}
-                                                <button
-                                                    onClick={() => toggleDigitalCall(student.nome, 'present')}
-                                                    className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all ${status.present ? 'bg-green-100 text-green-600 ring-2 ring-green-400 shadow-inner' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-200'}`}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                                </button>
+                                    // Verificar documentos faltantes deste aluno
+                                    const missingDocs: string[] = [];
+                                    if (!student.fichaUrl) missingDocs.push('Ficha');
+                                    if (!student.questionario_quantitativo?.url) missingDocs.push('Questionário');
+                                    if (!student.pesquisa_socioeconomica?.url) missingDocs.push('Pesq. Socioeconômica');
+                                    if (!student.boletim_escolar?.url) missingDocs.push('Boletim');
+                                    if (!student.declaracao_uniformes) missingDocs.push('Uniformes');
+                                    if (!student.declaracao_prontidao) missingDocs.push('Prontidão');
+
+                                    // Verificar se está no período de notificação
+                                    let isInDeadline = false;
+                                    let deadlineLevel: 'PARCIAL' | 'FINAL' | null = null;
+                                    if (nucleoData?.dataInicio) {
+                                        const hoje = new Date();
+                                        const inicio = new Date(nucleoData.dataInicio);
+                                        const m5 = new Date(inicio); m5.setMonth(m5.getMonth() + 5);
+                                        const m11 = new Date(inicio); m11.setMonth(m11.getMonth() + 11);
+                                        if (hoje >= m11) { isInDeadline = true; deadlineLevel = 'FINAL'; }
+                                        else if (hoje >= m5) { isInDeadline = true; deadlineLevel = 'PARCIAL'; }
+                                    }
+
+                                    const hasMissing = missingDocs.length > 0;
+                                    const isUrgent = hasMissing && isInDeadline;
+
+                                    return (
+                                        <div key={student.nome} className={`p-3 transition-colors border-l-4 ${isUrgent ? 'bg-red-50 border-l-red-500' : hasMissing ? 'bg-amber-50/50 border-l-amber-400' : 'border-l-transparent hover:bg-gray-50'}`}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex flex-col flex-1 pl-1">
+                                                    <span className={`font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis mr-4 ${isUrgent ? 'text-red-800' : 'text-gray-800'}`}>{student.nome}</span>
+                                                    {studentTurma && (
+                                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full mt-0.5 w-fit">
+                                                            {studentTurma.nome} · {studentTurma.horario}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 pr-2">
+                                                    {/* ITENS DISTRIBUÍDOS */}
+                                                    {distributeItem && selectedInventoryItems.length > 0 && (
+                                                        <div className="flex gap-2 flex-wrap justify-end">
+                                                            {selectedInventoryItems.map(itemId => {
+                                                                const itemData = inventory.find(i => i.id === itemId);
+                                                                const hasItem = status.items.includes(itemId);
+                                                                return (
+                                                                    <button
+                                                                        key={itemId}
+                                                                        onClick={() => toggleDigitalCall(student.nome, 'item', itemId)}
+                                                                        disabled={!status.present}
+                                                                        title={itemData?.name}
+                                                                        className={`flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase rounded transition-all ${
+                                                                            hasItem
+                                                                                ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400 shadow-inner'
+                                                                                : !status.present 
+                                                                                    ? 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-50' 
+                                                                                    : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm'
+                                                                        }`}
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                                                        <span className="max-w-[80px] truncate">{itemData?.name || 'Item'}</span>
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+
+                                                    {/* PRESENÇA */}
+                                                    <button
+                                                        onClick={() => toggleDigitalCall(student.nome, 'present')}
+                                                        className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center transition-all ${status.present ? 'bg-green-100 text-green-600 ring-2 ring-green-400 shadow-inner' : 'bg-gray-100 text-gray-400 border border-gray-200 hover:bg-gray-200'}`}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            {/* BARRA DE DOCUMENTOS FALTANTES */}
+                                            {hasMissing && (
+                                                <div className={`mt-2 rounded-lg px-2 py-1.5 flex items-start gap-1.5 ${isUrgent ? 'bg-red-100 border border-red-200' : 'bg-amber-50 border border-amber-200'}`}>
+                                                    <svg className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {isUrgent && deadlineLevel && (
+                                                            <span className="text-[9px] font-black text-red-700 bg-red-200 px-1.5 py-0.5 rounded-full uppercase mr-1">
+                                                                {deadlineLevel}
+                                                            </span>
+                                                        )}
+                                                        {missingDocs.map(doc => (
+                                                            <span key={doc} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isUrgent ? 'bg-red-200 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                ✗ {doc}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })
