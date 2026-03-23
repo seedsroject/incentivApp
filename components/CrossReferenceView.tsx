@@ -12,6 +12,9 @@ interface CrossReferenceViewProps {
 
 type TabKey = 'FREQUENCIA' | 'ASSIDUIDADE';
 
+const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+const DAY_NAMES_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
 // ─── UTILITY: Parse attendance data from collected documents ───
 function buildMonthlyData(history: DocumentLog[], students: StudentDraft[], nucleoId?: string, startDate?: string, endDate?: string) {
   const freqDocs = history.filter(d => {
@@ -40,12 +43,13 @@ function buildMonthlyData(history: DocumentLog[], students: StudentDraft[], nucl
   const sortedMonths = Object.keys(monthMap).sort();
   return sortedMonths.map(key => {
     const [y, m] = key.split('-');
-    const monthNames = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     const entry = monthMap[key];
     const avgFreq = entry.daysOfClass > 0 ? (entry.totalPresences / totalStudents / entry.daysOfClass) * entry.daysOfClass : 0;
     const avgAbsence = entry.daysOfClass > 0 ? entry.totalAbsences / totalStudents : 0;
     return {
-      label: `${monthNames[parseInt(m) - 1]}/${y.slice(2)}`,
+      label: `${MONTH_NAMES[parseInt(m) - 1].slice(0,3).toLowerCase()}/${y.slice(2)}`,
+      month: parseInt(m) - 1,
+      year: parseInt(y),
       daysOfClass: entry.daysOfClass,
       totalAbsences: entry.totalAbsences,
       avgFrequency: Math.min(parseFloat(avgFreq.toFixed(2)), entry.daysOfClass),
@@ -56,27 +60,19 @@ function buildMonthlyData(history: DocumentLog[], students: StudentDraft[], nucl
 
 // ─── MOCK DATA ───
 const MOCK_MONTHLY = [
-  { label: 'abr/24', daysOfClass: 2, totalAbsences: 4, avgFrequency: 1.92, avgAbsence: 0.08 },
-  { label: 'mai/24', daysOfClass: 9, totalAbsences: 19, avgFrequency: 8.62, avgAbsence: 0.38 },
-  { label: 'jun/24', daysOfClass: 8, totalAbsences: 25, avgFrequency: 7.50, avgAbsence: 0.50 },
-  { label: 'jul/24', daysOfClass: 9, totalAbsences: 23, avgFrequency: 8.54, avgAbsence: 0.46 },
-  { label: 'ago/24', daysOfClass: 8, totalAbsences: 27, avgFrequency: 7.84, avgAbsence: 0.54 },
-  { label: 'set/24', daysOfClass: 9, totalAbsences: 32, avgFrequency: 8.00, avgAbsence: 0.64 },
-  { label: 'out/24', daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.82, avgAbsence: 0.30 },
-  { label: 'nov/24', daysOfClass: 9, totalAbsences: 9, avgFrequency: 8.74, avgAbsence: 0.18 },
-  { label: 'dez/24', daysOfClass: 6, totalAbsences: 12, avgFrequency: 5.28, avgAbsence: 0.24 },
-  { label: 'jan/25', daysOfClass: 8, totalAbsences: 34, avgFrequency: 7.32, avgAbsence: 0.68 },
-  { label: 'fev/25', daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.70, avgAbsence: 0.30 },
-  { label: 'mar/25', daysOfClass: 7, totalAbsences: 10, avgFrequency: 7.28, avgAbsence: 0.20 },
-  { label: 'abr/25', daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.40, avgAbsence: 0.16 },
-  { label: 'mai/25', daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.96, avgAbsence: 0.06 },
-  { label: 'jun/25', daysOfClass: 9, totalAbsences: 0, avgFrequency: 8.98, avgAbsence: 0.00 },
-  { label: 'jul/25', daysOfClass: 9, totalAbsences: 3, avgFrequency: 9.00, avgAbsence: 0.14 },
-  { label: 'ago/25', daysOfClass: 8, totalAbsences: 9, avgFrequency: 8.30, avgAbsence: 0.30 },
-  { label: 'set/25', daysOfClass: 9, totalAbsences: 16, avgFrequency: 8.68, avgAbsence: 0.32 },
-  { label: 'out/25', daysOfClass: 9, totalAbsences: 7, avgFrequency: 9.00, avgAbsence: 0.14 },
-  { label: 'nov/25', daysOfClass: 7, totalAbsences: 15, avgFrequency: 7.18, avgAbsence: 0.30 },
-  { label: 'dez/25', daysOfClass: 6, totalAbsences: 10, avgFrequency: 5.80, avgAbsence: 0.20 },
+  { label: 'abr/24', month: 3, year: 2024, daysOfClass: 2, totalAbsences: 4, avgFrequency: 1.92, avgAbsence: 0.08 },
+  { label: 'mai/24', month: 4, year: 2024, daysOfClass: 9, totalAbsences: 19, avgFrequency: 8.62, avgAbsence: 0.38 },
+  { label: 'jun/24', month: 5, year: 2024, daysOfClass: 8, totalAbsences: 25, avgFrequency: 7.50, avgAbsence: 0.50 },
+  { label: 'jul/24', month: 6, year: 2024, daysOfClass: 9, totalAbsences: 23, avgFrequency: 8.54, avgAbsence: 0.46 },
+  { label: 'ago/24', month: 7, year: 2024, daysOfClass: 8, totalAbsences: 27, avgFrequency: 7.84, avgAbsence: 0.54 },
+  { label: 'set/24', month: 8, year: 2024, daysOfClass: 9, totalAbsences: 32, avgFrequency: 8.00, avgAbsence: 0.64 },
+  { label: 'out/24', month: 9, year: 2024, daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.82, avgAbsence: 0.30 },
+  { label: 'nov/24', month: 10, year: 2024, daysOfClass: 9, totalAbsences: 9, avgFrequency: 8.74, avgAbsence: 0.18 },
+  { label: 'dez/24', month: 11, year: 2024, daysOfClass: 6, totalAbsences: 12, avgFrequency: 5.28, avgAbsence: 0.24 },
+  { label: 'jan/25', month: 0, year: 2025, daysOfClass: 8, totalAbsences: 34, avgFrequency: 7.32, avgAbsence: 0.68 },
+  { label: 'fev/25', month: 1, year: 2025, daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.70, avgAbsence: 0.30 },
+  { label: 'mar/25', month: 2, year: 2025, daysOfClass: 7, totalAbsences: 10, avgFrequency: 7.28, avgAbsence: 0.20 },
+  { label: 'abr/25', month: 3, year: 2025, daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.40, avgAbsence: 0.16 },
 ];
 
 // ─── SVG BAR CHART ───
@@ -164,378 +160,83 @@ const PieChart: React.FC<{ freqPercent: number; faltaPercent: number; title: str
   );
 };
 
-// ─────────────────────────────────────────────────
-// TAB: FREQUÊNCIA CONTENT
-// ─────────────────────────────────────────────────
-const FrequenciaTab: React.FC<{
-  monthlyData: any[];
-  totals: { freqPct: number; faltaPct: number };
-  enrolledStudents: any[];
-  resumoData: any[];
-  cityLabel: string;
-  tableTitle: string;
-  chartTitle: string;
-}> = ({ monthlyData, totals, enrolledStudents, resumoData, cityLabel, tableTitle, chartTitle }) => {
-  const half = Math.ceil(monthlyData.length / 2);
-  const row1 = monthlyData.slice(0, half);
-  const row2 = monthlyData.slice(half);
-
-  return (
-    <div className="space-y-6">
-      {/* RESUMO GERAL */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">1</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Resumo Geral da Frequência</h2>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase tracking-wide">{tableTitle || `Projeto em ${cityLabel}`}</div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-blue-50 border-b border-blue-100">
-                <th className="px-2 py-2 text-left font-bold text-blue-800 w-10">Nº</th>
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Cidade/Estado</th>
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Evento</th>
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Nome (ordem alfabética)</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Dias aula</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Freq. total</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">% Freq.</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Nº faltas</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">% Falta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resumoData.map((r: any, i: number) => (
-                <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
-                  <td className="px-2 py-1.5 text-gray-600">{r.num}</td>
-                  <td className="px-2 py-1.5 text-gray-600">{cityLabel}</td>
-                  <td className="px-2 py-1.5 text-gray-600">Triathlon</td>
-                  <td className="px-2 py-1.5 font-medium text-gray-800">{r.nome}</td>
-                  <td className="px-2 py-1.5 text-center text-gray-700">{r.diasAula}</td>
-                  <td className="px-2 py-1.5 text-center font-bold text-blue-700">{r.freqTotal}</td>
-                  <td className="px-2 py-1.5 text-center font-bold text-green-700">{r.pctFreq}%</td>
-                  <td className="px-2 py-1.5 text-center font-bold text-red-600">{r.totalFaltas}</td>
-                  <td className="px-2 py-1.5 text-center text-red-500">{r.pctFalta}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* RELAÇÃO DE ALUNOS */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Relação de Alunos Matriculados</h2>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase tracking-wide">Relação do Número de Alunos Regularmente Matriculados</div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-blue-50 border-b border-blue-100">
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Cidade/Estado</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800" colSpan={2}>Gênero</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Nº alunos</th>
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Nome (ordem alfabética)</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Idade</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Ensino</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Escola</th>
-              </tr>
-              <tr className="bg-blue-50/50 border-b border-blue-100">
-                <th></th>
-                <th className="px-2 py-1 text-center text-[10px] font-bold text-blue-600">Masc.</th>
-                <th className="px-2 py-1 text-center text-[10px] font-bold text-blue-600">Fem.</th>
-                <th></th><th></th><th></th><th></th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {enrolledStudents.map((s: any, i: number) => {
-                const isFem = s.nome.split(' ')[0].slice(-1).toLowerCase() === 'a';
-                return (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
-                    <td className="px-2 py-1.5 text-gray-600">{cityLabel}</td>
-                    <td className="px-2 py-1.5 text-center">{!isFem ? '✓' : ''}</td>
-                    <td className="px-2 py-1.5 text-center">{isFem ? '✓' : ''}</td>
-                    <td className="px-2 py-1.5 text-center font-bold text-blue-700">{i === 0 ? enrolledStudents.length : ''}</td>
-                    <td className="px-2 py-1.5 font-medium text-gray-800">{s.nome}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-700">{s.age}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-600">{s.ensino}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-600">{s.escola}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* PIE CHART */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">3</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Figura 1 — Média da Frequência e Faltas</h2>
-        </div>
-        <PieChart freqPercent={totals.freqPct} faltaPercent={totals.faltaPct} title={chartTitle || `Média da Frequência e faltas dos alunos em ${cityLabel}`} />
-      </section>
-
-      {/* BAR: Média Frequência */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Figura 2 — Média de Frequência</h2>
-        </div>
-        <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))} maxY={10} title={chartTitle || `Média de frequência dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de frequência" />
-      </section>
-
-      {/* BAR: Média Faltas */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">5</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Figura 3 — Média de Faltas</h2>
-        </div>
-        <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgAbsence }))} maxY={10} title={`Média de faltas dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de faltas dos alunos" />
-      </section>
-
-      {/* TABLES: Histórico + Média */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">6</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Frequência e Faltas — Tabelas</h2>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
-          <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Histórico do número de faltas — {cityLabel}</div>
-          {[row1, row2].map((row, ri) => (
-            <table key={ri} className="w-full text-xs border-b border-gray-100">
-              <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-24">Mês</th>{row.map((m: any) => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
-              <tbody><tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">N° de faltas</td>{row.map((m: any) => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-gray-800">{m.totalAbsences}</td>)}</tr></tbody>
-            </table>
-          ))}
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Média de faltas dos alunos — {cityLabel}</div>
-          {[row1, row2].map((row, ri) => (
-            <table key={ri} className="w-full text-xs border-b border-gray-100">
-              <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-32">Mês</th>{row.map((m: any) => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
-              <tbody>
-                <tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">Dias de aula (média)</td>{row.map((m: any) => <td key={m.label} className="px-2 py-1.5 text-center text-gray-700">{m.daysOfClass}</td>)}</tr>
-                <tr className="bg-blue-50/30"><td className="px-2 py-1.5 font-bold text-gray-700">Média de faltas</td>{row.map((m: any) => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-orange-600">{m.avgAbsence.toFixed(2).replace('.', ',')}</td>)}</tr>
-              </tbody>
-            </table>
-          ))}
-        </div>
-      </section>
-
-      {/* BAR: Histórico Faltas */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">7</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Figura 4 — Histórico do Número de Faltas</h2>
-        </div>
-        <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.totalAbsences }))} maxY={35} title={`Histórico de número de faltas em ${cityLabel}`} legend1="Nº de faltas no mês" singleColor />
-      </section>
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────
-// TAB: ASSIDUIDADE E APROVEITAMENTO ESCOLAR
-// ─────────────────────────────────────────────────
-const Assiduidade: React.FC<{
-  students: StudentDraft[];
+// ─── MONTHLY ATTENDANCE TABLE COMPONENT (DETALHADO DIA-A-DIA) ───
+const MonthlyAttendanceTable: React.FC<{
+  month: number;
+  year: number;
+  students: { nome: string }[];
   history: DocumentLog[];
-  nucleoId?: string;
   cityLabel: string;
-  tableTitle: string;
-  chartTitle: string;
-}> = ({ students, history, nucleoId, cityLabel, tableTitle, chartTitle }) => {
-  // Extract boletim data from history
-  const boletimData = useMemo(() => {
-    const boletimDocs = history.filter(d => d.type === 'BOLETIM');
-    const entries: { studentName: string; grade1: number; attendance1: number; grade2: number; attendance2: number; status: string; periodType: string }[] = [];
+}> = ({ month, year, students, history, cityLabel }) => {
+  const monthDocs = history.filter(d => {
+    const dt = new Date(d.timestamp);
+    return d.type === 'LISTA_FREQUENCIA' && dt.getMonth() === month && dt.getFullYear() === year;
+  }).sort((a,b) => a.timestamp.localeCompare(b.timestamp));
 
-    boletimDocs.forEach(doc => {
-      const meta = doc.metaData;
-      if (meta?.reports && Array.isArray(meta.reports)) {
-        meta.reports.forEach((r: any) => entries.push(r));
-      } else if (meta?.studentName) {
-        entries.push(meta);
-      }
-    });
-    return entries;
-  }, [history]);
-
-  // Per student calculations
-  const studentReport = useMemo(() => {
-    const filtered = nucleoId
-      ? students.filter(s => s.nucleo_id === nucleoId && s.status !== 'INATIVO')
-      : students.filter(s => s.status !== 'INATIVO');
-
-    return filtered.sort((a, b) => a.nome.localeCompare(b.nome)).map((student, idx) => {
-      const report = boletimData.find(b => b.studentName === student.nome);
-      const grade1 = report?.grade1 ?? ((6 + Math.random() * 4));
-      const attendance1 = report?.attendance1 ?? (80 + Math.random() * 20);
-      const grade2 = report?.grade2 ?? ((6 + Math.random() * 4));
-      const attendance2 = report?.attendance2 ?? (80 + Math.random() * 20);
-      const avgGrade = (grade1 + grade2) / 2;
-      const avgAttendance = (attendance1 + attendance2) / 2;
-      let status: string;
-      if (grade2 > grade1) status = 'MELHORA';
-      else if (grade2 < grade1) status = 'PIORA';
-      else status = 'MANTEVE';
-
-      let avaliacao: string;
-      if (avgGrade >= 8) avaliacao = 'Bom';
-      else if (avgGrade >= 6) avaliacao = 'Regular';
-      else if (avgGrade >= 4) avaliacao = 'Insatisfatório';
-      else avaliacao = 'Péssimo';
-
-      return {
-        num: idx + 1,
-        nome: student.nome,
-        grade1: parseFloat(grade1.toFixed(1)),
-        attendance1: parseFloat(attendance1.toFixed(0)),
-        grade2: parseFloat(grade2.toFixed(1)),
-        attendance2: parseFloat(attendance2.toFixed(0)),
-        avgGrade: parseFloat(avgGrade.toFixed(1)),
-        avgAttendance: parseFloat(avgAttendance.toFixed(0)),
-        status,
-        avaliacao,
-      };
-    });
-  }, [students, boletimData, nucleoId]);
-
-  // Aggregate for charts
-  const avgGrade1 = studentReport.length ? parseFloat((studentReport.reduce((a, s) => a + s.grade1, 0) / studentReport.length).toFixed(1)) : 0;
-  const avgGrade2 = studentReport.length ? parseFloat((studentReport.reduce((a, s) => a + s.grade2, 0) / studentReport.length).toFixed(1)) : 0;
-  const avgAtt1 = studentReport.length ? parseFloat((studentReport.reduce((a, s) => a + s.attendance1, 0) / studentReport.length).toFixed(0)) : 0;
-  const avgAtt2 = studentReport.length ? parseFloat((studentReport.reduce((a, s) => a + s.attendance2, 0) / studentReport.length).toFixed(0)) : 0;
-  const countMelhora = studentReport.filter(s => s.status === 'MELHORA').length;
-  const countPiora = studentReport.filter(s => s.status === 'PIORA').length;
-  const countManteve = studentReport.filter(s => s.status === 'MANTEVE').length;
-
-  const statusColor = (s: string) => s === 'MELHORA' ? 'text-green-600' : s === 'PIORA' ? 'text-red-600' : 'text-yellow-600';
-  const avalColor = (a: string) => a === 'Bom' ? 'text-green-600' : a === 'Regular' ? 'text-yellow-600' : 'text-red-600';
+  if (monthDocs.length === 0) return null;
 
   return (
-    <div className="space-y-6">
-      {/* SUMMARY CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Aproveitamento 01</span>
-          <span className="block text-2xl font-black text-blue-600">{avgGrade1}</span>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Aproveitamento 02</span>
-          <span className="block text-2xl font-black text-teal-600">{avgGrade2}</span>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Assiduidade 01</span>
-          <span className="block text-2xl font-black text-blue-600">{avgAtt1}%</span>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
-          <span className="text-[10px] font-bold text-gray-400 uppercase">Assiduidade 02</span>
-          <span className="block text-2xl font-black text-teal-600">{avgAtt2}%</span>
-        </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-8">
+      <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">
+        2.1 Frequência do mês de {MONTH_NAMES[month]} de {year} - PROJETO ESCOLINHA DE TRIATHLON
       </div>
-
-      {/* TABLE: Relatório de Assiduidade e Aproveitamento */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">1</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Relatório de Assiduidade e Aproveitamento Escolar</h2>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase tracking-wide">{tableTitle || `Assiduidade e Aproveitamento Escolar — ${cityLabel}`}</div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-blue-50 border-b border-blue-100">
-                <th className="px-2 py-2 text-left font-bold text-blue-800 w-10">Nº</th>
-                <th className="px-2 py-2 text-left font-bold text-blue-800">Nome do Aluno</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Aprov. 01</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Assid. 01</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Aprov. 02</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Assid. 02</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Status</th>
-                <th className="px-2 py-2 text-center font-bold text-blue-800">Avaliação</th>
+      <table className="w-full text-[10px] border-collapse">
+        <thead>
+          <tr className="bg-blue-600 text-white">
+            <th className="border border-blue-500 p-1 w-24">Cidade/Estado</th>
+            <th className="border border-blue-500 p-1 w-48">Nome (ordem alfabética)</th>
+            {monthDocs.map(doc => {
+              const d = new Date(doc.timestamp);
+              return (
+                <th key={doc.id} className="border border-blue-500 p-1 text-center min-w-[35px]">
+                  <div className="text-[8px] opacity-80">{DAY_NAMES_SHORT[d.getDay()]}</div>
+                  <div>{d.getDate()}-{MONTH_NAMES[month].slice(0,3).toLowerCase()}</div>
+                </th>
+              );
+            })}
+            <th className="border border-blue-500 p-1 text-center font-bold">Dias aula</th>
+            <th className="border border-blue-500 p-1 text-center font-bold">Freq. total</th>
+            <th className="border border-blue-500 p-1 text-center font-bold">% Freq.</th>
+            <th className="border border-blue-500 p-1 text-center font-bold">Nº faltas</th>
+            <th className="border border-blue-500 p-1 text-center font-bold">% Falta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((student, sIdx) => {
+            let presences = 0;
+            const totalDays = monthDocs.length;
+            return (
+              <tr key={student.nome} className={sIdx % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
+                <td className="border border-gray-200 px-2 py-1.5 text-gray-600">{cityLabel}</td>
+                <td className="border border-gray-200 px-2 py-1.5 text-gray-800 font-bold uppercase">{student.nome}</td>
+                {monthDocs.map(doc => {
+                  const isPresent = doc.metaData?.present?.includes(student.nome);
+                  if (isPresent) presences++;
+                  return (
+                    <td key={doc.id} className={`border border-gray-200 p-1 text-center font-black ${isPresent ? 'text-blue-600' : 'text-red-500'}`}>
+                      {isPresent ? '✓' : 'F'}
+                    </td>
+                  );
+                })}
+                <td className="border border-gray-200 p-1 text-center font-bold text-gray-700">{totalDays}</td>
+                <td className="border border-gray-200 p-1 text-center font-bold text-blue-700">{presences}</td>
+                <td className="border border-gray-200 p-1 text-center font-bold text-green-700">{totalDays > 0 ? Math.round((presences / totalDays) * 100) : 0}%</td>
+                <td className="border border-gray-200 p-1 text-center font-bold text-red-600">{totalDays - presences}</td>
+                <td className="border border-gray-200 p-1 text-center font-bold text-red-500">{totalDays > 0 ? 100 - Math.round((presences / totalDays) * 100) : 0}%</td>
               </tr>
-            </thead>
-            <tbody>
-              {studentReport.map((r, i) => (
-                <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
-                  <td className="px-2 py-1.5 text-gray-600">{r.num}</td>
-                  <td className="px-2 py-1.5 font-medium text-gray-800">{r.nome}</td>
-                  <td className="px-2 py-1.5 text-center font-bold text-blue-700">{r.grade1}</td>
-                  <td className="px-2 py-1.5 text-center text-gray-700">{r.attendance1}%</td>
-                  <td className="px-2 py-1.5 text-center font-bold text-teal-700">{r.grade2}</td>
-                  <td className="px-2 py-1.5 text-center text-gray-700">{r.attendance2}%</td>
-                  <td className={`px-2 py-1.5 text-center font-bold ${statusColor(r.status)}`}>{r.status === 'MELHORA' ? '▲ Melhora' : r.status === 'PIORA' ? '▼ Piora' : '● Manteve'}</td>
-                  <td className={`px-2 py-1.5 text-center font-bold ${avalColor(r.avaliacao)}`}>{r.avaliacao}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* CHART: Aproveitamento Comparativo */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Aproveitamento Escolar Comparativo</h2>
-        </div>
-        <BarChart
-          data={studentReport.map(s => ({ label: s.nome.split(' ').slice(0, 2).join(' '), value1: s.grade1, value2: s.grade2 }))}
-          maxY={10}
-          title={chartTitle || `Aproveitamento Escolar Comparativo — ${cityLabel}`}
-          legend1="Aproveitamento 01"
-          legend2="Aproveitamento 02"
-          color1="#2563eb"
-          color2="#14b8a6"
-        />
-      </section>
-
-      {/* CHART: Assiduidade Comparativa */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">3</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Assiduidade Escolar Comparativa</h2>
-        </div>
-        <BarChart
-          data={studentReport.map(s => ({ label: s.nome.split(' ').slice(0, 2).join(' '), value1: s.attendance1, value2: s.attendance2 }))}
-          maxY={100}
-          title={`Assiduidade Escolar Comparativa — ${cityLabel}`}
-          legend1="Assiduidade 01"
-          legend2="Assiduidade 02"
-          color1="#2563eb"
-          color2="#14b8a6"
-        />
-      </section>
-
-      {/* STATUS DISTRIBUTION PIE */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span>
-          <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Distribuição de Resultados</h2>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
-            <span className="block text-3xl font-black text-green-600">{countMelhora}</span>
-            <span className="text-xs font-bold text-green-500">▲ Melhora</span>
-          </div>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 text-center">
-            <span className="block text-3xl font-black text-yellow-600">{countManteve}</span>
-            <span className="text-xs font-bold text-yellow-500">● Manteve</span>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
-            <span className="block text-3xl font-black text-red-600">{countPiora}</span>
-            <span className="text-xs font-bold text-red-500">▼ Piora</span>
-          </div>
-        </div>
-      </section>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };
+
+// ─────────────────────────────────────────────────
+// TAB components...
+// ─────────────────────────────────────────────────
+
+// Main components are now moved inside the main class to share visibility state
 
 // ═══════════════════════════════════════════
 // MAIN COMPONENT
@@ -543,17 +244,40 @@ const Assiduidade: React.FC<{
 export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   students, history, nucleos, currentNucleoId, onBack
 }) => {
-  // ─── State ───
   const [activeTab, setActiveTab] = useState<TabKey>('FREQUENCIA');
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(currentNucleoId || '');
   const [filterStart, setFilterStart] = useState('');
   const [filterEnd, setFilterEnd] = useState('');
-  const [tableTitle, setTableTitle] = useState('');
-  const [chartTitle, setChartTitle] = useState('');
+  
+  // New List Filters
+  const [selectedTable, setSelectedTable] = useState('TODAS');
+  const [selectedChart, setSelectedChart] = useState('TODOS');
 
   const effectiveNucleoId = selectedNucleoId || undefined;
   const nucleo = nucleos.find(n => n.id === effectiveNucleoId);
   const cityLabel = nucleo ? nucleo.nome.split(' | ')[0] || nucleo.nome.split(' - ')[0] : 'Todos os Núcleos';
+
+  // ─── Constants ───
+  const TABLE_TITLES_FREQ = [
+    { id: '1. Resumo Geral da Frequência', label: '1. Resumo Geral da Frequência' },
+    { id: '2. Relação de Alunos Regularmente Matriculados', label: '2. Relação de Alunos Regularmente Matriculados' },
+    { id: '3. Frequência e Faltas — Tabelas', label: '3. Frequência e Faltas — Tabelas (Histórico e Média)' },
+    { id: '4. LISTA: Frequência Mensal Detalhada', label: '4. LISTA: Frequência Mensal Detalhada (Item 2.1)' },
+  ];
+  const CHART_TITLES_FREQ = [
+    { id: 'Figura 1', label: 'Figura 1 — Média da Frequência e Faltas' },
+    { id: 'Figura 2', label: 'Figura 2 — Média de Frequência dos Alunos' },
+    { id: 'Figura 3', label: 'Figura 3 — Média de Faltas dos Alunos' },
+    { id: 'Figura 4', label: 'Figura 4 — Histórico do Número de Faltas' },
+  ];
+  const TABLE_TITLES_ASSID = [
+    { id: '1. Relatório de Assiduidade', label: '1. Relatório de Assiduidade e Aproveitamento Escolar' },
+  ];
+  const CHART_TITLES_ASSID = [
+    { id: 'Aproveitamento', label: 'Figura 2 — Aproveitamento Escolar Comparativo' },
+    { id: 'Assiduidade', label: 'Figura 3 — Assiduidade Escolar Comparativa' },
+    { id: 'Distribuição', label: 'Figura 4 — Distribuição de Resultados' },
+  ];
 
   // ─── Computed data ───
   const monthlyData = useMemo(() => {
@@ -600,6 +324,37 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
     });
   }, [students, history, monthlyData, effectiveNucleoId]);
 
+  const boletimEntries = useMemo(() => {
+    const boletimDocs = history.filter(d => d.type === 'BOLETIM');
+    const entries: any[] = [];
+    boletimDocs.forEach(doc => {
+      if (doc.metaData?.reports) doc.metaData.reports.forEach((r: any) => entries.push(r));
+      else if (doc.metaData?.studentName) entries.push(doc.metaData);
+    });
+    return entries;
+  }, [history]);
+
+  const studentReport = useMemo(() => {
+    const filtered = enrolledStudents;
+    return filtered.map((student, idx) => {
+      const report = boletimEntries.find(b => b.studentName === student.nome);
+      const g1 = report?.grade1 ?? (6+Math.random()*4);
+      const a1 = report?.attendance1 ?? (80+Math.random()*20);
+      const g2 = report?.grade2 ?? (6+Math.random()*4);
+      const a2 = report?.attendance2 ?? (80+Math.random()*20);
+      const avgG = (g1+g2)/2;
+      return {
+        num: idx+1, nome: student.nome, g1, a1, g2, a2, avgG,
+        status: g2>g1 ? 'MELHORA' : g2<g1 ? 'PIORA' : 'MANTEVE',
+        avaliacao: avgG>=8?'Bom':avgG>=6?'Regular':'Péssimo'
+      };
+    });
+  }, [enrolledStudents, boletimEntries]);
+
+  // Visibility Helpers
+  const showTable = (id: string) => selectedTable === 'TODAS' || selectedTable === id;
+  const showChart = (id: string) => selectedChart === 'TODOS' || selectedChart === id;
+
   const TABS: { key: TabKey; label: string }[] = [
     { key: 'FREQUENCIA', label: 'Anexo Meta Quantitativa 01 - Lista de Frequência' },
     { key: 'ASSIDUIDADE', label: 'Anexo Meta Quantitativa 01 - Rel. Assiduidade e Aproveitamento' },
@@ -632,8 +387,8 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
           {TABS.map(tab => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 py-2.5 px-3 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
+              onClick={() => { setActiveTab(tab.key); setSelectedTable('TODAS'); setSelectedChart('TODOS'); }}
+              className={`flex-1 py-3 px-4 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
                 activeTab === tab.key ? 'bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -643,74 +398,147 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
         </div>
 
         {/* ═══ FILTERS ═══ */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Filtros</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Núcleo */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Núcleo</label>
-              <select
-                value={selectedNucleoId}
-                onChange={e => setSelectedNucleoId(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-              >
+              <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Núcleo</label>
+              <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-bold text-gray-700 focus:ring-2 focus:ring-blue-500/20">
                 <option value="">Todos os Núcleos</option>
-                {nucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split(' - ')[0]}</option>)}
+                {nucleos.map(n => <option key={n.id} value={n.id}>{n.nome}</option>)}
               </select>
             </div>
             {/* Data Início */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Data Início</label>
-              <input type="date" value={filterStart} onChange={e => setFilterStart(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+              <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Início</label>
+              <input type="date" value={filterStart} onChange={e => setFilterStart(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-bold text-gray-700" />
             </div>
             {/* Data Fim */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Data Fim</label>
-              <input type="date" value={filterEnd} onChange={e => setFilterEnd(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+              <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Fim</label>
+              <input type="date" value={filterEnd} onChange={e => setFilterEnd(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-bold text-gray-700" />
             </div>
             {/* Título da Tabela */}
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Título da Tabela</label>
-              <input type="text" value={tableTitle} onChange={e => setTableTitle(e.target.value)} placeholder="Ex: Projeto em Joinville" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+              <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Exibir Tabela</label>
+              <select value={selectedTable} onChange={e => setSelectedTable(e.target.value)} className="w-full bg-blue-50/50 border border-blue-100 rounded-xl py-2 px-3 text-xs font-black text-blue-700">
+                <option value="TODAS">Exibir Todas</option>
+                {(activeTab === 'FREQUENCIA' ? TABLE_TITLES_FREQ : TABLE_TITLES_ASSID).map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
             </div>
-          </div>
-          {/* Second row for chart title */}
-          <div className="mt-3">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Título do Gráfico</label>
-            <input type="text" value={chartTitle} onChange={e => setChartTitle(e.target.value)} placeholder="Ex: Média de Frequência dos Alunos" className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all" />
+            {/* Título do Gráfico */}
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">Exibir Gráfico</label>
+              <select value={selectedChart} onChange={e => setSelectedChart(e.target.value)} className="w-full bg-teal-50/50 border border-teal-100 rounded-xl py-2 px-3 text-xs font-black text-teal-700">
+                <option value="TODOS">Exibir Todos</option>
+                {(activeTab === 'FREQUENCIA' ? CHART_TITLES_FREQ : CHART_TITLES_ASSID).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* ═══ TAB CONTENT ═══ */}
+        {/* ═══ TAB CONTENT: FREQUENCIA ═══ */}
         {activeTab === 'FREQUENCIA' && (
-          <FrequenciaTab
-            monthlyData={monthlyData}
-            totals={totals}
-            enrolledStudents={enrolledStudents}
-            resumoData={resumoData}
-            cityLabel={cityLabel}
-            tableTitle={tableTitle}
-            chartTitle={chartTitle}
-          />
+          <div className="space-y-8">
+            {showTable('1. Resumo Geral da Frequência') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">1</span><h2 className="text-sm font-bold text-gray-700">Resumo Geral da Frequência</h2></div>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Projeto em {cityLabel}</div>
+                  <table className="w-full text-[10px]">
+                    <thead><tr className="bg-blue-50 border-b border-blue-100 font-bold text-blue-800"><th className="px-2 py-2">Nº</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th className="text-center">Dias aula</th><th className="text-center">Freq. total</th><th className="text-center">% Freq.</th><th className="text-center">Nº faltas</th><th className="text-center">% Falta</th></tr></thead>
+                    <tbody>{resumoData.map((r, i) => (<tr key={i} className="border-b border-gray-50"><td>{r.num}</td><td className="font-bold">{r.nome}</td><td className="text-center">{r.diasAula}</td><td className="text-center font-bold text-blue-700">{r.freqTotal}</td><td className="text-center font-bold text-green-700">{r.pctFreq}%</td><td className="text-center text-red-600">{r.totalFaltas}</td><td className="text-center">{r.pctFalta}%</td></tr>))}</tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {showTable('2. Relação de Alunos Regularmente Matriculados') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span><h2 className="text-sm font-bold text-gray-700">Relação de Alunos Matriculados</h2></div>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Relação do Número de Alunos Regularmente Matriculados</div>
+                  <table className="w-full text-[10px]">
+                    <thead><tr className="bg-blue-50 font-bold text-blue-800"><th className="px-2 py-2">Cidade/Estado</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th>Masc.</th><th>Fem.</th><th>Idade</th><th>Ensino</th><th>Escola</th></tr></thead>
+                    <tbody>{enrolledStudents.map((s, i) => (<tr key={i} className="border-b border-gray-50"><td>{cityLabel}</td><td className="font-bold">{s.nome}</td><td>{s.nome.slice(-1) !== 'a' ? '✓' : ''}</td><td>{s.nome.slice(-1) === 'a' ? '✓' : ''}</td><td>{s.age}</td><td>{s.ensino}</td><td>{s.escola}</td></tr>))}</tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {showChart('Figura 1') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">3</span><h2 className="text-sm font-bold text-gray-700">Figura 1 — Média da Frequência e Faltas</h2></div>
+                <PieChart freqPercent={totals.freqPct} faltaPercent={totals.faltaPct} title={`Média da Frequência e faltas dos alunos em ${cityLabel}`} />
+              </section>
+            )}
+
+            {showChart('Figura 2') && (
+              <section><BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))} maxY={10} title={`Média de frequência em ${cityLabel}`} legend1="Dias de aula" legend2="Média frequência" /></section>
+            )}
+
+            {showTable('3. Frequência e Faltas — Tabelas') && (
+              <section>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Histórico do número de faltas — {cityLabel}</div>
+                  <table className="w-full text-[10px]">
+                    <tr className="bg-blue-50"><th>Mês</th>{monthlyData.map(m => <th key={m.label}>{m.label}</th>)}</tr>
+                    <tr><td>Nº faltas</td>{monthlyData.map(m => <td key={m.label} className="text-center font-bold text-red-600">{m.totalAbsences}</td>)}</tr>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {showTable('4. LISTA: Frequência Mensal Detalhada') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span><h2 className="text-sm font-bold text-gray-700">LISTA: Frequência Mensal Detalhada (Item 2.1)</h2></div>
+                {monthlyData.map(m => (
+                  <MonthlyAttendanceTable key={`${m.month}-${m.year}`} month={m.month} year={m.year} students={enrolledStudents} history={history} cityLabel={cityLabel} />
+                ))}
+              </section>
+            )}
+
+            {showChart('Figura 4') && (
+              <section><BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.totalAbsences }))} maxY={40} title={`Histórico de faltas em ${cityLabel}`} legend1="Nº faltas" singleColor /></section>
+            )}
+          </div>
         )}
 
+        {/* ═══ TAB CONTENT: ASSIDUIDADE ═══ */}
         {activeTab === 'ASSIDUIDADE' && (
-          <Assiduidade
-            students={students}
-            history={history}
-            nucleoId={effectiveNucleoId}
-            cityLabel={cityLabel}
-            tableTitle={tableTitle}
-            chartTitle={chartTitle}
-          />
+          <div className="space-y-8">
+            {showTable('1. Relatório de Assiduidade') && (
+              <section>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Assiduidade e Aproveitamento Escolar — {cityLabel}</div>
+                  <table className="w-full text-[10px]">
+                    <thead><tr className="bg-blue-50 text-blue-800"><th>Nº</th><th className="text-left">Nome do Aluno</th><th>Aprov. 01</th><th>Assid. 01</th><th>Aprov. 02</th><th>Assid. 02</th><th>Status</th><th>Avaliação</th></tr></thead>
+                    <tbody>{studentReport.map((r, i) => (<tr key={i} className="border-b border-gray-50"><td>{r.num}</td><td className="font-bold">{r.nome}</td><td>{r.g1.toFixed(1)}</td><td>{r.a1.toFixed(0)}%</td><td>{r.g2.toFixed(1)}</td><td>{r.a2.toFixed(0)}%</td><td className={r.status==='MELHORA'?'text-green-600 font-bold':r.status==='PIORA'?'text-red-600 font-bold':'text-yellow-600'}>{r.status}</td><td>{r.avaliacao}</td></tr>))}</tbody>
+                  </table>
+                </div>
+              </section>
+            )}
+
+            {showChart('Aproveitamento') && (
+              <BarChart data={studentReport.map(s => ({ label: s.nome.split(' ')[0], value1: s.g1, value2: s.g2 }))} maxY={10} title="Comparativo de Aproveitamento" legend1="Aprov. 01" legend2="Aprov. 02" />
+            )}
+            
+            {showChart('Assiduidade') && (
+              <BarChart data={studentReport.map(s => ({ label: s.nome.split(' ').slice(0,2).join(' '), value1: s.a1, value2: s.a2 }))} maxY={100} title="Comparativo de Assiduidade" legend1="Assid. 01" legend2="Assid. 02" color2="#14b8a6" />
+            )}
+
+            {showChart('Distribuição') && (
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-green-50 rounded-2xl p-5 text-center border border-green-100 text-green-700"><span className="block text-3xl font-black">{studentReport.filter(s => s.status==='MELHORA').length}</span><span className="text-[10px] font-bold">▲ MELHORA</span></div>
+                <div className="bg-yellow-50 rounded-2xl p-5 text-center border border-yellow-100 text-yellow-700"><span className="block text-3xl font-black">{studentReport.filter(s => s.status==='MANTEVE').length}</span><span className="text-[10px] font-bold">● MANTEVE</span></div>
+                <div className="bg-red-50 rounded-2xl p-5 text-center border border-red-100 text-red-700"><span className="block text-3xl font-black">{studentReport.filter(s => s.status==='PIORA').length}</span><span className="text-[10px] font-bold">▼ PIORA</span></div>
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-[10px] text-gray-400 pt-6">
-          Fonte: Escolinha de Triathlon ({new Date().getFullYear()})
+        <div className="text-center text-[10px] text-gray-400 pt-10">
+          Fonte: Relatórios de Atividades do Projeto Escolinha de Triathlon - Núcleo {cityLabel}
         </div>
       </div>
     </div>
