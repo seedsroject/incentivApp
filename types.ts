@@ -333,6 +333,7 @@ export enum AppView {
   FEATURE_EVIDENCE = 'FEATURE_EVIDENCE', // 9, 10, 11
   FEATURE_INVENTORY = 'FEATURE_INVENTORY', // Novo: Controle de Estoque
   FEATURE_PRE_CADASTRO = 'FEATURE_PRE_CADASTRO', // Novo: Pré-cadastro e Fila de Espera
+  FEATURE_CROSS_REFERENCE = 'FEATURE_CROSS_REFERENCE', // Cruzamento de Dados e Gráficos
 
   REPORT = 'REPORT', // 7, 8 (Gerados automaticamente)
   ADMIN_DASHBOARD = 'ADMIN_DASHBOARD', // Novo Dashboard Admin

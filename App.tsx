@@ -18,6 +18,7 @@ import { InventoryControl } from './components/InventoryControl';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PreCadastroDashboard, MOCK_PRE_CADASTRO } from './components/PreCadastroDashboard';
 import { ServicoSocialDashboard } from './components/ServicoSocialDashboard';
+import { CrossReferenceView } from './components/CrossReferenceView';
 import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
@@ -969,6 +970,16 @@ const AppContent: React.FC = () => {
             nucleos={nucleos}
             onBack={() => setView(AppView.DASHBOARD)}
             onUpdateHistory={setCollectedDocuments}
+          />
+        )}
+
+        {view === AppView.FEATURE_CROSS_REFERENCE && (
+          <CrossReferenceView
+            students={students}
+            history={collectedDocuments}
+            nucleos={nucleos}
+            currentNucleoId={user?.nucleo_id || undefined}
+            onBack={() => setView(AppView.DASHBOARD)}
           />
         )}
 

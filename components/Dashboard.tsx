@@ -117,6 +117,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       action: () => onNavigate(AppView.FEATURE_SERVICO_SOCIAL),
       canShare: false
     },
+    {
+      id: 'cruzamento',
+      title: 'Cruzamento de Dados',
+      subtitle: 'Gráficos e Relatórios',
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
+      action: () => onNavigate(AppView.FEATURE_CROSS_REFERENCE),
+      canShare: false
+    },
   ];
 
   return (
