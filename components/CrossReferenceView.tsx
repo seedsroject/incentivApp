@@ -73,6 +73,14 @@ const MOCK_MONTHLY = [
   { label: 'fev/25', month: 1, year: 2025, daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.70, avgAbsence: 0.30 },
   { label: 'mar/25', month: 2, year: 2025, daysOfClass: 7, totalAbsences: 10, avgFrequency: 7.28, avgAbsence: 0.20 },
   { label: 'abr/25', month: 3, year: 2025, daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.40, avgAbsence: 0.16 },
+  { label: 'mai/25', month: 4, year: 2025, daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.42, avgAbsence: 0.16 },
+  { label: 'jun/25', month: 5, year: 2025, daysOfClass: 8, totalAbsences: 0, avgFrequency: 8.00, avgAbsence: 0.00 },
+  { label: 'jul/25', month: 6, year: 2025, daysOfClass: 9, totalAbsences: 3, avgFrequency: 8.94, avgAbsence: 0.06 },
+  { label: 'ago/25', month: 7, year: 2025, daysOfClass: 8, totalAbsences: 9, avgFrequency: 7.82, avgAbsence: 0.18 },
+  { label: 'set/25', month: 8, year: 2025, daysOfClass: 9, totalAbsences: 16, avgFrequency: 8.68, avgAbsence: 0.32 },
+  { label: 'out/25', month: 9, year: 2025, daysOfClass: 9, totalAbsences: 7, avgFrequency: 8.86, avgAbsence: 0.14 },
+  { label: 'nov/25', month: 10, year: 2025, daysOfClass: 7, totalAbsences: 15, avgFrequency: 6.70, avgAbsence: 0.30 },
+  { label: 'dez/25', month: 11, year: 2025, daysOfClass: 6, totalAbsences: 10, avgFrequency: 5.80, avgAbsence: 0.20 },
 ];
 
 // ─── SVG BAR CHART ───
@@ -284,6 +292,45 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
     const real = buildMonthlyData(history, students, effectiveNucleoId, filterStart, filterEnd);
     return real.length >= 3 ? real : MOCK_MONTHLY;
   }, [history, students, effectiveNucleoId, filterStart, filterEnd]);
+
+  const fullMonthlyDataSpan = useMemo(() => {
+    const startStr = filterStart || '2024-04-24';
+    const endStr = filterEnd || '2025-12-23';
+    
+    // Parse without tz shift
+    const [sy, sm, sd] = startStr.split('-');
+    const [ey, em, ed] = endStr.split('-');
+    const startObj = new Date(parseInt(sy), parseInt(sm) - 1, parseInt(sd));
+    const endObj = new Date(parseInt(ey), parseInt(em) - 1, parseInt(ed));
+    
+    let curr = new Date(startObj.getFullYear(), startObj.getMonth(), 1);
+    const limit = new Date(endObj.getFullYear(), endObj.getMonth(), 1);
+    
+    const span: any[] = [];
+    while (curr <= limit) {
+      const y = curr.getFullYear();
+      const m = curr.getMonth();
+      const existing = monthlyData.find(md => md.year === y && md.month === m);
+      const label = `${MONTH_NAMES[m].slice(0,3).toLowerCase()}/${String(y).slice(2)}`;
+      
+      if (existing) {
+        span.push(existing);
+      } else {
+        span.push({
+          label, month: m, year: y, isEmptyPlaceholder: true
+        });
+      }
+      
+      curr.setMonth(curr.getMonth() + 1);
+    }
+    return { span, startStr, endStr };
+  }, [filterStart, filterEnd, monthlyData]);
+
+  const formatDisplayDate = (dStr: string) => {
+    const parts = dStr.split('-');
+    if (parts.length !== 3) return dStr;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  };
 
   const totals = useMemo(() => {
     const totalDays = monthlyData.reduce((a, m) => a + m.daysOfClass, 0);
@@ -566,13 +613,13 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
                     <thead>
                       <tr className="bg-[#4472c4] text-white font-bold border border-white">
                         <th colSpan={13} className="border border-white px-2 py-2 text-center text-xs">
-                          Histórico do número de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de 24/04/2024 a 23/12/2025, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
+                          Histórico do número de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de {formatDisplayDate(fullMonthlyDataSpan.startStr)} a {formatDisplayDate(fullMonthlyDataSpan.endStr)}, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {Array.from({ length: Math.ceil(monthlyData.length / 12) }).map((_, blockIdx) => {
-                        const chunk = monthlyData.slice(blockIdx * 12, (blockIdx + 1) * 12);
+                      {Array.from({ length: Math.ceil(fullMonthlyDataSpan.span.length / 12) }).map((_, blockIdx) => {
+                        const chunk = fullMonthlyDataSpan.span.slice(blockIdx * 12, (blockIdx + 1) * 12);
                         const padded: any[] = [...chunk];
                         while (padded.length < 12) padded.push(null);
                         return (
@@ -589,11 +636,14 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
                               <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
                                 N° de faltas<br/>dos alunos
                               </td>
-                              {padded.map((m, i) => (
-                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
-                                  {m ? m.totalAbsences : ''}
-                                </td>
-                              ))}
+                              {padded.map((m, i) => {
+                                const isMissing = !m || m.isEmptyPlaceholder;
+                                return (
+                                  <td key={i} className={`border border-white px-2 py-1.5 text-xs ${isMissing ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
+                                    {isMissing ? '' : m.totalAbsences}
+                                  </td>
+                                );
+                              })}
                             </tr>
                           </React.Fragment>
                         );
@@ -608,13 +658,13 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
                     <thead>
                       <tr className="bg-[#4472c4] text-white font-bold border border-white">
                         <th colSpan={13} className="border border-white px-2 py-2 text-center text-xs">
-                          Média de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de 24/04/2024 a 23/12/2025, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
+                          Média de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de {formatDisplayDate(fullMonthlyDataSpan.startStr)} a {formatDisplayDate(fullMonthlyDataSpan.endStr)}, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {Array.from({ length: Math.ceil(monthlyData.length / 12) }).map((_, blockIdx) => {
-                        const chunk = monthlyData.slice(blockIdx * 12, (blockIdx + 1) * 12);
+                      {Array.from({ length: Math.ceil(fullMonthlyDataSpan.span.length / 12) }).map((_, blockIdx) => {
+                        const chunk = fullMonthlyDataSpan.span.slice(blockIdx * 12, (blockIdx + 1) * 12);
                         const padded: any[] = [...chunk];
                         while (padded.length < 12) padded.push(null);
                         return (
@@ -631,21 +681,27 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
                               <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
                                 Dias de aula<br/>no mês<br/>(média)
                               </td>
-                              {padded.map((m, i) => (
-                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
-                                  {m ? m.daysOfClass : ''}
-                                </td>
-                              ))}
+                              {padded.map((m, i) => {
+                                const isMissing = !m || m.isEmptyPlaceholder;
+                                return (
+                                  <td key={i} className={`border border-white px-2 py-1.5 text-xs ${isMissing ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
+                                    {isMissing ? '' : m.daysOfClass}
+                                  </td>
+                                );
+                              })}
                             </tr>
                             <tr className="font-bold text-black border border-white">
                               <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
                                 Média de<br/>faltas dos<br/>alunos
                               </td>
-                              {padded.map((m, i) => (
-                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#b4c6e7]'}`}>
-                                  {m ? m.avgAbsence.toFixed(2).replace('.', ',') : ''}
-                                </td>
-                              ))}
+                              {padded.map((m, i) => {
+                                const isMissing = !m || m.isEmptyPlaceholder;
+                                return (
+                                  <td key={i} className={`border border-white px-2 py-1.5 text-xs ${isMissing ? 'bg-[#4472c4]' : 'bg-[#b4c6e7]'}`}>
+                                    {isMissing ? '' : (m.avgAbsence?.toFixed(2) || '0,00').replace('.', ',')}
+                                  </td>
+                                );
+                              })}
                             </tr>
                           </React.Fragment>
                         );
