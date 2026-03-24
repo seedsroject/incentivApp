@@ -181,56 +181,66 @@ const MonthlyAttendanceTable: React.FC<{
     return d.type === 'LISTA_FREQUENCIA' && dt.getMonth() === month && dt.getFullYear() === year;
   }).sort((a,b) => a.timestamp.localeCompare(b.timestamp));
 
-  if (monthDocs.length === 0) return null;
-
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-8">
-      <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">
-        2.1 Frequência do mês de {MONTH_NAMES[month]} de {year} - PROJETO ESCOLINHA DE TRIATHLON
+    <div className="bg-white shadow-sm border border-gray-100 overflow-x-auto mb-8">
+      <div className="bg-[#4472c4] text-white text-left pl-2 py-1 text-xs font-bold uppercase border-b border-white">
+        Frequência de cada mês - {MONTH_NAMES[month]} / {year}
       </div>
-      <table className="w-full text-[10px] border-collapse">
+      <table className="w-full text-[10px] border-collapse text-center">
         <thead>
-          <tr className="bg-blue-600 text-white">
-            <th className="border border-blue-500 p-1 w-24">Cidade/Estado</th>
-            <th className="border border-blue-500 p-1 w-48">Nome (ordem alfabética)</th>
-            {monthDocs.map(doc => {
-              const d = new Date(doc.timestamp);
-              return (
-                <th key={doc.id} className="border border-blue-500 p-1 text-center min-w-[35px]">
-                  <div className="text-[8px] opacity-80">{DAY_NAMES_SHORT[d.getDay()]}</div>
-                  <div>{d.getDate()}-{MONTH_NAMES[month].slice(0,3).toLowerCase()}</div>
-                </th>
-              );
-            })}
-            <th className="border border-blue-500 p-1 text-center font-bold">Dias aula</th>
-            <th className="border border-blue-500 p-1 text-center font-bold">Freq. total</th>
-            <th className="border border-blue-500 p-1 text-center font-bold">% Freq.</th>
-            <th className="border border-blue-500 p-1 text-center font-bold">Nº faltas</th>
-            <th className="border border-blue-500 p-1 text-center font-bold">% Falta</th>
+          <tr className="bg-[#4472c4] text-white font-bold border border-white">
+            <th rowSpan={3} className="border border-white px-2 py-2 w-8"></th>
+            <th rowSpan={3} className="border border-white px-2 py-2 min-w-[80px]">Cidade/Estado</th>
+            <th rowSpan={3} className="border border-white px-3 py-2 text-left min-w-[200px]">Nome (ordem alfabética)</th>
+            {monthDocs.length > 0 && <th colSpan={monthDocs.length} className="border border-white px-2 py-1"></th>}
+            <th rowSpan={3} className="border border-white px-1 py-1 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Dias de aula<br/>no mês</th>
+            <th rowSpan={3} className="border border-white px-1 py-1 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Frequência total</th>
+            <th rowSpan={3} className="border border-white px-1 py-1 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>% Frequência</th>
+            <th rowSpan={3} className="border border-white px-1 py-1 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Número de faltas</th>
+            <th rowSpan={3} className="border border-white px-1 py-1 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>% Falta</th>
           </tr>
+          {monthDocs.length > 0 && (
+            <>
+              <tr className="bg-[#4472c4] text-white font-bold text-[10px] border border-white">
+                {monthDocs.map((doc, idx) => {
+                  const d = new Date(doc.timestamp);
+                  return <th key={`r2-${idx}`} className="border border-white px-1 py-1 w-8">{DAY_NAMES_SHORT[d.getDay()]}</th>;
+                })}
+              </tr>
+              <tr className="bg-[#4472c4] text-white font-bold text-[10px] border border-white">
+                {monthDocs.map((doc, idx) => {
+                  const d = new Date(doc.timestamp);
+                  const daySuffix = MONTH_NAMES[month].slice(0,3).toLowerCase();
+                  return <th key={`r3-${idx}`} className="border border-white px-1 py-1 w-8 leading-tight">{d.getDate()}-<br/>{daySuffix}</th>;
+                })}
+              </tr>
+            </>
+          )}
         </thead>
         <tbody>
           {students.map((student, sIdx) => {
             let presences = 0;
             const totalDays = monthDocs.length;
+            
             return (
-              <tr key={student.nome} className={sIdx % 2 === 0 ? 'bg-white' : 'bg-blue-50/30'}>
-                <td className="border border-gray-200 px-2 py-1.5 text-gray-600">{cityLabel}</td>
-                <td className="border border-gray-200 px-2 py-1.5 text-gray-800 font-bold uppercase">{student.nome}</td>
-                {monthDocs.map(doc => {
+              <tr key={student.nome} className={sIdx % 2 === 0 ? 'bg-[#b4c6e7]' : 'bg-[#d9e2f3]'}>
+                <td className="border border-white px-2 py-1.5 font-bold text-black">{sIdx + 1}</td>
+                <td className="border border-white px-2 py-1.5 font-bold text-black">{sIdx === 0 ? cityLabel : ''}</td>
+                <td className="border border-white px-3 py-1.5 text-left text-gray-800 font-bold whitespace-nowrap">{student.nome}</td>
+                {monthDocs.map((doc, idx) => {
                   const isPresent = doc.metaData?.present?.includes(student.nome);
                   if (isPresent) presences++;
                   return (
-                    <td key={doc.id} className={`border border-gray-200 p-1 text-center font-black ${isPresent ? 'text-blue-600' : 'text-red-500'}`}>
-                      {isPresent ? '✓' : 'F'}
+                    <td key={`d-${idx}`} className="border border-white p-1 text-center font-bold text-black">
+                      {isPresent ? 'PP' : ''}
                     </td>
                   );
                 })}
-                <td className="border border-gray-200 p-1 text-center font-bold text-gray-700">{totalDays}</td>
-                <td className="border border-gray-200 p-1 text-center font-bold text-blue-700">{presences}</td>
-                <td className="border border-gray-200 p-1 text-center font-bold text-green-700">{totalDays > 0 ? Math.round((presences / totalDays) * 100) : 0}%</td>
-                <td className="border border-gray-200 p-1 text-center font-bold text-red-600">{totalDays - presences}</td>
-                <td className="border border-gray-200 p-1 text-center font-bold text-red-500">{totalDays > 0 ? 100 - Math.round((presences / totalDays) * 100) : 0}%</td>
+                <td className="border border-white p-1 text-center font-bold text-black">{totalDays}</td>
+                <td className="border border-white p-1 text-center font-bold text-black">{presences}</td>
+                <td className="border border-white p-1 text-center font-bold text-black">{totalDays > 0 ? Math.round((presences / totalDays) * 100) : 0}%</td>
+                <td className="border border-white p-1 text-center font-bold text-black">{totalDays - presences}</td>
+                <td className="border border-white p-1 text-center font-bold text-black">{totalDays > 0 ? 100 - Math.round((presences / totalDays) * 100) : 0}%</td>
               </tr>
             );
           })}
@@ -270,7 +280,7 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
     { id: '1. Relação de Alunos Matriculados', label: '1. A Relação do Número de Alunos Regularmente Matriculados' },
     { id: '2. Resumo Geral da Frequência', label: '2. Resumo Geral da Frequência' },
     { id: '3. Frequência e Faltas — Tabelas', label: '3. Frequência e Faltas — Tabelas (Histórico e Média)' },
-    { id: '4. LISTA: Frequência Mensal Detalhada', label: '4. LISTA: Frequência Mensal Detalhada (Item 2.1)' },
+    { id: '5. Frequência de cada mês', label: '5. Frequência de cada mês' },
   ];
   const CHART_TITLES_FREQ = [
     { id: 'Figura 1', label: 'Figura 1 — Média da Frequência e Faltas' },
@@ -712,10 +722,10 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
               </section>
             )}
 
-            {showTable('4. LISTA: Frequência Mensal Detalhada') && (
-              <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span><h2 className="text-sm font-bold text-gray-700">LISTA: Frequência Mensal Detalhada (Item 2.1)</h2></div>
-                {monthlyData.map(m => (
+            {showTable('5. Frequência de cada mês') && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">5</span><h2 className="text-sm font-bold text-gray-700">Frequência de cada mês</h2></div>
+                {fullMonthlyDataSpan.span.map(m => (
                   <MonthlyAttendanceTable key={`${m.month}-${m.year}`} month={m.month} year={m.year} students={enrolledStudents} history={history} cityLabel={cityLabel} />
                 ))}
               </section>
