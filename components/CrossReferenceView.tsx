@@ -628,22 +628,29 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
 
             {showChart('Figura 1') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">3</span><h2 className="text-sm font-bold text-gray-700">Figura 1 — Média da Frequência e Faltas</h2></div>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">F1</span><h2 className="text-sm font-bold text-gray-700">Figura 1 — Média da Frequência e Faltas</h2></div>
                 <PieChart freqPercent={totals.freqPct} faltaPercent={totals.faltaPct} title={`Média da Frequência e faltas dos alunos em ${cityLabel}`} />
               </section>
             )}
 
             {showChart('Figura 2') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span><h2 className="text-sm font-bold text-gray-700">Figura 2 — Média de Frequência dos Alunos</h2></div>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">F2</span><h2 className="text-sm font-bold text-gray-700">Figura 2 — Média de Frequência dos Alunos</h2></div>
                 <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))} maxY={10} title={`Média de frequência dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de frequência" />
               </section>
             )}
 
             {showChart('Figura 3') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">5</span><h2 className="text-sm font-bold text-gray-700">Figura 3 — Média de Faltas dos Alunos</h2></div>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">F3</span><h2 className="text-sm font-bold text-gray-700">Figura 3 — Média de Faltas dos Alunos</h2></div>
                 <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgAbsence }))} maxY={10} title={`Média de faltas dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de faltas dos alunos" />
+              </section>
+            )}
+
+            {showChart('Figura 4') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">F4</span><h2 className="text-sm font-bold text-gray-700">Figura 4 — Histórico do Número de Faltas</h2></div>
+                <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.totalAbsences }))} maxY={40} title={`Histórico do número de faltas em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Nº faltas" />
               </section>
             )}
 
@@ -765,9 +772,7 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
               </section>
             )}
 
-            {showChart('Figura 4') && (
-              <section><BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.totalAbsences }))} maxY={40} title={`Histórico de faltas em ${cityLabel}`} legend1="Nº faltas" singleColor /></section>
-            )}
+            {/* Figura 4 movida para cima */}
           </div>
         )}
 
