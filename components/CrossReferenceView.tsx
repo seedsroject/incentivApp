@@ -449,7 +449,7 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   return (
     <div className="bg-gray-50 min-h-screen pb-20 font-sans" ref={containerRef}>
       {/* ═══ SYSTEM STANDARD HEADER ═══ */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex flex-col md:flex-row shadow-sm justify-between items-center z-10 sticky top-0">
+      <div className="bg-white border-b border-gray-200 pl-6 pr-20 py-4 flex flex-col md:flex-row shadow-sm justify-between items-center z-10 sticky top-0">
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors" title="Voltar ao Centro de Serviços">
             <svg className="w-5 h-5 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
