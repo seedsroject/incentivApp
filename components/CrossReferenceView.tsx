@@ -259,8 +259,8 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
 
   // ─── Constants ───
   const TABLE_TITLES_FREQ = [
-    { id: '1. Resumo Geral da Frequência', label: '1. Resumo Geral da Frequência' },
-    { id: '2. Relação de Alunos Regularmente Matriculados', label: '2. Relação de Alunos Regularmente Matriculados' },
+    { id: '1. Relação de Alunos Matriculados', label: '1. A Relação do Número de Alunos Regularmente Matriculados' },
+    { id: '2. Resumo Geral da Frequência', label: '2. Resumo Geral da Frequência' },
     { id: '3. Frequência e Faltas — Tabelas', label: '3. Frequência e Faltas — Tabelas (Histórico e Média)' },
     { id: '4. LISTA: Frequência Mensal Detalhada', label: '4. LISTA: Frequência Mensal Detalhada (Item 2.1)' },
   ];
@@ -440,27 +440,63 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
         {/* ═══ TAB CONTENT: FREQUENCIA ═══ */}
         {activeTab === 'FREQUENCIA' && (
           <div className="space-y-8">
-            {showTable('1. Resumo Geral da Frequência') && (
+            {showTable('1. Relação de Alunos Matriculados') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">1</span><h2 className="text-sm font-bold text-gray-700">Resumo Geral da Frequência</h2></div>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Projeto em {cityLabel}</div>
-                  <table className="w-full text-[10px]">
-                    <thead><tr className="bg-blue-50 border-b border-blue-100 font-bold text-blue-800"><th className="px-2 py-2">Nº</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th className="text-center">Dias aula</th><th className="text-center">Freq. total</th><th className="text-center">% Freq.</th><th className="text-center">Nº faltas</th><th className="text-center">% Falta</th></tr></thead>
-                    <tbody>{resumoData.map((r, i) => (<tr key={i} className="border-b border-gray-50"><td>{r.num}</td><td className="font-bold">{r.nome}</td><td className="text-center">{r.diasAula}</td><td className="text-center font-bold text-blue-700">{r.freqTotal}</td><td className="text-center font-bold text-green-700">{r.pctFreq}%</td><td className="text-center text-red-600">{r.totalFaltas}</td><td className="text-center">{r.pctFalta}%</td></tr>))}</tbody>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">1</span><h2 className="text-sm font-bold text-gray-700">A Relação do Número de Alunos Regularmente Matriculados</h2></div>
+                <div className="bg-white shadow-sm border border-gray-100 overflow-x-auto">
+                  <table className="w-full text-[10px] border-collapse text-center">
+                    <thead>
+                      <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                        <th className="border border-white px-2 py-4"></th>
+                        <th colSpan={2} className="border border-white px-2 py-1">Gênero</th>
+                        <th rowSpan={3} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Número de alunos</th>
+                        <th rowSpan={3} className="border border-white px-3 py-2 text-center align-middle">Nome (ordem alfabética)</th>
+                        <th rowSpan={3} className="border border-white px-2 py-2 w-10 align-middle">Idade</th>
+                        <th colSpan={3} className="border border-white px-2 py-2 leading-tight">Ensino Fundamental I, Ensino<br/>Fundamental II e Ensino Médio</th>
+                      </tr>
+                      <tr className="bg-[#d9e2f3] text-[#1f4e78] font-bold">
+                        <th rowSpan={2} className="bg-white border text-black font-semibold border-[#b4c6e7] px-2 py-2 min-w-[100px] align-middle">Cidade/Estado</th>
+                        <th rowSpan={2} className="border border-[#b4c6e7] px-1 py-4 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Masculino</th>
+                        <th rowSpan={2} className="border border-[#b4c6e7] px-1 py-4 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Feminino</th>
+                        <th rowSpan={2} className="border border-[#b4c6e7] px-2 py-1 align-bottom">Ensino</th>
+                        <th colSpan={2} className="border border-[#b4c6e7] px-2 py-1 bg-white hover:bg-white text-black text-[9px]">Escola</th>
+                      </tr>
+                      <tr className="bg-[#d9e2f3] text-[#1f4e78] font-bold">
+                        <th className="bg-white border text-black border-[#b4c6e7] px-1 py-4 w-8 align-middle text-[9px]" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Pública</th>
+                        <th className="bg-white border text-black border-[#b4c6e7] px-1 py-4 w-8 align-middle text-[9px]" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Particular</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {enrolledStudents.map((s, i) => {
+                        const isFem = s.nome.split(' ')[0].slice(-1).toLowerCase() === 'a';
+                        return (
+                          <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#d9e2f3]/30'}>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 font-bold text-black">{i === 0 ? cityLabel : ''}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center">{!isFem ? 'X' : ''}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center">{isFem ? 'X' : ''}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{i + 1}</td>
+                            <td className="border border-[#b4c6e7] px-3 py-1.5 text-left text-gray-800 font-medium whitespace-nowrap">{s.nome}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{s.age}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{s.ensino}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center">{s.escola === 'Pública' ? 'X' : ''}</td>
+                            <td className="border border-[#b4c6e7] px-2 py-1.5 text-center">{s.escola === 'Particular' ? 'X' : ''}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
                   </table>
                 </div>
               </section>
             )}
 
-            {showTable('2. Relação de Alunos Regularmente Matriculados') && (
+            {showTable('2. Resumo Geral da Frequência') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span><h2 className="text-sm font-bold text-gray-700">Relação de Alunos Matriculados</h2></div>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span><h2 className="text-sm font-bold text-gray-700">Resumo Geral da Frequência</h2></div>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Relação do Número de Alunos Regularmente Matriculados</div>
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Projeto em {cityLabel}</div>
                   <table className="w-full text-[10px]">
-                    <thead><tr className="bg-blue-50 font-bold text-blue-800"><th className="px-2 py-2">Cidade/Estado</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th>Masc.</th><th>Fem.</th><th>Idade</th><th>Ensino</th><th>Escola</th></tr></thead>
-                    <tbody>{enrolledStudents.map((s, i) => (<tr key={i} className="border-b border-gray-50"><td>{cityLabel}</td><td className="font-bold">{s.nome}</td><td>{s.nome.slice(-1) !== 'a' ? '✓' : ''}</td><td>{s.nome.slice(-1) === 'a' ? '✓' : ''}</td><td>{s.age}</td><td>{s.ensino}</td><td>{s.escola}</td></tr>))}</tbody>
+                    <thead><tr className="bg-blue-50 border-b border-blue-100 font-bold text-blue-800"><th className="px-2 py-2">Nº</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th className="text-center">Dias aula</th><th className="text-center">Freq. total</th><th className="text-center">% Freq.</th><th className="text-center">Nº faltas</th><th className="text-center">% Falta</th></tr></thead>
+                    <tbody>{resumoData.map((r, i) => (<tr key={i} className="border-b border-gray-50"><td>{r.num}</td><td className="font-bold">{r.nome}</td><td className="text-center">{r.diasAula}</td><td className="text-center font-bold text-blue-700">{r.freqTotal}</td><td className="text-center font-bold text-green-700">{r.pctFreq}%</td><td className="text-center text-red-600">{r.totalFaltas}</td><td className="text-center">{r.pctFalta}%</td></tr>))}</tbody>
                   </table>
                 </div>
               </section>
