@@ -491,12 +491,45 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
 
             {showTable('2. Resumo Geral da Frequência') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span><h2 className="text-sm font-bold text-gray-700">Resumo Geral da Frequência</h2></div>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Projeto em {cityLabel}</div>
-                  <table className="w-full text-[10px]">
-                    <thead><tr className="bg-blue-50 border-b border-blue-100 font-bold text-blue-800"><th className="px-2 py-2">Nº</th><th className="px-2 py-2 text-left">Nome (ordem alfabética)</th><th className="text-center">Dias aula</th><th className="text-center">Freq. total</th><th className="text-center">% Freq.</th><th className="text-center">Nº faltas</th><th className="text-center">% Falta</th></tr></thead>
-                    <tbody>{resumoData.map((r, i) => (<tr key={i} className="border-b border-gray-50"><td>{r.num}</td><td className="font-bold">{r.nome}</td><td className="text-center">{r.diasAula}</td><td className="text-center font-bold text-blue-700">{r.freqTotal}</td><td className="text-center font-bold text-green-700">{r.pctFreq}%</td><td className="text-center text-red-600">{r.totalFaltas}</td><td className="text-center">{r.pctFalta}%</td></tr>))}</tbody>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">2</span><h2 className="text-sm font-bold text-gray-700">Resumo Geral da Frequência</h2></div>
+                <div className="bg-white shadow-sm border border-gray-100 overflow-x-auto">
+                  <table className="w-full text-[10px] border-collapse text-center">
+                    <thead>
+                      <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                        <th colSpan={9} className="border border-white px-2 py-4 text-center uppercase tracking-wider text-xs">
+                          PROJETO "ESCOLINHA DE TRIATHLON" EM {cityLabel}
+                        </th>
+                      </tr>
+                      <tr className="bg-[#b4c6e7] text-black font-semibold">
+                        <th colSpan={2} className="border border-white px-2 py-4"></th>
+                        <th rowSpan={2} className="border border-white px-2 py-2 w-20 leading-tight">Evento/<br/>modalidade</th>
+                        <th rowSpan={2} className="border border-white px-3 py-2 text-center align-top pt-4 min-w-[200px]">Nome (ordem alfabética)</th>
+                        <th rowSpan={2} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Dias de aula</th>
+                        <th rowSpan={2} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Frequência total</th>
+                        <th rowSpan={2} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>% Frequência</th>
+                        <th rowSpan={2} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Total do número<br/>de faltas</th>
+                        <th rowSpan={2} className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>% Falta</th>
+                      </tr>
+                      <tr className="bg-[#d9e2f3] text-black font-semibold">
+                        <th className="border border-white px-1 py-2 w-8 align-middle" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Nº por<br/>núcleo</th>
+                        <th className="border border-white px-2 py-2 min-w-[100px] align-middle">Cidade/Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resumoData.map((r, i) => (
+                        <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#d9e2f3]/30'}>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 font-bold text-black text-center">{r.num}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 font-bold text-black text-center">{i === 0 ? cityLabel : ''}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 font-bold text-black text-center">Triathlon</td>
+                          <td className="border border-[#b4c6e7] px-3 py-1.5 text-left text-gray-800 font-medium whitespace-nowrap">{r.nome}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{r.diasAula}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{r.freqTotal}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{r.pctFreq}%</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{r.totalFaltas}</td>
+                          <td className="border border-[#b4c6e7] px-2 py-1.5 text-center font-bold text-black">{r.pctFalta}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
                   </table>
                 </div>
               </section>
