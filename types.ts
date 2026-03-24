@@ -317,6 +317,9 @@ export interface DocumentLog {
   description?: string;
   fileUrl?: string; // Foto ou PDF
   metaData?: any; // Para armazenar JSON do formulário digital ou dados de boletim/assiduidade
+  status?: string;
+  nucleoId?: string;
+  uploadedBy?: string;
 }
 
 export enum AppView {

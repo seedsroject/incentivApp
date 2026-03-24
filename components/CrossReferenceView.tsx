@@ -58,30 +58,40 @@ function buildMonthlyData(history: DocumentLog[], students: StudentDraft[], nucl
   });
 }
 
-// ─── MOCK DATA ───
-const MOCK_MONTHLY = [
-  { label: 'abr/24', month: 3, year: 2024, daysOfClass: 2, totalAbsences: 4, avgFrequency: 1.92, avgAbsence: 0.08 },
-  { label: 'mai/24', month: 4, year: 2024, daysOfClass: 9, totalAbsences: 19, avgFrequency: 8.62, avgAbsence: 0.38 },
-  { label: 'jun/24', month: 5, year: 2024, daysOfClass: 8, totalAbsences: 25, avgFrequency: 7.50, avgAbsence: 0.50 },
-  { label: 'jul/24', month: 6, year: 2024, daysOfClass: 9, totalAbsences: 23, avgFrequency: 8.54, avgAbsence: 0.46 },
-  { label: 'ago/24', month: 7, year: 2024, daysOfClass: 8, totalAbsences: 27, avgFrequency: 7.84, avgAbsence: 0.54 },
-  { label: 'set/24', month: 8, year: 2024, daysOfClass: 9, totalAbsences: 32, avgFrequency: 8.00, avgAbsence: 0.64 },
-  { label: 'out/24', month: 9, year: 2024, daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.82, avgAbsence: 0.30 },
-  { label: 'nov/24', month: 10, year: 2024, daysOfClass: 9, totalAbsences: 9, avgFrequency: 8.74, avgAbsence: 0.18 },
-  { label: 'dez/24', month: 11, year: 2024, daysOfClass: 6, totalAbsences: 12, avgFrequency: 5.28, avgAbsence: 0.24 },
-  { label: 'jan/25', month: 0, year: 2025, daysOfClass: 8, totalAbsences: 34, avgFrequency: 7.32, avgAbsence: 0.68 },
-  { label: 'fev/25', month: 1, year: 2025, daysOfClass: 8, totalAbsences: 15, avgFrequency: 7.70, avgAbsence: 0.30 },
-  { label: 'mar/25', month: 2, year: 2025, daysOfClass: 7, totalAbsences: 10, avgFrequency: 7.28, avgAbsence: 0.20 },
-  { label: 'abr/25', month: 3, year: 2025, daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.40, avgAbsence: 0.16 },
-  { label: 'mai/25', month: 4, year: 2025, daysOfClass: 8, totalAbsences: 8, avgFrequency: 7.42, avgAbsence: 0.16 },
-  { label: 'jun/25', month: 5, year: 2025, daysOfClass: 8, totalAbsences: 0, avgFrequency: 8.00, avgAbsence: 0.00 },
-  { label: 'jul/25', month: 6, year: 2025, daysOfClass: 9, totalAbsences: 3, avgFrequency: 8.94, avgAbsence: 0.06 },
-  { label: 'ago/25', month: 7, year: 2025, daysOfClass: 8, totalAbsences: 9, avgFrequency: 7.82, avgAbsence: 0.18 },
-  { label: 'set/25', month: 8, year: 2025, daysOfClass: 9, totalAbsences: 16, avgFrequency: 8.68, avgAbsence: 0.32 },
-  { label: 'out/25', month: 9, year: 2025, daysOfClass: 9, totalAbsences: 7, avgFrequency: 8.86, avgAbsence: 0.14 },
-  { label: 'nov/25', month: 10, year: 2025, daysOfClass: 7, totalAbsences: 15, avgFrequency: 6.70, avgAbsence: 0.30 },
-  { label: 'dez/25', month: 11, year: 2025, daysOfClass: 6, totalAbsences: 10, avgFrequency: 5.80, avgAbsence: 0.20 },
-];
+// ─── MOCK DATA GENERATOR ───
+function generateMockHistory(students: StudentDraft[], startStr: string, endStr: string, nucleoId?: string): DocumentLog[] {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  const docs: DocumentLog[] = [];
+  let curr = new Date(start.getFullYear(), start.getMonth(), 1);
+  const limit: Date = new Date(end.getFullYear(), end.getMonth(), 1);
+  let docId = 1;
+
+  while (curr <= limit) {
+    const year = curr.getFullYear();
+    const month = curr.getMonth();
+    // Generate roughly 8 classes per month (Tue/Thu)
+    for (let day = 1; day <= 28; day++) {
+      const date = new Date(year, month, day);
+      if (date.getDay() === 2 || date.getDay() === 4) {
+        // Pick present students pseudorandomly based on index
+        const presentList = students.filter((s, i) => (i + day + month) % 8 !== 0).map(s => s.nome);
+        docs.push({
+          id: `mock-freq-${docId++}`,
+          title: `Chamada Digital - ${date.toLocaleDateString('pt-BR')}`,
+          type: 'LISTA_FREQUENCIA',
+          status: 'concluido',
+          timestamp: date.toISOString(),
+          nucleoId: nucleoId || 'mock-nucleo',
+          uploadedBy: 'Sistema Mock',
+          metaData: { present: presentList }
+        });
+      }
+    }
+    curr.setMonth(curr.getMonth() + 1);
+  }
+  return docs;
+}
 
 // ─── SVG BAR CHART ───
 const BarChart: React.FC<{
@@ -262,10 +272,22 @@ const MonthlyAttendanceTable: React.FC<{
 export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   students, history, nucleos, currentNucleoId, onBack
 }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('FREQUENCIA');
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(currentNucleoId || '');
   const [filterStart, setFilterStart] = useState('');
   const [filterEnd, setFilterEnd] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const tds = containerRef.current.querySelectorAll('td');
+    tds.forEach(td => {
+      td.contentEditable = isEditing ? 'true' : 'false';
+      if (isEditing) td.classList.add('outline-dashed', 'outline-1', 'outline-blue-300');
+      else td.classList.remove('outline-dashed', 'outline-1', 'outline-blue-300');
+    });
+  });
   
   // New List Filters
   const [selectedTable, setSelectedTable] = useState('TODAS');
@@ -298,10 +320,17 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   ];
 
   // ─── Computed data ───
-  const monthlyData = useMemo(() => {
-    const real = buildMonthlyData(history, students, effectiveNucleoId, filterStart, filterEnd);
-    return real.length >= 3 ? real : MOCK_MONTHLY;
+  const effectiveHistory = useMemo(() => {
+    const real = history.filter(d => d.type === 'LISTA_FREQUENCIA' && (!effectiveNucleoId || d.nucleoId === effectiveNucleoId));
+    if (real.length >= 3) return history;
+    const startStr = filterStart || '2024-04-24';
+    const endStr = filterEnd || '2025-12-23';
+    return generateMockHistory(students, startStr, endStr, effectiveNucleoId);
   }, [history, students, effectiveNucleoId, filterStart, filterEnd]);
+
+  const monthlyData = useMemo(() => {
+    return buildMonthlyData(effectiveHistory, students, effectiveNucleoId, filterStart, filterEnd);
+  }, [effectiveHistory, students, effectiveNucleoId, filterStart, filterEnd]);
 
   const fullMonthlyDataSpan = useMemo(() => {
     const startStr = filterStart || '2024-04-24';
@@ -418,14 +447,13 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* ═══ HEADER ═══ */}
-      <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-teal-500 text-white px-4 py-5 shadow-lg">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <div className="bg-gray-50 min-h-screen p-8 text-gray-800 font-sans" ref={containerRef}>
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Cruzamento de Dados</h1>
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            </button>
             <div>
               <h1 className="text-lg font-extrabold tracking-tight">Cruzamento de Dados e Gráficos</h1>
               <p className="text-blue-100 text-xs font-medium">{cityLabel}</p>
@@ -726,7 +754,7 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
               <section className="space-y-4">
                 <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">5</span><h2 className="text-sm font-bold text-gray-700">Frequência de cada mês</h2></div>
                 {fullMonthlyDataSpan.span.map(m => (
-                  <MonthlyAttendanceTable key={`${m.month}-${m.year}`} month={m.month} year={m.year} students={enrolledStudents} history={history} cityLabel={cityLabel} />
+                  <MonthlyAttendanceTable key={`${m.month}-${m.year}`} month={m.month} year={m.year} students={enrolledStudents} history={effectiveHistory} cityLabel={cityLabel} />
                 ))}
               </section>
             )}
