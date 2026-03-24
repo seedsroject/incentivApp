@@ -558,23 +558,98 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
 
             {showTable('3. Frequência e Faltas — Tabelas') && (
               <section>
-                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">6</span><h2 className="text-sm font-bold text-gray-700">Frequência e Faltas — Tabelas</h2></div>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-[#4472c4] text-white text-[10px] font-black px-2 py-0.5 rounded-full">3</span><h2 className="text-sm font-bold text-gray-700">Frequência e Faltas dos Alunos</h2></div>
+                
                 {/* Sub-tabela 1: Histórico do número de faltas */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
-                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Histórico do número de faltas — {cityLabel}</div>
-                  <table className="w-full text-[10px]">
-                    <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-24">Mês</th>{monthlyData.map(m => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
-                    <tbody><tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">N° de faltas</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-red-600">{m.totalAbsences}</td>)}</tr></tbody>
+                <div className="bg-white shadow-sm border border-gray-100 overflow-x-auto mb-8">
+                  <table className="w-full text-[10px] border-collapse text-center">
+                    <thead>
+                      <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                        <th colSpan={13} className="border border-white px-2 py-2 text-center text-xs">
+                          Histórico do número de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de 24/04/2024 a 23/12/2025, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: Math.ceil(monthlyData.length / 12) }).map((_, blockIdx) => {
+                        const chunk = monthlyData.slice(blockIdx * 12, (blockIdx + 1) * 12);
+                        const padded: any[] = [...chunk];
+                        while (padded.length < 12) padded.push(null);
+                        return (
+                          <React.Fragment key={blockIdx}>
+                            <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                              <td className="border border-white px-2 py-1.5 w-32">Mês</td>
+                              {padded.map((m, i) => (
+                                <td key={i} className="border border-white px-2 py-1.5 w-[6%] min-w-[50px]">
+                                  {m ? m.label : ''}
+                                </td>
+                              ))}
+                            </tr>
+                            <tr className="font-bold text-black border border-white">
+                              <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
+                                N° de faltas<br/>dos alunos
+                              </td>
+                              {padded.map((m, i) => (
+                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
+                                  {m ? m.totalAbsences : ''}
+                                </td>
+                              ))}
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
                   </table>
                 </div>
+
                 {/* Sub-tabela 2: Média de faltas dos alunos */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Média de faltas dos alunos — {cityLabel}</div>
-                  <table className="w-full text-[10px]">
-                    <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-32">Mês</th>{monthlyData.map(m => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
+                <div className="bg-white shadow-sm border border-gray-100 overflow-x-auto">
+                  <table className="w-full text-[10px] border-collapse text-center">
+                    <thead>
+                      <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                        <th colSpan={13} className="border border-white px-2 py-2 text-center text-xs">
+                          Média de faltas dos alunos do projeto "Escolinha de Triathlon", referente ao período de 24/04/2024 a 23/12/2025, no município de {cityLabel.split('/')[0]} ({cityLabel.split('/')[1] || 'SC'})
+                        </th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      <tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">Dias de aula (média)</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center text-gray-700">{m.daysOfClass}</td>)}</tr>
-                      <tr className="bg-blue-50/30"><td className="px-2 py-1.5 font-bold text-gray-700">Média de faltas</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-orange-600">{m.avgAbsence.toFixed(2).replace('.', ',')}</td>)}</tr>
+                      {Array.from({ length: Math.ceil(monthlyData.length / 12) }).map((_, blockIdx) => {
+                        const chunk = monthlyData.slice(blockIdx * 12, (blockIdx + 1) * 12);
+                        const padded: any[] = [...chunk];
+                        while (padded.length < 12) padded.push(null);
+                        return (
+                          <React.Fragment key={blockIdx}>
+                            <tr className="bg-[#4472c4] text-white font-bold border border-white">
+                              <td className="border border-white px-2 py-1.5 w-32">Mês</td>
+                              {padded.map((m, i) => (
+                                <td key={i} className="border border-white px-2 py-1.5 w-[6%] min-w-[50px]">
+                                  {m ? m.label : ''}
+                                </td>
+                              ))}
+                            </tr>
+                            <tr className="font-bold text-black border border-white">
+                              <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
+                                Dias de aula<br/>no mês<br/>(média)
+                              </td>
+                              {padded.map((m, i) => (
+                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#e9eff7]'}`}>
+                                  {m ? m.daysOfClass : ''}
+                                </td>
+                              ))}
+                            </tr>
+                            <tr className="font-bold text-black border border-white">
+                              <td className="bg-[#4472c4] text-white border border-white px-2 py-1.5 text-[10px] leading-tight">
+                                Média de<br/>faltas dos<br/>alunos
+                              </td>
+                              {padded.map((m, i) => (
+                                <td key={i} className={`border border-white px-2 py-1.5 text-xs ${!m ? 'bg-[#4472c4]' : 'bg-[#b4c6e7]'}`}>
+                                  {m ? m.avgAbsence.toFixed(2).replace('.', ',') : ''}
+                                </td>
+                              ))}
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
