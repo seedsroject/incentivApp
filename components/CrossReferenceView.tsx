@@ -447,25 +447,31 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen p-8 text-gray-800 font-sans" ref={containerRef}>
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Cruzamento de Dados</h1>
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-lg font-extrabold tracking-tight">Cruzamento de Dados e Gráficos</h1>
-              <p className="text-blue-100 text-xs font-medium">{cityLabel}</p>
-            </div>
+    <div className="bg-gray-50 min-h-screen pb-20 font-sans" ref={containerRef}>
+      {/* ═══ SYSTEM STANDARD HEADER ═══ */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex flex-col md:flex-row shadow-sm justify-between items-center z-10 sticky top-0">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors" title="Voltar ao Centro de Serviços">
+            <svg className="w-5 h-5 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          </button>
+          <div>
+            <h1 className="text-xl font-black text-gray-800 tracking-tight">Cruzamento de Dados</h1>
+            <p className="text-gray-500 text-sm font-medium">Cruzamento de Dados e Gráficos / <span className="text-blue-600 font-bold">{cityLabel}</span></p>
           </div>
-          <div className="bg-white/10 px-3 py-1.5 rounded-xl">
-            <span className="text-xs font-bold">{enrolledStudents.length} alunos</span>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <span className="text-xs font-bold bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100">
+            {enrolledStudents.length} alunos
+          </span>
+          <button onClick={() => setIsEditing(!isEditing)} className={`px-4 py-2 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 transition-colors ${isEditing ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            {isEditing ? '✔ Salvar Tabelas' : '✏️ Editar Tabelas'}
+          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-8 space-y-6">
 
         {/* ═══ TABS ═══ */}
         <div className="flex p-1 bg-gray-100 rounded-xl mb-4 overflow-x-auto">
