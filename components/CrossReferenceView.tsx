@@ -474,16 +474,39 @@ export const CrossReferenceView: React.FC<CrossReferenceViewProps> = ({
             )}
 
             {showChart('Figura 2') && (
-              <section><BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))} maxY={10} title={`Média de frequência em ${cityLabel}`} legend1="Dias de aula" legend2="Média frequência" /></section>
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">4</span><h2 className="text-sm font-bold text-gray-700">Figura 2 — Média de Frequência dos Alunos</h2></div>
+                <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))} maxY={10} title={`Média de frequência dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de frequência" />
+              </section>
+            )}
+
+            {showChart('Figura 3') && (
+              <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">5</span><h2 className="text-sm font-bold text-gray-700">Figura 3 — Média de Faltas dos Alunos</h2></div>
+                <BarChart data={monthlyData.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgAbsence }))} maxY={10} title={`Média de faltas dos alunos em ${cityLabel}`} legend1="Dias de aula no mês" legend2="Média de faltas dos alunos" />
+              </section>
             )}
 
             {showTable('3. Frequência e Faltas — Tabelas') && (
               <section>
+                <div className="flex items-center gap-2 mb-3"><span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">6</span><h2 className="text-sm font-bold text-gray-700">Frequência e Faltas — Tabelas</h2></div>
+                {/* Sub-tabela 1: Histórico do número de faltas */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto mb-4">
                   <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Histórico do número de faltas — {cityLabel}</div>
                   <table className="w-full text-[10px]">
-                    <tr className="bg-blue-50"><th>Mês</th>{monthlyData.map(m => <th key={m.label}>{m.label}</th>)}</tr>
-                    <tr><td>Nº faltas</td>{monthlyData.map(m => <td key={m.label} className="text-center font-bold text-red-600">{m.totalAbsences}</td>)}</tr>
+                    <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-24">Mês</th>{monthlyData.map(m => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
+                    <tbody><tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">N° de faltas</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-red-600">{m.totalAbsences}</td>)}</tr></tbody>
+                  </table>
+                </div>
+                {/* Sub-tabela 2: Média de faltas dos alunos */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                  <div className="bg-blue-700 text-white text-center py-2 text-xs font-bold uppercase">Média de faltas dos alunos — {cityLabel}</div>
+                  <table className="w-full text-[10px]">
+                    <thead><tr className="bg-blue-50"><th className="px-2 py-1.5 text-left font-bold text-blue-800 w-32">Mês</th>{monthlyData.map(m => <th key={m.label} className="px-2 py-1.5 text-center font-bold text-blue-800">{m.label}</th>)}</tr></thead>
+                    <tbody>
+                      <tr className="bg-white"><td className="px-2 py-1.5 font-bold text-gray-700">Dias de aula (média)</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center text-gray-700">{m.daysOfClass}</td>)}</tr>
+                      <tr className="bg-blue-50/30"><td className="px-2 py-1.5 font-bold text-gray-700">Média de faltas</td>{monthlyData.map(m => <td key={m.label} className="px-2 py-1.5 text-center font-bold text-orange-600">{m.avgAbsence.toFixed(2).replace('.', ',')}</td>)}</tr>
+                    </tbody>
                   </table>
                 </div>
               </section>
