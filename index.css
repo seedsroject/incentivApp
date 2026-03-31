@@ -3,3 +3,540 @@ body {
   margin: 0;
   font-family: 'Rawline', sans-serif;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FREQUENCY REPORT BUILDER STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+.freq-report-root {
+  background: #e8ecf1;
+  min-height: 100vh;
+}
+
+/* ─── TOOLBAR ─── */
+.freq-report-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid rgba(68, 114, 196, 0.5);
+}
+
+.freq-btn-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.freq-btn-back:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  transform: translateX(-2px);
+}
+
+.freq-select {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  outline: none;
+  min-width: 120px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.freq-select:focus {
+  border-color: #4472c4;
+  background: rgba(255, 255, 255, 0.12);
+}
+.freq-select option {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.freq-input-date {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 8px;
+  outline: none;
+  width: 130px;
+  transition: all 0.2s;
+}
+.freq-input-date:focus {
+  border-color: #4472c4;
+}
+
+.freq-input-sli {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  outline: none;
+  width: 90px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.freq-input-sli:focus {
+  border-color: #4472c4;
+}
+
+.freq-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #c0c0c0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.freq-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.freq-btn-active {
+  background: rgba(34, 197, 94, 0.25) !important;
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  color: #4ade80 !important;
+}
+.freq-btn-ai {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.15));
+  border-color: rgba(139, 92, 246, 0.35);
+}
+.freq-btn-ai:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.3));
+  color: #c4b5fd;
+}
+.freq-btn-ai:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.freq-btn-print {
+  background: linear-gradient(135deg, rgba(68, 114, 196, 0.2), rgba(16, 185, 129, 0.15));
+  border-color: rgba(68, 114, 196, 0.4);
+}
+.freq-btn-print:hover {
+  background: linear-gradient(135deg, rgba(68, 114, 196, 0.35), rgba(16, 185, 129, 0.3));
+  color: #93c5fd;
+}
+
+.freq-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #c4b5fd;
+  border-radius: 50%;
+  animation: freq-spin 0.8s linear infinite;
+}
+@keyframes freq-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── REPORT CONTENT ─── */
+.freq-report-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+}
+
+/* ─── PAGES ─── */
+.freq-page {
+  background: #ffffff;
+  padding: 50px 55px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  min-height: 600px;
+  position: relative;
+  page-break-after: always;
+}
+
+/* ─── COVER PAGE 1 ─── */
+.freq-cover-page {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 1100px;
+  overflow: hidden;
+  position: relative;
+}
+.freq-cover-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 40px 15px;
+}
+.freq-cover-gov-placeholder {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+.freq-cover-block {
+  flex: 1;
+  margin: 10px 0 0;
+  background: #1b5e8a;
+  background: linear-gradient(160deg, #1a5276 0%, #1b6b93 50%, #1b5e8a 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  border-radius: 0 0 40% 0 / 0 0 8% 0;
+  position: relative;
+  padding-bottom: 40px;
+}
+.freq-cover-inner {
+  padding: 60px 50px 40px;
+  text-align: left;
+  width: 100%;
+}
+.freq-cover-subtitle {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: none;
+}
+.freq-cover-title {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+  margin: 0;
+  text-align: left;
+}
+.freq-cover-spacer {
+  height: 30px;
+}
+.freq-cover-footer-text {
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+.freq-cover-bottom {
+  padding: 20px 50px 0;
+  position: relative;
+}
+.freq-cover-bottom-project {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.freq-cover-bottom-citybox {
+  position: absolute;
+  right: 0;
+  bottom: 60px;
+  background: #333;
+  color: #fff;
+  padding: 12px 24px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.freq-cover-bottom-ref {
+  font-size: 9px;
+  color: #555;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+.freq-cover-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+}
+/* ─── COVER PAGE 2 (Title Page) ─── */
+.freq-title-page {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 1100px;
+  overflow: hidden;
+  position: relative;
+}
+.freq-title-page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60px;
+}
+.freq-title-page-subtitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a5276;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 120px;
+}
+.freq-title-wave {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  width: 100%;
+  height: 60px;
+}
+/* ─── PIE CHART (Figura 1) ─── */
+.freq-pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  page-break-inside: avoid;
+}
+
+/* ─── SECTION HEADER BAR ─── */
+.freq-section-header-bar {
+  background: #4472c4;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+  border-bottom: 2px solid #325ea8;
+}
+
+/* ─── META TABLE ─── */
+.freq-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.freq-meta-table td {
+  border: 1px solid #bfbfbf;
+  padding: 12px 16px;
+  font-size: 12px;
+  vertical-align: top;
+  line-height: 1.6;
+}
+.freq-meta-label {
+  background: #d6e4f0;
+  font-weight: 700;
+  width: 180px;
+  color: #333;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.freq-meta-value {
+  color: #333;
+}
+
+/* ─── RESUMO TEXT ─── */
+.freq-resumo-text {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #333;
+  text-align: justify;
+  white-space: pre-wrap;
+  outline: none;
+  min-height: 200px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.freq-resumo-text:focus {
+  background: #f8f9fa;
+  box-shadow: inset 0 0 0 2px #4472c4;
+}
+
+/* ─── TOC TABLE ─── */
+.freq-toc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.freq-toc-table td {
+  padding: 6px 0;
+}
+
+/* ─── ENROLLMENT TABLE ─── */
+.freq-table-enrollment,
+.freq-table-resumo,
+.freq-table-monthly,
+.freq-table-mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.freq-table-header th {
+  background: #4472c4;
+  color: #ffffff;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 10px;
+  border: 1px solid #3b63a0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.freq-table-enrollment td,
+.freq-table-resumo td,
+.freq-table-monthly td,
+.freq-table-mini td {
+  border: 1px solid #c0c0c0;
+  padding: 5px 8px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+.freq-row-even td {
+  background: #ffffff;
+}
+.freq-row-odd td {
+  background: #dce6f1;
+}
+
+/* ─── MONTHLY ATTENDANCE TABLE ─── */
+.freq-monthly-page {
+  padding: 30px 25px;
+}
+.freq-table-monthly th {
+  padding: 4px 3px;
+}
+.freq-table-monthly td {
+  padding: 3px 4px;
+}
+
+/* ─── SUMMARY TABLES ─── */
+.freq-summary-table-wrapper {
+  border: 1px solid #c0c0c0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* ─── CHART CONTAINER ─── */
+.freq-report-chart {
+  margin: 20px 0;
+  page-break-inside: avoid;
+}
+
+/* ─── EDITABLE CELL FOCUS ─── */
+[contentEditable="true"]:focus {
+  outline: 2px dashed #4472c4;
+  outline-offset: 1px;
+  background: rgba(68, 114, 196, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+@media print {
+  .no-print,
+  .freq-report-toolbar {
+    display: none !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-report-root {
+    background: #fff !important;
+  }
+
+  .freq-report-content {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .freq-page {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 30px 40px !important;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+
+  .freq-cover-page {
+    padding: 0 !important;
+    min-height: 100vh;
+  }
+
+  .freq-monthly-page {
+    padding: 15px 20px !important;
+  }
+
+  .freq-table-header th {
+    background: #4472c4 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-row-odd td {
+    background: #dce6f1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-section-header-bar {
+    background: #4472c4 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-cover-block {
+    background: #002855 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-meta-label {
+    background: #d6e4f0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .freq-report-chart {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    margin: 0.5cm;
+    size: A4;
+  }
+}

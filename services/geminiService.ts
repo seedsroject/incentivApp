@@ -504,3 +504,59 @@ CLÁUSULA SÉTIMA – DO FORO
     return { text: masterTemplate };
   }
 };
+
+// ─── FREQUÊNCIA REPORT: AI ANALYSIS GENERATOR ───
+export const generateFrequencyReportAnalysis = async (
+  reportData: {
+    cityLabel: string;
+    period: string;
+    totalStudents: number;
+    avgFreqPct: number;
+    avgFaltaPct: number;
+    monthlyTrends: { month: string; freq: number; faltas: number }[];
+    totalDays: number;
+  }
+): Promise<string> => {
+  try {
+    const model = "gemini-2.5-flash";
+
+    const dataPayload = JSON.stringify({
+      cidade: reportData.cityLabel,
+      periodo: reportData.period,
+      total_alunos: reportData.totalStudents,
+      media_frequencia_pct: reportData.avgFreqPct,
+      media_faltas_pct: reportData.avgFaltaPct,
+      total_dias_aula: reportData.totalDays,
+      tendencias_mensais: reportData.monthlyTrends
+    }, null, 2);
+
+    const prompt = `Você é um analista técnico especializado em projetos esportivos sociais do governo brasileiro, especificamente da Lei de Incentivo ao Esporte.
+
+Baseado nos dados quantitativos de frequência abaixo, escreva um RESUMO EXECUTIVO formal (4-5 parágrafos) para o "Anexo da Meta Quantitativa 01 — Lista de Frequência" do projeto Escolinha de Triathlon.
+
+DADOS DO RELATÓRIO:
+${dataPayload}
+
+O resumo deve:
+1. Apresentar o contexto do relatório (monitoramento de participação ao longo do período)
+2. Analisar o desempenho geral de frequência em comparação com a meta de 70%
+3. Identificar tendências mensais (meses com maior/menor frequência)
+4. Destacar que o indicador utilizado é a "Lista de Presença" com marcação "PP" (Presença Participativa)
+5. Concluir com avaliação do cumprimento da meta e impacto social
+
+Formato: Texto formal, objetivo, em português brasileiro. Sem markdown, sem bullets, apenas parágrafos contínuos.
+No final, adicione "Palavras-chave:" com 3 termos relevantes.
+
+RETORNE APENAS O TEXTO, sem aspas nem explicações adicionais.`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt
+    });
+
+    return response.text || 'Erro ao gerar texto. Por favor, tente novamente.';
+  } catch (error) {
+    console.error("Erro ao gerar análise de frequência com IA:", error);
+    throw error;
+  }
+};

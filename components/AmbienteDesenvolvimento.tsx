@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { generateReportCoverAndIntro, createFinalDossier, triggerPdfDownload } from '../utils/pdfGenerator';
-import { Nucleo, PDFPage } from '../types';
+import { Nucleo, PDFPage, StudentDraft, DocumentLog } from '../types';
 import { PDFBuilderProvider, usePDFBuilder } from './PDFBuilderContext';
 import { PDFBuilderPreview } from './PDFBuilderSidebar';
 import { getReportTemplate } from '../utils/reportTemplates';
 
 interface AmbienteDesenvolvimentoProps {
   nucleos: Nucleo[];
+  students: StudentDraft[];
+  history: DocumentLog[];
   onOpenBuilder: () => void;
+  onOpenFrequencyReport?: () => void;
   onBack?: () => void;
 }
 
-export default function AmbienteDesenvolvimento({ nucleos, onOpenBuilder, onBack }: AmbienteDesenvolvimentoProps) {
+export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onBack }: AmbienteDesenvolvimentoProps) {
   const { loadTemplate } = usePDFBuilder();
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [selectedNucleo, setSelectedNucleo] = useState<string>('');
@@ -33,6 +36,14 @@ export default function AmbienteDesenvolvimento({ nucleos, onOpenBuilder, onBack
       proponente: 'ESCOLINHA DE TRIATHLON HORIZONTE'
     },
     {
+      id: 'frequencia',
+      title: 'Anexo Meta Quantitativa 01 - Lista de Frequência',
+      coverType: 'blue',
+      year: '2026',
+      city: 'Ilhéus – BA',
+      proponente: 'ESCOLINHA DE TRIATHLON'
+    },
+    {
       id: 'pdlie',
       title: 'Relatório do Plano de divulgação da Lei de Incentivo ao Esporte - PDLIE da Escolinha de Triathlon São José dos Pinhais',
       coverType: 'yellow',
@@ -45,13 +56,19 @@ export default function AmbienteDesenvolvimento({ nucleos, onOpenBuilder, onBack
     { id: 'placeholder5', title: 'Relatório Modelo 5 (Em Breve)', coverType: 'gray', year: '2026', city: 'Cidade', proponente: 'Proponente' },
     { id: 'placeholder6', title: 'Relatório Modelo 6 (Em Breve)', coverType: 'gray', year: '2026', city: 'Cidade', proponente: 'Proponente' },
     { id: 'placeholder7', title: 'Relatório Modelo 7 (Em Breve)', coverType: 'gray', year: '2026', city: 'Cidade', proponente: 'Proponente' },
-    { id: 'placeholder8', title: 'Relatório Modelo 8 (Em Breve)', coverType: 'gray', year: '2026', city: 'Cidade', proponente: 'Proponente' },
   ];
 
   const handleOpenBuilder = () => {
     if (!selectedReport) return;
     const reportDef = reports.find(r => r.id === selectedReport);
     if (!reportDef) return;
+
+    // Se for o relatório de frequência, abrir o editor inline dedicado
+    if (reportDef.id === 'frequencia') {
+      setSelectedReport(null);
+      if (onOpenFrequencyReport) onOpenFrequencyReport();
+      return;
+    }
 
     // Gerar o template inicial
     const pages = getReportTemplate(reportDef.id, {
@@ -151,7 +168,14 @@ export default function AmbienteDesenvolvimento({ nucleos, onOpenBuilder, onBack
           .map((report) => (
           <div 
             key={report.id} 
-            onClick={() => report.coverType !== 'gray' && setSelectedReport(report.id)}
+            onClick={() => {
+              if (report.coverType === 'gray') return;
+              if (report.id === 'frequencia' && onOpenFrequencyReport) {
+                onOpenFrequencyReport();
+                return;
+              }
+              setSelectedReport(report.id);
+            }}
             className={`
               relative bg-white rounded-lg shadow-sm border transition-all duration-200 overflow-hidden group
               ${report.coverType !== 'gray' ? 'cursor-pointer hover:shadow-md hover:border-blue-400' : 'opacity-60 cursor-not-allowed border-gray-200'}

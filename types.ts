@@ -342,6 +342,7 @@ export enum AppView {
   ADMIN_DASHBOARD = 'ADMIN_DASHBOARD', // Novo Dashboard Admin
   DEV_ENVIRONMENT = 'DEV_ENVIRONMENT', // Ambiente de Desenvolvimento
   PDF_BUILDER_VIEW = 'PDF_BUILDER_VIEW', // Nova tela para visualizar o PDF final
+  FREQUENCY_REPORT = 'FREQUENCY_REPORT', // Relatório de Frequência (Anexo Meta Quantitativa 01)
 
   // Visualização Externa (Pai)
   PUBLIC_FORM = 'PUBLIC_FORM'
