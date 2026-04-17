@@ -11,10 +11,11 @@ interface AmbienteDesenvolvimentoProps {
   history: DocumentLog[];
   onOpenBuilder: () => void;
   onOpenFrequencyReport?: () => void;
+  onOpenPDLIEReport?: () => void;
   onBack?: () => void;
 }
 
-export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onBack }: AmbienteDesenvolvimentoProps) {
+export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onOpenPDLIEReport, onBack }: AmbienteDesenvolvimentoProps) {
   const { loadTemplate } = usePDFBuilder();
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [selectedNucleo, setSelectedNucleo] = useState<string>('');
@@ -67,6 +68,12 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     if (reportDef.id === 'frequencia') {
       setSelectedReport(null);
       if (onOpenFrequencyReport) onOpenFrequencyReport();
+      return;
+    }
+
+    if (reportDef.id === 'pdlie') {
+      setSelectedReport(null);
+      if (onOpenPDLIEReport) onOpenPDLIEReport();
       return;
     }
 
@@ -172,6 +179,10 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
               if (report.coverType === 'gray') return;
               if (report.id === 'frequencia' && onOpenFrequencyReport) {
                 onOpenFrequencyReport();
+                return;
+              }
+              if (report.id === 'pdlie' && onOpenPDLIEReport) {
+                onOpenPDLIEReport();
                 return;
               }
               setSelectedReport(report.id);

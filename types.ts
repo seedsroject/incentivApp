@@ -344,6 +344,7 @@ export enum AppView {
   DEV_ENVIRONMENT = 'DEV_ENVIRONMENT', // Ambiente de Desenvolvimento
   PDF_BUILDER_VIEW = 'PDF_BUILDER_VIEW', // Nova tela para visualizar o PDF final
   FREQUENCY_REPORT = 'FREQUENCY_REPORT', // Relatório de Frequência (Anexo Meta Quantitativa 01)
+  PDLIE_REPORT = 'PDLIE_REPORT', // Relatório PDLIE (Plano de Divulgação da Lei de Incentivo ao Esporte)
 
   // Visualização Externa (Pai)
   PUBLIC_FORM = 'PUBLIC_FORM'

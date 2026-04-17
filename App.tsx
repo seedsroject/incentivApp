@@ -20,6 +20,7 @@ import { PreCadastroDashboard, MOCK_PRE_CADASTRO } from './components/PreCadastr
 import { ServicoSocialDashboard } from './components/ServicoSocialDashboard';
 import { CrossReferenceView } from './components/CrossReferenceView';
 import { FrequencyReportBuilder } from './components/FrequencyReportBuilder';
+import { PDLIEReportBuilder } from './components/PDLIEReportBuilder';
 import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
@@ -887,9 +888,9 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && <Header user={user} onLogout={handleLogout} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && <Header user={user} onLogout={handleLogout} />}
 
-      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
+      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (
           <PDFBuilderSidebar onOpenPreview={() => setView(AppView.PDF_BUILDER_VIEW)} />
         )}
@@ -1041,6 +1042,7 @@ const AppContent: React.FC = () => {
               history={collectedDocuments}
               onOpenBuilder={() => setView(AppView.PDF_BUILDER_VIEW)}
               onOpenFrequencyReport={() => setView(AppView.FREQUENCY_REPORT)}
+              onOpenPDLIEReport={() => setView(AppView.PDLIE_REPORT)}
               onBack={() => setView(AppView.DASHBOARD)}
             />
           </div>
@@ -1051,6 +1053,14 @@ const AppContent: React.FC = () => {
             students={students}
             history={collectedDocuments}
             nucleos={nucleos}
+            onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+          />
+        )}
+
+        {view === AppView.PDLIE_REPORT && user && (
+          <PDLIEReportBuilder
+            nucleos={nucleos}
+            evidences={collectedEvidence}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
           />
         )}
