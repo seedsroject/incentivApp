@@ -171,7 +171,8 @@ export interface DeclaracaoProntidao {
 export interface EvidenceLog {
   id: string;
   timestamp: string;
-  type: EvidenceType; // Categoria conforme PDF
+  date?: string; // Data em que a foto foi tirada/inserida pelo usuário
+  type: EvidenceType | string; // Categoria conforme PDF ou personalizada
   description: string;
   imageUrl?: string;
   user_id?: string;

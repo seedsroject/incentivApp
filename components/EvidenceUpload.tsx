@@ -13,11 +13,20 @@ interface EvidenceUploadProps {
 
 export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, onSave, initialCategory, history = [] }) => {
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState<EvidenceType>('ACESSIBILIDADE');
+    const [category, setCategory] = useState<EvidenceType | string>('ACESSIBILIDADE');
+    const [customCategories, setCustomCategories] = useState<string[]>([]);
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [photoDate, setPhotoDate] = useState(new Date().toISOString().split('T')[0]);
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
+
+    // Filtros da Galeria
+    const [filterCategory, setFilterCategory] = useState<string>('ALL');
+    const [filterDateStart, setFilterDateStart] = useState<string>('');
+    const [filterDateEnd, setFilterDateEnd] = useState<string>('');
 
     useEffect(() => {
         if (initialCategory) {
@@ -48,6 +57,7 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
         const evidenceData: EvidenceLog = {
             id: `ev_${Math.random().toString(36).substr(2, 9)}`,
             timestamp: new Date().toISOString(),
+            date: photoDate,
             type: category,
             description: description,
             imageUrl: preview || '',
@@ -74,7 +84,8 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
                 number: figureNumber,
                 figureLabel: figureLabel,
                 category: item.type,
-                categoryLabel: categoryLabel
+                categoryLabel: categoryLabel,
+                date: item.date || item.timestamp.split('T')[0]
             },
             title: `${figureLabel} - ${categoryLabel}`
         };
@@ -99,17 +110,35 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
     };
 
     // Função para obter o label da categoria
-    const getCategoryLabel = (type: EvidenceType): string => {
+    const getCategoryLabel = (type: EvidenceType | string): string => {
         switch (type) {
-            case 'ACESSIBILIDADE': return 'Acessibilidade';
-            case 'DIVULGACAO': return 'Divulgação';
-            case 'MATERIAIS': return 'Materiais do Projeto';
-            case 'MATERIAIS_CONSUMO': return 'Material de Consumo / Esportivo';
-            case 'UNIFORMES': return 'Uniformes';
-            case 'HOSPEDAGEM': return 'Hospedagem e Alimentação';
-            default: return 'Evidência';
+            case 'ACESSIBILIDADE': return '7 - Acessibilidade';
+            case 'DIVULGACAO': return '5 - Divulgação';
+            case 'MATERIAIS': return '6 - Materiais do Projeto';
+            case 'MATERIAIS_CONSUMO': return '3 - Material de Consumo / Esportivo';
+            case 'UNIFORMES': return '2 - Uniformes';
+            case 'HOSPEDAGEM': return '4 - Hospedagem e Alimentação';
+            default: return type;
         }
     };
+
+    const handleAddCategory = () => {
+        if (newCategoryName.trim()) {
+            setCustomCategories(prev => [...prev, newCategoryName.trim().toUpperCase()]);
+            setCategory(newCategoryName.trim().toUpperCase());
+            setNewCategoryName('');
+            setIsAddingCategory(false);
+        }
+    };
+
+    // Filtragem da Galeria
+    const filteredGallery = galleryItems.filter(item => {
+        const matchesCategory = filterCategory === 'ALL' || item.type === filterCategory;
+        const itemDate = item.date || item.timestamp.split('T')[0];
+        const matchesDateStart = !filterDateStart || itemDate >= filterDateStart;
+        const matchesDateEnd = !filterDateEnd || itemDate <= filterDateEnd;
+        return matchesCategory && matchesDateStart && matchesDateEnd;
+    });
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col relative">
@@ -124,20 +153,60 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
 
                 {/* FORMULÁRIO */}
                 <div className="space-y-4 mb-8">
-                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Categoria</label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value as EvidenceType)}
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-sm font-semibold text-gray-700">Categoria</label>
+                            <button 
+                                onClick={() => setIsAddingCategory(!isAddingCategory)}
+                                className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                            >
+                                {isAddingCategory ? 'Cancelar' : '+ Nova Categoria'}
+                            </button>
+                        </div>
+                        
+                        {isAddingCategory ? (
+                            <div className="flex gap-2 animate-fade-in">
+                                <input 
+                                    type="text"
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder="Nome da categoria..."
+                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-blue-500"
+                                />
+                                <button 
+                                    onClick={handleAddCategory}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+                                >
+                                    Adicionar
+                                </button>
+                            </div>
+                        ) : (
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="block w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                            >
+                                <option value="UNIFORMES">2 - Uniformes</option>
+                                <option value="MATERIAIS_CONSUMO">3 - Material de Consumo/Esportivo</option>
+                                <option value="HOSPEDAGEM">4 - Hospedagem/Alimentação</option>
+                                <option value="DIVULGACAO">5 - Material Divulgação</option>
+                                <option value="MATERIAIS">6 - Materiais/Bens do Projeto</option>
+                                <option value="ACESSIBILIDADE">7 - Fotos de Acessibilidade</option>
+                                {customCategories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Data da Foto</label>
+                        <input 
+                            type="date"
+                            value={photoDate}
+                            onChange={(e) => setPhotoDate(e.target.value)}
                             className="block w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-gray-700 focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
-                        >
-                            <option value="UNIFORMES">2 - Uniformes</option>
-                            <option value="MATERIAIS_CONSUMO">3 - Material de Consumo/Esportivo</option>
-                            <option value="HOSPEDAGEM">4 - Hospedagem/Alimentação</option>
-                            <option value="DIVULGACAO">5 - Material Divulgação</option>
-                            <option value="MATERIAIS">6 - Materiais/Bens do Projeto</option>
-                            <option value="ACESSIBILIDADE">7 - Fotos de Acessibilidade</option>
-                        </select>
+                        />
                     </div>
 
                     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -200,18 +269,74 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
 
                 {/* GALERIA */}
                 <div className="border-t border-gray-300 pt-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-bold text-gray-800">Galeria de Evidências</h2>
-                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-bold">{galleryItems.length}</span>
+                    <div className="flex flex-col gap-4 mb-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-gray-800">Galeria de Evidências</h2>
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-bold">{filteredGallery.length} fotos</span>
+                        </div>
+
+                        {/* Filtros da Galeria */}
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+                            <div className="flex items-center gap-2 mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Filtros de Relatório</span>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3">
+                                <select 
+                                    value={filterCategory}
+                                    onChange={(e) => setFilterCategory(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 text-xs font-medium text-gray-700 focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="ALL">Todas as Categorias</option>
+                                    <option value="UNIFORMES">2 - Uniformes</option>
+                                    <option value="MATERIAIS_CONSUMO">3 - Material de Consumo/Esportivo</option>
+                                    <option value="HOSPEDAGEM">4 - Hospedagem/Alimentação</option>
+                                    <option value="DIVULGACAO">5 - Material Divulgação</option>
+                                    <option value="MATERIAIS">6 - Materiais/Bens do Projeto</option>
+                                    <option value="ACESSIBILIDADE">7 - Fotos de Acessibilidade</option>
+                                    {customCategories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">De:</label>
+                                        <input 
+                                            type="date"
+                                            value={filterDateStart}
+                                            onChange={(e) => setFilterDateStart(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-2 text-[10px] font-medium text-gray-700 focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Até:</label>
+                                        <input 
+                                            type="date"
+                                            value={filterDateEnd}
+                                            onChange={(e) => setFilterDateEnd(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 px-2 text-[10px] font-medium text-gray-700 focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {galleryItems.length === 0 ? (
-                        <div className="text-center py-10 bg-white rounded-lg border border-dashed border-gray-300">
-                            <p className="text-gray-400 text-sm">Nenhuma foto adicionada ainda.</p>
+                    {filteredGallery.length === 0 ? (
+                        <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+                            <p className="text-gray-400 text-sm">Nenhuma foto encontrada para os filtros aplicados.</p>
+                            {(filterCategory !== 'ALL' || filterDateStart || filterDateEnd) && (
+                                <button 
+                                    onClick={() => { setFilterCategory('ALL'); setFilterDateStart(''); setFilterDateEnd(''); }}
+                                    className="mt-2 text-xs text-blue-600 font-bold hover:underline"
+                                >
+                                    Limpar Filtros
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-4">
-                            {galleryItems.map((item, index) => {
+                            {filteredGallery.map((item, index) => {
                                 // Calcula o número da figura dentro da sua categoria
                                 const figureNumber = getFigureNumber(item);
                                 const categoryLabel = getCategoryLabel(item.type);
@@ -246,8 +371,9 @@ export const EvidenceUpload: React.FC<EvidenceUploadProps> = ({ user, onBack, on
                                                 <span className="font-bold text-blue-700">Figura {figureNumber}: </span>
                                                 {item.description}
                                             </p>
-                                            <p className="text-[10px] text-gray-400 mt-2 border-t pt-1">
-                                                {new Date(item.timestamp).toLocaleDateString()}
+                                            <p className="text-[10px] text-gray-400 mt-2 border-t pt-1 flex justify-between">
+                                                <span>{item.date ? new Date(item.date).toLocaleDateString() : new Date(item.timestamp).toLocaleDateString()}</span>
+                                                <span className="font-bold text-gray-300">#{figureNumber}</span>
                                             </p>
                                         </div>
                                     </div>

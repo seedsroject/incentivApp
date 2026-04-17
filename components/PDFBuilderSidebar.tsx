@@ -524,11 +524,18 @@ const RenderItemContent = ({ item, pageId }: { item: PDFItem, pageId: string }) 
                 <div className="w-full h-full bg-white border border-gray-300 p-2 flex flex-col overflow-hidden">
                     {/* Description above the image */}
                     <div className="w-full text-left border-b border-gray-200 pb-1 mb-1">
-                        <p className="text-[10px] font-sans text-black leading-tight">
-                            <span className="font-bold text-blue-700">{item.data.figureLabel || `Figura ${item.data.number}`}:</span> {item.data.description}
-                        </p>
+                        <div className="flex justify-between items-start gap-2">
+                            <p className="text-[10px] font-sans text-black leading-tight flex-1">
+                                <span className="font-bold text-blue-700">{item.data.figureLabel || `Figura ${item.data.number}`}:</span> {item.data.description}
+                            </p>
+                            {item.data.date && (
+                                <span className="text-[8px] text-gray-400 font-bold whitespace-nowrap">
+                                    {new Date(item.data.date).toLocaleDateString()}
+                                </span>
+                            )}
+                        </div>
                         {item.data.categoryLabel && (
-                            <p className="text-[8px] text-gray-500 mt-0.5">Categoria: {item.data.categoryLabel}</p>
+                            <p className="text-[8px] text-gray-500 mt-0.5 font-medium">Categoria: {item.data.categoryLabel}</p>
                         )}
                     </div>
                     {/* Image */}
