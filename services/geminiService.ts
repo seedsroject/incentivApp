@@ -419,7 +419,7 @@ export const generateContractText = async (data: any): Promise<{ text: string, u
 
   const employeeDetails = `${data.employeeNacionalidade || 'Brasileiro(a)'}, ${data.employeeEstadoCivil || ''}, ${data.employeeProfissao || data.role || 'Profissional'}`;
 
-  // 2. Modelo Mestre (Template)
+  // 2. Modelo Mestre (Template baseado no documento fornecido)
   const masterTemplate = `
 CONTRATO DE PRESTAÇÃO DE SERVIÇOS TÉCNICOS PROFISSIONAIS
 
@@ -429,35 +429,68 @@ CONTRATANTE: ${data.nucleoMatrixName || data.nucleoName}, pessoa jurídica de di
 
 CONTRATADA: ${data.employeeName}, ${employeeDetails}, inscrito(a) no CPF sob o nº ${data.employeeCpf || '...'} e no RG nº ${data.employeeRG || '...'}, residente e domiciliado(a) em ${data.employeeAddress || '...'}, CEP: ....
 
-Resolvem celebrar o presente Contrato mediante as seguintes cláusulas:
+As partes acima identificadas têm, entre si, justo e acertado o presente Contrato de Prestação de Serviços, que se regerá pelas cláusulas seguintes e pelas condições descritas no presente.
 
-CLÁUSULA PRIMEIRA – DO OBJETO
-1.1. O presente contrato tem por objeto a prestação de serviços de ${data.role}, consistindo especificamente nas seguintes atividades:
+**“DO OBJETO DO CONTRATO”**
+O presente instrumento tem por objeto a prestação de serviços como ${data.role}, atuando especificamente com as seguintes atividades:
 "${specificClause}"
-1.2. Os serviços serão prestados com total autonomia técnica e operacional pela CONTRATADA, sem subordinação jurídica ou hierárquica à CONTRATANTE.
+A prestação de serviço não gera qualquer vínculo empregatício entre as partes, uma vez que a atividade não é essencial para o funcionamento da empresa contratante, e a prestadora realizará as atividades com liberdade de horário, respondendo somente pelas atividades combinadas.
 
-CLÁUSULA SEGUNDA – DAS OBRIGAÇÕES DA CONTRATADA
-2.1. Executar os serviços contratados com zelo, diligência e técnica adequada.
-2.2. Emitir as respectivas Notas Fiscais para fins de pagamento (se aplicável) ou Recibo de Pagamento Autônomo (RPA).
-2.3. Manter a confidencialidade de todas as informações da CONTRATANTE a que tiver acesso.
-2.4. A CONTRATADA declara estar regular perante seu órgão de classe (se aplicável) e apta legalmente para exercer a função.
+**“DO PREÇO E DAS CONDIÇÕES DE PAGAMENTO”**
+A CONTRATADA receberá, a título de prestação de serviço o valor bruto de R$ ${data.contractValue || '.......'} mensais.
+O pagamento será realizado no dia ${data.paymentDay || '05'} do mês subsequente ao trabalhado.
+O pagamento só poderá ser liberado mediante a nota fiscal da prestação de serviço, bem como poderá ser solicitado apresentação de recibo, das certidões de tributos municipais, certidão de tributos estaduais, certidão da dívida ativa da união, certificado de regularidade do FGTS e certidão da Justiça do Trabalho.
 
-CLÁUSULA TERCEIRA – DO PREÇO E PAGAMENTO
-3.1. Pelos serviços prestados, a CONTRATANTE pagará à CONTRATADA o valor mensal bruto de R$ ${data.contractValue || '.......'} (valor por extenso).
-3.2. O pagamento será efetuado mensalmente, até o dia ${data.paymentDay || '05'} do mês subsequente ao da prestação dos serviços, mediante apresentação de Nota Fiscal ou Recibo emitida até 5 dias antes.
+**“DA FORMA DE PAGAMENTO”**
+A CONTRATANTE pagará a CONTRATADA os valores, conforme condições estabelecidas mediante Transferência Bancária.
 
-CLÁUSULA QUARTA – DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO
-4.1. As partes declaram que este contrato é de natureza civil/empresarial. Não há entre as partes vínculo empregatício, não se aplicando as disposições da Consolidação das Leis do Trabalho (CLT), ausentes os requisitos de subordinação, horário controlado e pessoalidade (a CONTRATADA poderá fazer-se substituir por sócio ou preposto, desde que com qualificação equivalente, mediante aviso prévio).
+**“DA RESCISÃO”**
+O presente contrato poderá ser rescindido, sem qualquer indenização, bastando simples notificação por escrito com antecedência mínima de 10 (dez) dias, ou nos casos de descumprimento de qualquer cláusula ora avençada, o que se dará de forma imediata, mediante notificação por escrito;
+O presente contrato poderá ainda ser rescindido por razões de força maior, caso fortuito, fato príncipe, falência, recuperação judicial ou extrajudicial de uma das partes, interdição de estabelecimento, revogação ou suspensão das licenças de funcionamento de qualquer das partes pelas autoridades que possam impedir o exercício legal da atividade objeto do presente contrato;
+O contrato poderá ainda ser rescindido sem nenhuma indenização e independentemente de notificação nos seguintes casos:
+- Prestação de serviço inadequada, sem planejamento;
+- Na ausência imotivada no momento da prestação de serviços;
+- Postura inadequada na prestação de serviços.
 
-CLÁUSULA QUINTA – DA VIGÊNCIA E RESCISÃO
-5.1. O contrato terá vigência de ${data.startDate} até ${data.endDate}.
-5.2. Poderá ser rescindido por qualquer das partes, mediante aviso prévio por escrito de 30 (trinta) dias.
+**“EQUIPAMENTOS”**
+A CONTRATANTE fornecerá os materiais esportivos necessários a prestação de serviços da CONTRATADA, que deverá devolvê-los ao final do contrato;
+Todos os materiais esportivos necessários para a prestação dos serviços serão de responsabilidade exclusiva da CONTRATADA, que deverá utilizá-los com zelo. No momento da reposição do material, a CONTRATADA deverá apresentar o material antigo.
 
-CLÁUSULA SEXTA – DA PROTEÇÃO DE DADOS (LGPD)
-6.1. As partes comprometem-se a tratar dados pessoais envolvidos neste contrato em estrita observância à Lei 13.709/2018 (LGPD).
+**“DAS OBRIGAÇÕES DA CONTRATANTE”**
+- Efetuar os pagamentos devidos à CONTRATADA rigorosamente nos prazos estabelecidos;
+- Comunicar a CONTRATADA qualquer irregularidade que venha a constatar, tanto na execução dos serviços como no recebimento das notas e cobranças emitidas, de modo a viabilizar a correção necessária no menor tempo possível;
+- Fornecer à CONTRATADA todas as informações necessárias, inclusive material esportivo à realização dos serviços, devendo especificar os detalhes necessários à perfeita consecução dos mesmos e a forma como eles deverão ser entregues;
+- Fornecer informações e/ou dados necessários para que a CONTRATADA possa cumprir o objeto deste instrumento em tempo hábil.
 
-CLÁUSULA SÉTIMA – DO FORO
-7.1. Fica eleito o foro da Comarca de ${data.nucleoCity || '...'} para dirimir quaisquer dúvidas oriundas deste contrato.
+**“DAS OBRIGAÇÕES DA CONTRATADA”**
+- Assumir todos os encargos trabalhistas, civis, previdenciários e securitários relativos aos seus empregados, prepostos ou sócios, que estejam prestando serviço na CONTRATANTE, inclusive salários, indenização, aviso prévio, 13º salário, FGTS, seguros e outros, sem qualquer ônus para a CONTRATANTE;
+- Obedecer a todas as leis, normas, e regulamentos federais, estaduais e municipais relacionados com o trabalho executado;
+- Fornecer a atividade com qualidade, com planejamento, dentro dos padrões técnicos de qualidade, que totalizam a carga horária de prestação de serviços;
+- Se responsabilizar pela guarda e manutenção dos materiais objeto desta prestação de serviço que lhe forem entregues ou fornecidos pela própria CONTRATANTE;
+- Disponibilizar profissionais e/ou colaboradores identificados e qualificados para execução do objeto deste instrumento, de forma a não deixar os núcleos esportivos sem assistência, sob pena de arcar com os prejuízos causados ou sofrer descontos no valor da prestação de serviços;
+- Responsabilizar-se pelos danos e/ou prejuízos que seus profissionais e/ou colaboradores que vierem a causar à CONTRATANTE por imprudência, imperícia ou negligência;
+- Executar suas obrigações sem vícios, garantindo o devido cumprimento de suas obrigações, nos estritos termos do Contrato e normas em vigor, cumprindo todos os prazos e/ou datas acordadas por escrito com a Contratante para realização de etapas, fases e entregas dos Serviços;
+- Abster-se de praticar quaisquer atos que possam interferir negativamente na imagem da CONTRATANTE, responsabilizando-se integralmente pelas consequências de qualquer eventual descumprimento;
+- Arcar com todos os tributos de sua responsabilidade que incidam ou venham a incidir sobre o objeto deste Contrato, conforme o disposto na legislação aplicável sejam eles de natureza federal, estadual e/ou municipal, responsabilizando-se, inclusive, pelas infrações a que der causa em virtude da não observância do disposto nesta cláusula;
+- Fica expressamente estipulado que não se estabelece, por força desta contratação, qualquer vínculo empregatício ou de responsabilidade, mesmo por salário, por parte da CONTRATANTE em relação aos empregados que a CONTRATADA empregar diretamente ou indiretamente, para a execução dos serviços ora ajustados, correndo por conta exclusiva da CONTRATADA todas as despesas com esse pessoal, inclusive encargos de legislação trabalhista, previdenciária, securitária ou qualquer outra, obrigando-se a Contratada ao cumprimento das disposições legais, quer seja quanto à remuneração de seus empregados, quer seja quanto aos demais encargos de qualquer natureza, em especial aqueles referentes a acidente de trabalho;
+- O representante legal da empresa deverá providenciar substituto em caso de ausência do titular.
+
+**“VIGÊNCIA”**
+O contrato terá vigência de ${data.startDate} até ${data.endDate}.
+
+**“DISPOSIÇÕES GERAIS”**
+O presente instrumento constitui título executivo extrajudicial, nos termos do artigo 784 do Código de Processo Civil/15.
+Em qualquer hipótese, será sempre a CONTRATADA responsável por todos os serviços prestados e por todas as obrigações assumidas no presente instrumento.
+O presente contrato contém o acordo integral estabelecido entre as partes com relação ao objeto deste instrumento. Quaisquer documentos, compromissos e avenças anteriores, orais, escritos ou de outra forma estabelecidos entre as partes e referentes ao objeto deste pacto serão considerados cancelados e não afetarão ou modificarão quaisquer termos ou obrigações.
+Qualquer alteração ou notificação entre as partes só será válida se prévia e expressamente acordado por escrito entre as partes.
+A rescisão do presente contrato não libera as partes das obrigações devidas até a data da rescisão, que não afetará ou limitará qualquer direito, que expressamente ou por sua natureza, deva permanecer em vigor após a rescisão do presente contrato ou que decorra de tal rescisão.
+Qualquer postergação no exercício de direito ou prerrogativa prevista neste contrato significará mera liberalidade e não novação. A tolerância, a inércia ou a demora, de qualquer das partes no exercício de quaisquer direitos e atribuições ou na obtenção de qualquer reparação, conforme previsto no presente contrato, não impedirão o exercício de quaisquer direitos e não constituirão a renúncia por tal PARTE ao seu direito de exercê-lo a qualquer tempo.
+A tolerância, por uma das Partes, à infração das Cláusulas e disposições contidas neste Contrato, bem como a prática de quaisquer atos ou procedimentos não previstos de forma expressa neste Contrato, será considerada mera liberalidade, não se configurando como precedente ou novação contratual.
+
+**“FORO”**
+As partes elegem o Foro da cidade de ${data.nucleoCity || '...'}, para dirimir quaisquer dúvidas ou litígios relacionados a este contrato, renunciando a qualquer outro por mais privilegiado que seja. O presente contrato obriga as partes e sucessoras, a cumprirem e a fazerem cumprir, a qualquer tempo, as cláusulas ora pactuadas.
+
+E por estarem justas e contratadas, firmam o presente instrumento.
   `;
 
   try {
