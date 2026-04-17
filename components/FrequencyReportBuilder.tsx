@@ -233,12 +233,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 1: COVER (matches PDF) ━━━ */}
         <div className="freq-page freq-cover-page">
           <div className="freq-cover-logos">
-            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ height: 60 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <img src="/logo.png" alt="Escolinha de Triathlon" style={{ height: 65 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <div className="freq-cover-gov-placeholder">
-              <div style={{ fontSize: 8, fontWeight: 700, color: '#333', textAlign: 'center', lineHeight: 1.2 }}>MINISTÉRIO DO<br/>ESPORTE</div>
-              <div style={{ fontSize: 7, color: '#555', textAlign: 'center', marginTop: 3 }}>GOVERNO DO<br/>BRASIL</div>
-            </div>
+            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 80, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
 
           <div className="freq-cover-block">
@@ -274,12 +269,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 2: TITLE PAGE (matches PDF) ━━━ */}
         <div className="freq-page freq-title-page">
           <div className="freq-cover-logos" style={{ marginBottom: 20 }}>
-            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ height: 50 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <img src="/logo.png" alt="Escolinha de Triathlon" style={{ height: 55 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <div className="freq-cover-gov-placeholder">
-              <div style={{ fontSize: 8, fontWeight: 700, color: '#333', textAlign: 'center', lineHeight: 1.2 }}>MINISTÉRIO DO<br/>ESPORTE</div>
-              <div style={{ fontSize: 7, color: '#555', textAlign: 'center', marginTop: 3 }}>GOVERNO DO<br/>BRASIL</div>
-            </div>
+            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 70, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div className="freq-title-page-subtitle" contentEditable={isEditing} suppressContentEditableWarning>
             PROJETO ESCOLINHA DE TRIATHLON
