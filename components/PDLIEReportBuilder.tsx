@@ -115,33 +115,38 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
       <div ref={reportRef} className="freq-report-content">
 
         {/* ━━━ 1. CAPA (colorida, modelo governo) ━━━ */}
-        <div style={{ ...PS, padding: 0, overflow: 'hidden' }}>
+        <div style={{ ...PS, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {/* Header logos */}
-          <div style={{ padding: '20px 25mm 0' }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 90, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <div style={{ padding: '18px 20mm 0' }}>
+            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 80, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
-          {/* LIE illustration block - bordered */}
-          <div style={{ margin: '20px 25mm 0', border: '2px solid #d4a017', padding: '30px 20px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 320 }}>
-            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ maxWidth: '80%', maxHeight: 280, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          {/* LIE illustration block - bordered golden box */}
+          <div style={{ margin: '16px 20mm 0', border: '2px solid #d4a017', padding: '24px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 340 }}>
+            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ width: '70%', maxHeight: 300, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
-          {/* Yellow title block */}
-          <div style={{ margin: '0 25mm', background: '#f5a623', padding: '30px 25px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderTop: '4px solid #c98a1a' }}>
-            <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 22, fontWeight: 900, color: '#1a1a2e', textAlign: 'center', margin: 0, lineHeight: 1.4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-              RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON
-            </h1>
+          {/* Yellow curved title block */}
+          <div style={{ position: 'relative', margin: '0 20mm', overflow: 'visible' }}>
+            <svg viewBox="0 0 600 40" preserveAspectRatio="none" style={{ width: '100%', height: 40, display: 'block' }}>
+              <path d="M0,40 C150,0 450,0 600,40 L600,40 L0,40 Z" fill="#f5a623" />
+            </svg>
+            <div style={{ background: '#f5a623', padding: '10px 30px 28px', marginTop: -1 }}>
+              <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', textAlign: 'center', margin: 0, lineHeight: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON
+              </h1>
+            </div>
           </div>
-          {/* Bottom bar */}
-          <div style={{ margin: '0 25mm', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '30px 0 40px' }}>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, color: '#1a5276', textTransform: 'uppercase', margin: 0 }}>
+          {/* Bottom bar with ESCOLINHA + green badge */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20mm 16px' }}>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, color: '#1a5276', textTransform: 'uppercase', margin: 0 }}>
               ESCOLINHA DE TRIATHLON
             </p>
-            <div style={{ background: '#4caf50', color: '#fff', padding: '8px 18px', fontSize: 14, fontWeight: 800, textAlign: 'right', borderRadius: 2 }}>
+            <div style={{ background: '#4caf50', color: '#fff', padding: '7px 16px', fontSize: 13, fontWeight: 800, textAlign: 'right', borderRadius: 2, lineHeight: 1.4 }}>
               {city} – {uf}<br/>{yr}
             </div>
           </div>
           {/* Footer text */}
-          <div style={{ borderTop: '1px solid #ddd', margin: '0 25mm', padding: '10px 0 20px' }}>
-            <p style={{ fontSize: 9, color: '#666', margin: 0, textTransform: 'uppercase' }}>
+          <div style={{ borderTop: '1px solid #ddd', margin: '0 20mm', padding: '8px 0 14px' }}>
+            <p style={{ fontSize: 8, color: '#666', margin: 0, textTransform: 'uppercase' }}>
               RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON
             </p>
           </div>
