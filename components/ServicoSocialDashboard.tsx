@@ -394,7 +394,7 @@ export const ServicoSocialDashboard: React.FC<ServicoSocialDashboardProps> = ({
 };
 
 // ─── BIRTHDAY CARD COMPONENT ───
-const BirthdayCardModal: React.FC<{ student: StudentDraft; onClose: () => void; onSendWhatsApp: (s: StudentDraft) => void; cardRef: React.RefObject<HTMLDivElement | null> }> = ({ student, onClose, onSendWhatsApp, cardRef }) => {
+const BirthdayCardModal: React.FC<{ student: StudentDraft; onClose: () => void; onSendWhatsApp: (s: StudentDraft) => void; cardRef: React.RefObject<HTMLDivElement> }> = ({ student, onClose, onSendWhatsApp, cardRef }) => {
     const firstName = student.nome?.split(' ')[0] || 'Aluno';
     return (
         <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
