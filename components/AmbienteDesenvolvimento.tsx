@@ -195,10 +195,8 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
             {/* Visual Cover Miniature */}
             <div className="h-48 w-full p-4 flex flex-col justify-between relative bg-white border-b border-gray-100">
               {/* Fake Header Logos */}
-              <div className="flex justify-between items-start opacity-70">
-                <div className="w-10 h-6 bg-blue-100 rounded"></div>
-                <div className="w-8 h-8 bg-green-100 rounded-full"></div>
-                <div className="w-10 h-6 bg-yellow-100 rounded"></div>
+              <div className="w-full flex justify-center mb-2 px-2">
+                <img src="/header_full.png" alt="Header" className="w-full object-contain" style={{ maxHeight: '30px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
 
               {/* Cover Main Block */}
