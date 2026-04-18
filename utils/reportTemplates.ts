@@ -118,7 +118,7 @@ export const getReportTemplate = (reportId: string, options: TemplateOptions): P
         data: {
           text: '',
           style: DEFAULT_TEXT_STYLE,
-          src: '/header_full.png'
+          url: '/header_full.png'
         },
         title: 'Cabeçalho',
         x: 50,

@@ -1106,13 +1106,8 @@ const RenderItemContent = ({ item, pageId }: { item: PDFItem, pageId: string }) 
             return (
                 <div className="w-full h-full bg-white border-2 border-black p-4 text-black font-sans overflow-hidden flex flex-col text-[10px]">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-2 border-b border-black pb-2">
-                        <div className="w-16"><img src="/logo.svg" alt="Gov" className="object-contain h-8" /></div>
-                        <div className="text-center">
-                            <h1 className="font-bold text-[10px] uppercase">Questionário de Meta Qualitativa</h1>
-                            <h2 className="font-bold text-[9px] uppercase">Escolinha de Triathlon</h2>
-                        </div>
-                        <div className="w-16 text-right"><span className="text-[8px] font-bold">Ministério do Esporte</span></div>
+                    <div className="flex justify-center mb-4 border-b border-black pb-2">
+                        <img src="/header_full.png" alt="Header" className="w-full object-contain" style={{ maxHeight: '80px' }} />
                     </div>
 
                     {/* Info */}
@@ -1160,13 +1155,8 @@ const RenderItemContent = ({ item, pageId }: { item: PDFItem, pageId: string }) 
             return (
                 <div className="w-full h-full bg-white border-2 border-black p-4 text-black font-sans overflow-hidden flex flex-col text-[8px]">
                     {/* Header */}
-                    <div className="flex justify-between items-center mb-2 border-b border-black pb-2">
-                        <div className="w-12"><img src="/logo.svg" alt="Gov" className="object-contain h-6" /></div>
-                        <div className="text-center flex-1">
-                            <h1 className="font-bold text-[9px] uppercase">Indicadores Socioeconômicos e de Saúde</h1>
-                            <h2 className="font-bold text-[8px] uppercase text-gray-600">Escolinha de Triathlon</h2>
-                        </div>
-                        <div className="w-12 text-right"><span className="text-[7px] font-bold">Ministério do Esporte</span></div>
+                    <div className="flex justify-center mb-4 border-b border-black pb-2">
+                        <img src="/header_full.png" alt="Header" className="w-full object-contain" style={{ maxHeight: '80px' }} />
                     </div>
 
                     {/* Destaque */}

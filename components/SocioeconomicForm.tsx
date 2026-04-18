@@ -53,16 +53,11 @@ const SocioTemplate: React.FC<{ data: SocioeconomicData }> = ({ data }) => {
     return (
         <div className="bg-white text-black font-sans h-full p-2">
             {/* CABEÇALHO OFICIAL */}
-            <div className="flex justify-between items-center mb-6 border-b-2 border-gray-800 pb-4">
-                <div className="flex flex-col items-center w-24">
-                    <img src="/logo.svg" alt="Gov" className="h-12 object-contain" />
-                </div>
-                <div className="text-center flex-1">
+            <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
+                <img src="/header_full.png" alt="Header" className="h-20 object-contain mb-4 w-full max-w-[210mm]" />
+                <div className="text-center">
                     <h1 className="text-lg font-bold text-black uppercase">Indicadores Socioeconômicos e de Saúde</h1>
                     <h2 className="text-sm font-bold text-gray-600 uppercase">Escolinha de Triathlon - Núcleo Campinas</h2>
-                </div>
-                <div className="w-24 text-right">
-                    <p className="text-[8px] font-bold text-gray-600">Ministério do Esporte</p>
                 </div>
             </div>
 

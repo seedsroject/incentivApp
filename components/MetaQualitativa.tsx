@@ -43,22 +43,8 @@ const MetaTemplate: React.FC<{
     return (
         <div className="bg-white text-black font-sans h-full">
            {/* CABEÇALHO OFICIAL */}
-           <div className="flex justify-between items-center mb-6">
-              <div className="flex flex-col items-center w-32">
-                  <img src="/logo.svg" alt="Lei de Incentivo" className="h-14 object-contain mb-1" />
-                  <p className="text-[9px] text-center font-bold text-blue-600 leading-tight">Lei de Incentivo<br/>ao Esporte</p>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                  <img src="/logo.svg" alt="Triathlon" className="h-20 object-contain" />
-              </div>
-              <div className="flex flex-col items-center w-32 text-center">
-                  <p className="text-[8px] uppercase font-bold text-gray-700 mb-1">Ministério do<br/>Esporte</p>
-                  <p className="text-[8px] uppercase font-bold text-gray-700 mb-1">Governo Federal</p>
-                  <div className="flex items-center justify-center gap-0.5 font-black text-xs">
-                     <span className="text-green-600">BR</span><span className="text-yellow-500">A</span><span className="text-blue-700">SIL</span>
-                  </div>
-                  <p className="text-[6px] uppercase text-gray-500 mt-0.5">União e Reconstrução</p>
-              </div>
+           <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
+               <img src="/header_full.png" alt="Header" className="h-20 object-contain w-full max-w-[210mm]" />
            </div>
 
            {/* TÍTULO */}
