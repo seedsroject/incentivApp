@@ -294,6 +294,9 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
             </head>
             <body>
                 <div class="page-container">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="/header_full.png" alt="Header" style="width: 100%; max-height: 80px; object-fit: contain;" onerror="this.style.display='none'" />
+                    </div>
                     <div class="content">
                     ${content}
                 </div>

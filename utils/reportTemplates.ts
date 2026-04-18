@@ -113,6 +113,21 @@ export const getReportTemplate = (reportId: string, options: TemplateOptions): P
     id: `page_content_${Date.now()}`,
     items: [
       {
+        id: `content_header_${Date.now()}`,
+        type: 'IMAGE',
+        data: {
+          text: '',
+          style: DEFAULT_TEXT_STYLE,
+          src: '/header_full.png'
+        },
+        title: 'Cabeçalho',
+        x: 50,
+        y: 20,
+        width: 694,
+        height: 60,
+        zIndex: 10
+      },
+      {
         id: `content_title_${Date.now()}`,
         type: 'TEXT_NOTE',
         data: {
@@ -122,7 +137,7 @@ export const getReportTemplate = (reportId: string, options: TemplateOptions): P
         },
         title: 'Título Resumo',
         x: 50,
-        y: 50,
+        y: 100,
         width: 694,
         height: 50,
         zIndex: 10
@@ -136,7 +151,7 @@ export const getReportTemplate = (reportId: string, options: TemplateOptions): P
         },
         title: 'Texto Analítico (IA)',
         x: 50,
-        y: 120,
+        y: 170,
         width: 694,
         height: 300,
         zIndex: 10

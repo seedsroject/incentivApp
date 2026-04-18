@@ -406,9 +406,9 @@ const BirthdayCardModal: React.FC<{ student: StudentDraft; onClose: () => void; 
                 {/* CARD */}
                 <div ref={cardRef} style={{ background: '#e8f5e9', padding: 28, fontFamily: "'Georgia', serif", fontSize: 15, lineHeight: 2, color: '#1a3a5c', position: 'relative', backgroundImage: 'repeating-linear-gradient(transparent, transparent 31px, #c8e6c9 31px, #c8e6c9 32px)' }}>
                     {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 16, gap: 16 }}>
                         <span style={{ fontSize: 40 }}>🎂</span>
-                        <img src="/logo.png" alt="Logo" style={{ height: 60, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src="/header_full.png" alt="Header" style={{ height: 60, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         <span style={{ fontSize: 40 }}>🎁</span>
                     </div>
                     {/* Body */}
