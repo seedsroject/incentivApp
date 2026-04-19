@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { User, Nucleo, AppView, StudentDraft, EvidenceLog, DocumentLog, DocumentType, EvidenceType, InventoryItem } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { User, Nucleo, AppView, StudentDraft, EvidenceLog, DocumentLog, DocumentType, EvidenceType, InventoryItem, ProjectId } from './types';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { Onboarding } from './components/Onboarding';
@@ -130,12 +130,49 @@ const MOCK_NUCLEOS: Nucleo[] = [
   { id: 'nuc_ribeirao', nome: 'Ribeirão Preto | SP - Ginásio Cava do Bosque – Rua Camilo de Mattos, nº 627, Rib. Preto - SP', coordinates: [-21.1775, -47.8103], stockStatus: 'LOW' },
 ].map(n => ({
   ...n,
+  project: 'FORMANDO_CAMPEOES' as const,
   stockDetails: generateStockDetails(n.stockStatus as any),
   address: n.nome.split(' - ')[1] || 'Endereço não cadastrado',
   phone: '(00) 3333-4444',
   email: `contato.${n.id}@esporte.gov.br`,
   employees: generateMockEmployees(n.id, n.nome)
 })) as Nucleo[];
+
+// --- NÚCLEOS DANIEL DIAS ---
+const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
+  { id: 'dd_cic', nome: 'CEL Bairro CIC – Rua Pedro Gusso, 2447, Cidade Industrial, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4925, -49.3450], stockStatus: 'HIGH' },
+  { id: 'dd_boa_vista', nome: 'CEL Boa Vista – Rua Lodovico Geronazzo, 1910, Boa Vista, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.3850, -49.2319], stockStatus: 'MEDIUM' },
+  { id: 'dd_boqueirao', nome: 'CEL Boqueirão – Rua Dr. Luiz Losso Filho, s/n, Boqueirão, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5008, -49.2392], stockStatus: 'HIGH' },
+  { id: 'dd_osvaldo_cruz', nome: 'CEL Osvaldo Cruz – Rua Cel. Dulcídio, 950, Centro, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4386, -49.2783], stockStatus: 'MEDIUM' },
+  { id: 'dd_cajuru', nome: 'CEL Cajuru – Rua Benedito Herculano de Oliveira, s/n, Cajuru, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4611, -49.2133], stockStatus: 'HIGH' },
+  { id: 'dd_santa_felicidade', nome: 'CEL Santa Felicidade – Via Vêneto, 1431, Santa Felicidade, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4053, -49.3283], stockStatus: 'MEDIUM' },
+  { id: 'dd_gente_bairro_novo', nome: 'Clube da Gente Bairro Novo – Rua Marcolina Caetano Chaves, 150, Sítio Cercado, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5532, -49.2743], stockStatus: 'LOW' },
+  { id: 'dd_gente_cic', nome: 'Clube da Gente CIC – Rua Emílio Romani, s/n, CIC, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5100, -49.3500], stockStatus: 'HIGH' },
+  { id: 'dd_valinhos_juventude', nome: 'Praça da Juventude – Rua Geraldo de Gasperi, s/n, Cecap, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9708, -46.9958], stockStatus: 'MEDIUM' },
+  { id: 'dd_valinhos_nardini', nome: 'Parque Monsenhor Nardini – Rua Dom João VI, s/n, Jardim Planalto, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9650, -47.0050], stockStatus: 'HIGH' },
+  { id: 'dd_atibaia_ciem2', nome: 'CIEM 2 – Av. Industrial Walter Kloth, 1135, Jd. Imperial, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5530], stockStatus: 'MEDIUM' },
+  { id: 'dd_atibaia_ciem3', nome: 'CIEM 3 – Av. Jerônimo de Camargo, 421, Caetetuba, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1250, -46.5650], stockStatus: 'LOW' },
+  { id: 'dd_atibaia_elefantao', nome: 'Piscina do Elefantão – Alameda Lucas Nogueira Garcez, s/n, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5500], stockStatus: 'HIGH' },
+  { id: 'dd_ponta_grossa_arena', nome: 'Arena Multiuso – Av. Visconde de Taunay, 950, Ronda, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0950, -50.1619], stockStatus: 'MEDIUM' },
+  { id: 'dd_ponta_grossa_cecon', nome: 'CECON (Idoso) – Rua João Cecy Filho, s/n, Nova Rússia, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0900, -50.1700], stockStatus: 'LOW' },
+  { id: 'dd_hortolandia', nome: 'Complexo Nelson Cancian – Rua João Mendes, 203, Jd. Nova Hortolândia, Hortolândia - SP', project: 'DANIEL_DIAS', coordinates: [-22.8600, -47.2200], stockStatus: 'HIGH' },
+  { id: 'dd_jundiai', nome: 'CECE Nicolino de Luca (Bolão) – Rua Rodrigo Soares de Oliveira, s/n, Jundiaí - SP', project: 'DANIEL_DIAS', coordinates: [-23.1864, -46.8842], stockStatus: 'MEDIUM' },
+  { id: 'dd_limeira', nome: 'Piscina Alberto Savoi – Rua Dr. Roberto Mange, s/n, Jd. Mercedes, Limeira - SP', project: 'DANIEL_DIAS', coordinates: [-22.5650, -47.4017], stockStatus: 'LOW' },
+  { id: 'dd_extrema', nome: 'Parque de Eventos – Av. Delegado Waldemar Gomes Pinto, s/n, Extrema - MG', project: 'DANIEL_DIAS', coordinates: [-22.8550, -46.3178], stockStatus: 'HIGH' },
+  { id: 'dd_pindoretama', nome: 'Ginásio Poliesportivo – Centro da Cidade, Pindoretama - CE', project: 'DANIEL_DIAS', coordinates: [-4.0142, -38.3050], stockStatus: 'MEDIUM' },
+  { id: 'dd_pacajus', nome: 'Estádio/Ginásio Municipal – Rua Tabelião José de Lima, s/n, Pacajus - CE', project: 'DANIEL_DIAS', coordinates: [-4.1722, -38.4617], stockStatus: 'LOW' },
+  { id: 'dd_canaa', nome: 'Polo de Natação Municipal – Av. Weyne Cavalcante, s/n, Canaã dos Carajás - PA', project: 'DANIEL_DIAS', coordinates: [-6.4967, -49.8783], stockStatus: 'HIGH' },
+  { id: 'dd_belo_jardim', nome: 'SESC Belo Jardim (Parceria) – Rua Pedro Rocha, s/n, Centro, Belo Jardim - PE', project: 'DANIEL_DIAS', coordinates: [-8.3361, -36.4244], stockStatus: 'MEDIUM' },
+].map(n => ({
+  ...n,
+  stockDetails: generateStockDetails(n.stockStatus as any),
+  address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+  phone: '(00) 3333-4444',
+  email: `contato.${n.id}@danieldias.org.br`,
+  employees: generateMockEmployees(n.id, n.nome)
+})) as Nucleo[];
+
+const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS];
 
 const MOCK_USER: User = {
   uid: 'usr_123456',
@@ -227,8 +264,14 @@ const AppContent: React.FC = () => {
     if (saved) return JSON.parse(saved);
     return MOCK_PRE_CADASTRO;
   }); // Fila de espera
-  const [nucleos, setNucleos] = useState<Nucleo[]>(MOCK_NUCLEOS); // Initialize with mocks
+  const [nucleos, setNucleos] = useState<Nucleo[]>(ALL_NUCLEOS);
   const [loading, setLoading] = useState(false);
+  const [activeProject, setActiveProject] = useState<ProjectId>('FORMANDO_CAMPEOES');
+
+  // --- PROJECT-SCOPED DATA ---
+  const filteredNucleos = useMemo(() => nucleos.filter(n => n.project === activeProject), [nucleos, activeProject]);
+  const projectStudents = useMemo(() => students.filter(s => !s.projectId || s.projectId === activeProject), [students, activeProject]);
+  const projectPreCadastros = useMemo(() => preCadastros.filter(p => !p.projectId || p.projectId === activeProject), [preCadastros, activeProject]);
 
   // Navigation Params
   const [navParams, setNavParams] = useState<any>({});
@@ -379,6 +422,17 @@ const AppContent: React.FC = () => {
 
   const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY);
 
+  // --- PROJECT-SCOPED DOCUMENTS / EVIDENCE / INVENTORY ---
+  const projectDocuments = useMemo(() => collectedDocuments.filter(d => !d.projectId || d.projectId === activeProject), [collectedDocuments, activeProject]);
+  const projectEvidence = useMemo(() => collectedEvidence.filter(e => !e.projectId || e.projectId === activeProject), [collectedEvidence, activeProject]);
+
+  // --- PROJECT ASSETS HELPER ---
+  const projectAssets = useMemo(() => ({
+    logo: activeProject === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png',
+    header: activeProject === 'DANIEL_DIAS' ? '/Banner_Relatorio_Daniel.png' : '/header_full.png',
+    name: activeProject === 'DANIEL_DIAS' ? 'Nadando com Daniel Dias' : 'Formando Campeões',
+  }), [activeProject]);
+
   const [loginNucleoId, setLoginNucleoId] = useState<string>('');
   const [loginEmail, setLoginEmail] = useState<string>('professor@teste.com');
   const [loginPassword, setLoginPassword] = useState<string>('123456');
@@ -474,7 +528,8 @@ const AppContent: React.FC = () => {
         email: loginEmail,
         role: role as any,
         nucleo_id: loginNucleoId,
-        nucleo_nome: selectedNucleoObj?.nome
+        nucleo_nome: selectedNucleoObj?.nome,
+        projectId: activeProject
       });
 
       // REDIRECT LOGIC BASED ON ROLE
@@ -490,14 +545,15 @@ const AppContent: React.FC = () => {
   };
 
   const handleDemoAccess = () => {
-    const demoNucleo = nucleos[0];
+    const demoNucleo = filteredNucleos[0] || nucleos[0];
     setUser({
       uid: 'demo_user',
       nome: 'Administrador Demo',
       email: 'admin@demo.com',
       role: 'ADMIN', // Set as ADMIN
       nucleo_id: demoNucleo.id,
-      nucleo_nome: demoNucleo.nome
+      nucleo_nome: demoNucleo.nome,
+      projectId: activeProject
     });
     setView(AppView.ADMIN_DASHBOARD); // Direct to Admin Dashboard
   };
@@ -719,7 +775,8 @@ const AppContent: React.FC = () => {
         email: regEmail,
         role: regRole,
         nucleo_id: regNucleo,
-        nucleo_nome: selectedNucleoObj?.nome
+        nucleo_nome: selectedNucleoObj?.nome,
+        projectId: activeProject
       });
       setView(AppView.DASHBOARD);
       setLoading(false);
@@ -733,13 +790,41 @@ const AppContent: React.FC = () => {
         <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden transform transition-all">
 
           <div className="p-6 sm:p-8">
-            {/* Logo e Cabeçalho */}
+            {/* Logo Carousel - Seletor de Projeto */}
             <div className="flex flex-col items-center text-center mb-4">
-              <div className="w-full flex justify-center mb-2">
-                <Logo className="max-w-[200px] max-h-[160px] w-auto h-auto object-contain hover:scale-105 transition-transform duration-500" />
+              <div className="w-full flex items-center justify-center gap-3 mb-2">
+                <button
+                  onClick={() => { setActiveProject('FORMANDO_CAMPEOES'); setLoginNucleoId(''); setRegNucleo(''); }}
+                  className={`p-1.5 rounded-full transition-all ${activeProject === 'FORMANDO_CAMPEOES' ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-700'}`}
+                  disabled={activeProject === 'FORMANDO_CAMPEOES'}
+                  title="Projeto anterior"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div className="relative w-[200px] h-[160px] flex items-center justify-center overflow-hidden">
+                  <img
+                    key={activeProject}
+                    src={projectAssets.logo}
+                    alt={projectAssets.name}
+                    className="max-w-[200px] max-h-[160px] w-auto h-auto object-contain animate-fade-in"
+                  />
+                </div>
+                <button
+                  onClick={() => { setActiveProject('DANIEL_DIAS'); setLoginNucleoId(''); setRegNucleo(''); }}
+                  className={`p-1.5 rounded-full transition-all ${activeProject === 'DANIEL_DIAS' ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-700'}`}
+                  disabled={activeProject === 'DANIEL_DIAS'}
+                  title="Próximo projeto"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+              {/* Indicadores */}
+              <div className="flex gap-2 mb-2">
+                <span className={`w-2 h-2 rounded-full transition-all ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
+                <span className={`w-2 h-2 rounded-full transition-all ${activeProject === 'DANIEL_DIAS' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
               </div>
               <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Gestão de Núcleo</h2>
-              <p className="text-gray-500 mt-1 font-medium text-sm">Formando Campeões</p>
+              <p className="text-gray-500 mt-1 font-medium text-sm">{projectAssets.name}</p>
             </div>
 
             {/* Toggle Login/Cadastro */}
@@ -772,7 +857,7 @@ const AppContent: React.FC = () => {
                         className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                       >
                         <option value="">Selecione seu núcleo...</option>
-                        {nucleos.map(nucleo => (
+                        {filteredNucleos.map(nucleo => (
                           <option key={nucleo.id} value={nucleo.id}>{nucleo.nome}</option>
                         ))}
                       </select>
@@ -826,7 +911,7 @@ const AppContent: React.FC = () => {
                         className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
                       >
                         <option value="">Selecione...</option>
-                        {nucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split('-')[0]}</option>)}
+                        {filteredNucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split('-')[0]}</option>)}
                       </select>
                     </div>
                   </div>

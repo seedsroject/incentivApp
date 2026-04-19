@@ -3,6 +3,8 @@
  * FIRESTORE DATA MODELING (SCHEMA)
  */
 
+export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS';
+
 export interface User {
   uid: string;
   nome: string;
@@ -10,6 +12,7 @@ export interface User {
   role: 'PROFESSOR' | 'MONITOR' | 'ADMIN';
   nucleo_id: string | null;
   nucleo_nome?: string;
+  projectId?: ProjectId;
 }
 
 export interface NucleoTurma {
@@ -22,6 +25,7 @@ export interface NucleoTurma {
 export interface Nucleo {
   id: string;
   nome: string;
+  project: ProjectId; // Projeto ao qual o núcleo pertence
   coordinates?: [number, number]; // [lat, lng]
   stockStatus?: 'LOW' | 'MEDIUM' | 'HIGH';
   stockDetails?: { item: string; qty: number; status: 'OK' | 'LOW' }[];
@@ -97,10 +101,12 @@ export interface InventoryItem {
   unit: string; // Ex: Unid., Kit, Cx.
   minThreshold: number; // Para alerta de estoque baixo (manual)
   category: 'ALIMENTACAO' | 'VESTUARIO' | 'EQUIPAMENTO' | 'OUTROS';
+  projectId?: ProjectId;
 }
 
 export interface StudentDraft {
   id?: string;
+  projectId?: ProjectId;
   // Campos Pessoais (Ficha Pág 3)
   nome: string;
   data_nascimento: string;
@@ -170,6 +176,7 @@ export interface DeclaracaoProntidao {
 
 export interface EvidenceLog {
   id: string;
+  projectId?: ProjectId;
   timestamp: string;
   date?: string; // Data em que a foto foi tirada/inserida pelo usuário
   type: EvidenceType | string; // Categoria conforme PDF ou personalizada
@@ -264,6 +271,7 @@ export interface SocioeconomicData {
 
 export interface PreCadastroData {
   id: string;
+  projectId?: ProjectId;
   timestamp: string;
   nucleo_id?: string;
   status: 'AGUARDANDO' | 'APROVADO' | 'DESCARTADO';
@@ -312,6 +320,7 @@ export interface PreCadastroData {
 
 export interface DocumentLog {
   id: string;
+  projectId?: ProjectId;
   timestamp: string;
   type: DocumentType;
   title: string;
