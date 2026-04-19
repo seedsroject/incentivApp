@@ -304,6 +304,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 120px;
+  text-align: center;
 }
 .freq-title-wave {
   position: absolute;
