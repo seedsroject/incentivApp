@@ -982,13 +982,13 @@ const AppContent: React.FC = () => {
 
         {view === AppView.ADMIN_DASHBOARD && user && (
           <AdminDashboard
-            nucleos={nucleos}
+            nucleos={filteredNucleos}
             onNavigateToServices={() => setView(AppView.DASHBOARD)}
             userParams={{ nome: user.nome, email: user.email }}
             onLogout={handleLogout}
-            students={students}
-            documents={collectedDocuments}
-            onAddNucleo={(newNucleo) => setNucleos([...nucleos, newNucleo])}
+            students={projectStudents}
+            documents={projectDocuments}
+            onAddNucleo={(newNucleo) => setNucleos([...nucleos, { ...newNucleo, project: activeProject }])}
             onDischargeStudent={handleDischargeStudent}
           />
         )}
@@ -1084,16 +1084,18 @@ const AppContent: React.FC = () => {
           <MetaQualitativa
             onBack={() => setView(AppView.DASHBOARD)}
             defaultProfessorName={user?.nome}
-            history={collectedDocuments.filter(doc => doc.type === 'PESQUISA_META')}
+            history={projectDocuments.filter(doc => doc.type === 'PESQUISA_META')}
             onSave={handleSaveDocument}
+            headerImage={projectAssets.header}
           />
         )}
 
         {view === AppView.FEATURE_SOCIOECONOMIC && (
           <SocioeconomicForm
             onBack={() => setView(AppView.DASHBOARD)}
-            history={collectedDocuments.filter(doc => doc.type === 'INDICADORES_SAUDE')}
+            history={projectDocuments.filter(doc => doc.type === 'INDICADORES_SAUDE')}
             onSave={handleSaveDocument}
+            headerImage={projectAssets.header}
           />
         )}
 
@@ -1135,18 +1137,20 @@ const AppContent: React.FC = () => {
 
         {view === AppView.FREQUENCY_REPORT && user && (
           <FrequencyReportBuilder
-            students={students}
-            history={collectedDocuments}
-            nucleos={nucleos}
+            students={projectStudents}
+            history={projectDocuments}
+            nucleos={filteredNucleos}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            headerImage={projectAssets.header}
           />
         )}
 
         {view === AppView.PDLIE_REPORT && user && (
           <PDLIEReportBuilder
-            nucleos={nucleos}
-            evidences={collectedEvidence}
+            nucleos={filteredNucleos}
+            evidences={projectEvidence}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            headerImage={projectAssets.header}
           />
         )}
       </main>

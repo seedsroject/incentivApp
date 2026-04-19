@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Nucleo, EvidenceLog } from '../types';
 
-interface Props { nucleos: Nucleo[]; evidences: EvidenceLog[]; onBack: () => void; }
+interface Props { nucleos: Nucleo[]; evidences: EvidenceLog[]; onBack: () => void; headerImage?: string; }
 
 const SECTIONS = [
   { id: 'UNIFORMES', num: '2', title: 'AÇÃO: UNIFORMES', subs: [
@@ -23,7 +23,7 @@ const SECTIONS = [
   ]},
 ];
 
-export const PDLIEReportBuilder: React.FC<Props> = ({ nucleos, evidences, onBack }) => {
+export const PDLIEReportBuilder: React.FC<Props> = ({ nucleos, evidences, onBack, headerImage = '/header_full.png' }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState(nucleos[0]?.id || '');
   const [periodStart, setPeriodStart] = useState('2024-04-24');
   const [periodEnd, setPeriodEnd] = useState('2025-12-23');
@@ -118,7 +118,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         <div style={{ ...PS, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {/* Header logos */}
           <div style={{ padding: 0 }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           {/* LIE illustration block - bordered golden box */}
           <div style={{ margin: '16px 20mm 0', border: '2px solid #d4a017', padding: '24px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 340 }}>
@@ -158,7 +158,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         {/* ━━━ 2. CONTRA CAPA ━━━ */}
         <div style={{ ...PS, padding: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ padding: 0 }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#1a1a2e', margin: '16px 25mm 0', textTransform: 'uppercase' }}>
             ESCOLINHA DE TRIATHLON

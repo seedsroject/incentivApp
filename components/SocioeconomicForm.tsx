@@ -8,6 +8,7 @@ interface SocioeconomicFormProps {
     onSave: (data: DocumentLog) => void;
     initialMode?: 'MENU' | 'DIGITAL_FORM' | 'HISTORY';
     history?: DocumentLog[];
+    headerImage?: string;
 }
 
 type QuestionField = keyof SocioeconomicData;
@@ -54,7 +55,7 @@ const SocioTemplate: React.FC<{ data: SocioeconomicData }> = ({ data }) => {
         <div className="bg-white text-black font-sans h-full p-2">
             {/* CABEÇALHO OFICIAL */}
             <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
-                <img src="/header_full.png" alt="Header" className="h-20 object-contain mb-4 w-full max-w-[210mm]" />
+                <img src={headerImage} alt="Header" className="h-20 object-contain mb-4 w-full max-w-[210mm]" />
                 <div className="text-center">
                     <h1 className="text-lg font-bold text-black uppercase">Indicadores Socioeconômicos e de Saúde</h1>
                     <h2 className="text-sm font-bold text-gray-600 uppercase">Escolinha de Triathlon - Núcleo Campinas</h2>
@@ -103,7 +104,7 @@ const SocioTemplate: React.FC<{ data: SocioeconomicData }> = ({ data }) => {
 
 type FormMode = 'MENU' | 'DIGITAL_FORM' | 'HISTORY' | 'CAMERA_SCAN' | 'SCAN_PREVIEW';
 
-export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [] }) => {
+export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [], headerImage = '/header_full.png' }) => {
     const [mode, setMode] = useState<FormMode>(initialMode);
 
     // State for Form Data

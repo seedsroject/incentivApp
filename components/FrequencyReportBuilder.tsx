@@ -31,6 +31,7 @@ interface FrequencyReportBuilderProps {
   history: DocumentLog[];
   nucleos: Nucleo[];
   onBack: () => void;
+  headerImage?: string;
 }
 
 // ─── SVG BAR CHART (Print-friendly) ───
@@ -109,7 +110,8 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
   students,
   history,
   nucleos,
-  onBack
+  onBack,
+  headerImage = '/header_full.png'
 }) => {
   // ─── STATE ───
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
@@ -233,7 +235,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 1: COVER (matches PDF) ━━━ */}
         <div className="freq-page freq-cover-page">
           <div className="freq-cover-logos">
-            <img src="/header_full.png?v=2" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
 
           <div className="freq-cover-block">
@@ -269,7 +271,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 2: TITLE PAGE (matches PDF) ━━━ */}
         <div className="freq-page freq-title-page">
           <div className="freq-cover-logos" style={{ marginBottom: 20 }}>
-            <img src="/header_full.png?v=2" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div className="freq-title-page-subtitle" contentEditable={isEditing} suppressContentEditableWarning>
             PROJETO ESCOLINHA DE TRIATHLON

@@ -9,6 +9,7 @@ interface MetaQualitativaProps {
   defaultProfessorName?: string;
   history?: DocumentLog[];
   initialMode?: Mode; // Adicionado para pular menu
+  headerImage?: string;
 }
 
 type Mode = 'MENU' | 'DIGITAL_FORM' | 'CAMERA_SCAN' | 'SCAN_PREVIEW' | 'SUCCESS' | 'HISTORY' | 'DETAIL_VIEW';
@@ -26,8 +27,9 @@ const MetaTemplate: React.FC<{
   responsibleName: string,
   professorName: string,
   answers: Record<string, Option>,
-  questions: Question[]
-}> = ({ studentName, responsibleName, professorName, answers, questions }) => {
+  questions: Question[],
+  headerImage?: string
+}> = ({ studentName, responsibleName, professorName, answers, questions, headerImage = '/header_full.png' }) => {
 
   const renderOption = (currentOpt: string, selectedOpt: string) => {
     const isSelected = currentOpt === selectedOpt;
@@ -44,7 +46,7 @@ const MetaTemplate: React.FC<{
     <div className="bg-white text-black font-sans h-full">
       {/* CABEÇALHO OFICIAL */}
       <div className="-mx-10 -mt-10 print:-mx-8 print:-mt-8 mb-6">
-        <img src="/header_full.png" alt="Header" className="w-full object-contain block" />
+        <img src={headerImage} alt="Header" className="w-full object-contain block" />
       </div>
 
       {/* TÍTULO */}
@@ -95,7 +97,7 @@ const MetaTemplate: React.FC<{
   );
 }
 
-export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, history = [], initialMode }) => {
+export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, history = [], initialMode, headerImage }) => {
   const [mode, setMode] = useState<Mode>(initialMode || 'MENU');
 
   // Form State
@@ -239,6 +241,7 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
                 professorName={data.professorName}
                 answers={data.answers}
                 questions={questions}
+                headerImage={headerImage}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full">
@@ -280,6 +283,7 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
             professorName={professorName}
             answers={answers}
             questions={questions}
+            headerImage={headerImage}
           />
         </div>
         <style>{`@media print { body { background-color: white !important; margin: 0 !important; } @page { size: A4 portrait; margin: 10mm; } .print\\:hidden { display: none !important; } .print\\:block { display: block !important; } .no-print { display: none !important; } html { height: 100%; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }`}</style>

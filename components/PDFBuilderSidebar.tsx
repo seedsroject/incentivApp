@@ -1156,7 +1156,7 @@ const RenderItemContent = ({ item, pageId }: { item: PDFItem, pageId: string }) 
                 <div className="w-full h-full bg-white border-2 border-black p-4 text-black font-sans overflow-hidden flex flex-col text-[8px]">
                     {/* Header */}
                     <div className="flex justify-center mb-4 border-b border-black pb-2">
-                        <img src="/header_full.png" alt="Header" className="w-full object-contain" style={{ maxHeight: '80px' }} />
+                        <img src="/header_full.png?v=2" alt="Header" className="w-full object-contain" style={{ maxHeight: '80px' }} />
                     </div>
 
                     {/* Destaque */}
