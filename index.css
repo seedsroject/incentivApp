@@ -191,9 +191,9 @@ body {
 }
 .freq-cover-logos {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 30px 40px 15px;
+  padding: 0;
 }
 .freq-cover-gov-placeholder {
   width: 80px;

@@ -117,8 +117,8 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         {/* ━━━ 1. CAPA (colorida, modelo governo) ━━━ */}
         <div style={{ ...PS, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {/* Header logos */}
-          <div style={{ padding: '18px 20mm 0' }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 80, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <div style={{ padding: 0 }}>
+            <img src="/header_full.png" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           {/* LIE illustration block - bordered golden box */}
           <div style={{ margin: '16px 20mm 0', border: '2px solid #d4a017', padding: '24px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 340 }}>
@@ -154,8 +154,8 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
 
         {/* ━━━ 2. CONTRA CAPA ━━━ */}
         <div style={{ ...PS, padding: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '20px 25mm 0' }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 90, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <div style={{ padding: 0 }}>
+            <img src="/header_full.png" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#1a1a2e', margin: '16px 25mm 0', textTransform: 'uppercase' }}>
             ESCOLINHA DE TRIATHLON

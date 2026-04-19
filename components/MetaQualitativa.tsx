@@ -43,8 +43,8 @@ const MetaTemplate: React.FC<{
   return (
     <div className="bg-white text-black font-sans h-full">
       {/* CABEÇALHO OFICIAL */}
-      <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
-        <img src="/header_full.png" alt="Header" className="h-20 object-contain w-full max-w-[210mm]" />
+      <div className="-mx-10 -mt-10 print:-mx-8 print:-mt-8 mb-6">
+        <img src="/header_full.png" alt="Header" className="w-full object-contain block" />
       </div>
 
       {/* TÍTULO */}

@@ -233,7 +233,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 1: COVER (matches PDF) ━━━ */}
         <div className="freq-page freq-cover-page">
           <div className="freq-cover-logos">
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 80, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/header_full.png?v=2" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
 
           <div className="freq-cover-block">
@@ -269,7 +269,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
         {/* ━━━ PAGE 2: TITLE PAGE (matches PDF) ━━━ */}
         <div className="freq-page freq-title-page">
           <div className="freq-cover-logos" style={{ marginBottom: 20 }}>
-            <img src="/header_full.png" alt="Header" style={{ width: '100%', maxHeight: 70, objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/header_full.png?v=2" alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div className="freq-title-page-subtitle" contentEditable={isEditing} suppressContentEditableWarning>
             PROJETO ESCOLINHA DE TRIATHLON
