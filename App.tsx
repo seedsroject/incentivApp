@@ -792,52 +792,65 @@ const AppContent: React.FC = () => {
           <div className="p-6 sm:p-8">
             {/* Logo Carousel - Seletor de Projeto */}
             <div className="flex flex-col items-center text-center mb-4">
-              <div className="w-full flex items-center justify-center gap-3 mb-2">
+              <div className="w-full flex items-center justify-center gap-1 mb-2 group relative">
+                {/* Seta Esquerda — invisível até hover */}
                 <button
                   onClick={() => { setActiveProject('FORMANDO_CAMPEOES'); setLoginNucleoId(''); setRegNucleo(''); }}
-                  className={`p-1.5 rounded-full transition-all ${activeProject === 'FORMANDO_CAMPEOES' ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-700'}`}
+                  className={`p-2 rounded-full transition-all duration-300 ${activeProject === 'FORMANDO_CAMPEOES' ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
                   disabled={activeProject === 'FORMANDO_CAMPEOES'}
                   title="Projeto anterior"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <div className="relative w-[200px] h-[160px] flex items-center justify-center overflow-hidden">
+                {/* Logo com glow de fundo */}
+                <div className="relative w-[200px] h-[160px] flex items-center justify-center overflow-visible">
+                  {/* Glow / sombra de fundo */}
+                  <div
+                    className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-all duration-700 scale-75"
+                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #f59e0b 0%, #f97316 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
+                  />
                   <img
                     key={activeProject}
                     src={projectAssets.logo}
                     alt={projectAssets.name}
-                    className="max-w-[200px] max-h-[160px] w-auto h-auto object-contain animate-fade-in"
+                    className="max-w-[200px] max-h-[160px] w-auto h-auto object-contain relative z-10"
+                    style={{ animation: 'fadeSlideIn 0.5s cubic-bezier(0.16,1,0.3,1) both' }}
                   />
                 </div>
+                {/* Seta Direita — invisível até hover */}
                 <button
                   onClick={() => { setActiveProject('DANIEL_DIAS'); setLoginNucleoId(''); setRegNucleo(''); }}
-                  className={`p-1.5 rounded-full transition-all ${activeProject === 'DANIEL_DIAS' ? 'opacity-30 cursor-default' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-700'}`}
+                  className={`p-2 rounded-full transition-all duration-300 ${activeProject === 'DANIEL_DIAS' ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
                   disabled={activeProject === 'DANIEL_DIAS'}
                   title="Próximo projeto"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
                 </button>
               </div>
-              {/* Indicadores */}
+              {/* Indicadores com cor por projeto */}
               <div className="flex gap-2 mb-2">
-                <span className={`w-2 h-2 rounded-full transition-all ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
-                <span className={`w-2 h-2 rounded-full transition-all ${activeProject === 'DANIEL_DIAS' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'DANIEL_DIAS' ? 'bg-amber-500 scale-125' : 'bg-gray-300'}`} />
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Gestão de Núcleo</h2>
-              <p className="text-gray-500 mt-1 font-medium text-sm">{projectAssets.name}</p>
+              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : 'Gestão de Núcleo'}</h2>
+              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-amber-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
             </div>
 
-            {/* Toggle Login/Cadastro */}
+            {/* Toggle Login/Cadastro — cores adaptam ao projeto */}
             <div className="flex p-1 bg-gray-100 rounded-xl mb-4 relative">
               <button
                 onClick={() => setIsRegistering(false)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all z-10 ${!isRegistering ? 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${!isRegistering
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Entrar
               </button>
               <button
                 onClick={() => setIsRegistering(true)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all z-10 ${isRegistering ? 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${isRegistering
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Cadastrar
               </button>
@@ -884,7 +897,7 @@ const AppContent: React.FC = () => {
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
-                  <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-teal-500 text-white py-3 rounded-xl font-bold text-base shadow-lg shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600 hover:shadow-teal-500/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2">
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Acessando...' : 'Entrar no Sistema'}
                   </button>
                 </form>
@@ -946,7 +959,7 @@ const AppContent: React.FC = () => {
                     />
                   </div>
 
-                  <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-teal-500 text-white py-3 rounded-xl font-bold text-base shadow-lg shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600 hover:shadow-teal-500/40 hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2">
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Cadastrando...' : 'Criar Conta'}
                   </button>
                 </form>
@@ -973,7 +986,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && <Header user={user} onLogout={handleLogout} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'} />}
 
       <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (

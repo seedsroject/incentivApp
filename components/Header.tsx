@@ -1,20 +1,25 @@
 import React from 'react';
 import { User } from '../types';
-import { Logo } from './Logo';
 
 interface HeaderProps {
   user: User;
   onLogout: () => void;
+  projectLogo?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+export const Header: React.FC<HeaderProps> = ({ user, onLogout, projectLogo = '/logo.png' }) => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-md border-b-4 border-blue-600 print:hidden">
       <div className="max-w-4xl mx-auto px-4 py-2 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          {/* Logo Nova Substituída */}
+          {/* Logo Dinâmica por Projeto */}
           <div className="flex-shrink-0">
-            <Logo className="max-w-[70px] max-h-[73px] w-auto h-auto object-contain" />
+            <img
+              src={projectLogo}
+              alt="Logo do Projeto"
+              className="max-w-[70px] max-h-[73px] w-auto h-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+            />
           </div>
           <div>
             <h1 className="text-gray-800 font-bold text-lg leading-tight">
