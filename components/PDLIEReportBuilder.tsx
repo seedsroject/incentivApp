@@ -135,6 +135,9 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
               </h1>
             </div>
           </div>
+          {/* Espaçador flexível para empurrar o rodapé para o fundo */}
+          <div style={{ flex: 1 }}></div>
+
           {/* Bottom bar with ESCOLINHA + green badge */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '12px 20mm 8px' }}>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, color: '#1a5276', textTransform: 'uppercase', margin: 0 }}>
@@ -173,12 +176,18 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
 
         {/* ━━━ 3. FOLHA DE ROSTO ━━━ */}
         <div style={{ ...PS, display: 'flex', flexDirection: 'column' }}>
-          <p contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#111', textTransform: 'uppercase', margin: '0 0 40px' }}>
-            ESCOLINHA DE TRIATHLON
-          </p>
-          <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 22, fontWeight: 900, color: '#111', textAlign: 'left', lineHeight: 1.5, textTransform: 'uppercase', margin: 0 }}>
-            RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON
-          </h1>
+          {/* Espaçador flexível superior */}
+          <div style={{ flex: 1 }} />
+          
+          <div style={{ textAlign: 'center' }}>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontSize: 14, fontWeight: 800, color: '#111', textTransform: 'uppercase', margin: '0 0 40px' }}>
+              PROJETO ESCOLINHA DE TRIATHLON
+            </p>
+            <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 22, fontWeight: 900, color: '#111', textAlign: 'center', lineHeight: 1.5, textTransform: 'uppercase', margin: 0, padding: '0 20px' }}>
+              RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON
+            </h1>
+          </div>
+          
           <div style={{ flex: 1 }} />
           <div style={{ textAlign: 'center', paddingBottom: 40 }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>{city.toUpperCase()} – {uf}</p>
