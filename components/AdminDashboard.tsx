@@ -16,6 +16,7 @@ interface AdminDashboardProps {
     documents: DocumentLog[];
     onAddNucleo: (nucleo: Nucleo) => void;
     onDischargeStudent?: (studentId: string, nucleoId: string) => void;
+    projectLogo?: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -26,7 +27,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     students,
     documents,
     onAddNucleo,
-    onDischargeStudent
+    onDischargeStudent,
+    projectLogo = '/logo.png'
 }) => {
     const [selectedNucleoId, setSelectedNucleoId] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState<'LOW' | 'MEDIUM' | 'HIGH' | null>(null);
@@ -168,7 +170,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <header className="bg-white shadow-sm z-10 px-6 py-4 flex justify-between items-center border-b border-gray-100">
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-10 flex items-center justify-center">
-                        <Logo className="h-full w-auto object-contain" />
+                        <img src={projectLogo} alt="Logo" className="h-full w-auto object-contain" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold text-gray-800 tracking-tight">Painel Administrativo</h1>

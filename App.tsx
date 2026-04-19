@@ -807,7 +807,7 @@ const AppContent: React.FC = () => {
                   {/* Glow / sombra de fundo */}
                   <div
                     className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-all duration-700 scale-75"
-                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #f59e0b 0%, #f97316 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
+                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #0ea5e9 0%, #64748b 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
                   />
                   <img
                     key={activeProject}
@@ -830,10 +830,10 @@ const AppContent: React.FC = () => {
               {/* Indicadores com cor por projeto */}
               <div className="flex gap-2 mb-2">
                 <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
-                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'DANIEL_DIAS' ? 'bg-amber-500 scale-125' : 'bg-gray-300'}`} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'DANIEL_DIAS' ? 'bg-sky-500 scale-125' : 'bg-gray-300'}`} />
               </div>
               <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : 'Gestão de Núcleo'}</h2>
-              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-amber-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
+              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-sky-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
             </div>
 
             {/* Toggle Login/Cadastro — cores adaptam ao projeto */}
@@ -841,7 +841,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(false)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${!isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Entrar
@@ -849,7 +849,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(true)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Cadastrar
@@ -897,7 +897,7 @@ const AppContent: React.FC = () => {
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Acessando...' : 'Entrar no Sistema'}
                   </button>
                 </form>
@@ -959,7 +959,7 @@ const AppContent: React.FC = () => {
                     />
                   </div>
 
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30 hover:from-amber-600 hover:to-orange-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Cadastrando...' : 'Criar Conta'}
                   </button>
                 </form>
@@ -1003,6 +1003,7 @@ const AppContent: React.FC = () => {
             documents={projectDocuments}
             onAddNucleo={(newNucleo) => setNucleos([...nucleos, { ...newNucleo, project: activeProject }])}
             onDischargeStudent={handleDischargeStudent}
+            projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'}
           />
         )}
 
