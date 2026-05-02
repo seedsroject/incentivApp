@@ -21,6 +21,7 @@ import { ServicoSocialDashboard } from './components/ServicoSocialDashboard';
 import { CrossReferenceView } from './components/CrossReferenceView';
 import { FrequencyReportBuilder } from './components/FrequencyReportBuilder';
 import { PDLIEReportBuilder } from './components/PDLIEReportBuilder';
+import { AssiduidadeReportBuilder } from './components/AssiduidadeReportBuilder';
 import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
@@ -1145,6 +1146,7 @@ const AppContent: React.FC = () => {
               onOpenBuilder={() => setView(AppView.PDF_BUILDER_VIEW)}
               onOpenFrequencyReport={() => setView(AppView.FREQUENCY_REPORT)}
               onOpenPDLIEReport={() => setView(AppView.PDLIE_REPORT)}
+              onOpenAssiduidadeReport={() => setView(AppView.ASSIDUIDADE_REPORT)}
               onBack={() => setView(AppView.DASHBOARD)}
             />
           </div>
@@ -1166,6 +1168,15 @@ const AppContent: React.FC = () => {
             evidences={projectEvidence}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
+          />
+        )}
+
+        {view === AppView.ASSIDUIDADE_REPORT && user && (
+          <AssiduidadeReportBuilder
+            nucleos={filteredNucleos}
+            onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            headerImage={projectAssets.header}
+            projectName={projectAssets.name}
           />
         )}
       </main>
