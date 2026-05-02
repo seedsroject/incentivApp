@@ -1101,6 +1101,7 @@ const AppContent: React.FC = () => {
             history={projectDocuments.filter(doc => doc.type === 'PESQUISA_META')}
             onSave={handleSaveDocument}
             headerImage={projectAssets.header}
+            projectName={projectAssets.name}
           />
         )}
 

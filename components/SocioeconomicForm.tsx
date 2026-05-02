@@ -50,7 +50,7 @@ const QUESTIONS: QuestionConfig[] = [
 ];
 
 // --- TEMPLATE DE VISUALIZAÇÃO INTEGRAL ---
-const SocioTemplate: React.FC<{ data: SocioeconomicData }> = ({ data }) => {
+const SocioTemplate: React.FC<{ data: SocioeconomicData, headerImage: string }> = ({ data, headerImage }) => {
     return (
         <div className="bg-white text-black font-sans h-full p-2">
             {/* CABEÇALHO OFICIAL */}
@@ -336,7 +336,7 @@ export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, on
                                 <p className="text-sm font-bold text-gray-600">Aluno: {selectedDoc.metaData?.nome}</p>
                             </div>
                         ) : (
-                            <SocioTemplate data={selectedDoc.metaData} />
+                            <SocioTemplate data={selectedDoc.metaData} headerImage={headerImage} />
                         )}
                     </div>
                 </div>
