@@ -121,9 +121,8 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             <div className="freq-cover-bottom-citybox" contentEditable={isEditing} suppressContentEditableWarning>
               {cityLabel} | {stateLabel}<br/>{currentYear}
             </div>
-            <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning>
-              RELATÓRIO DA META QUALITATIVA DO PROJETO "{projectTitleUpper}",<br/>
-              REFERENTE AO NÚCLEO DE {nucleoShortName.toUpperCase()}
+            <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 9, lineHeight: 1.4 }}>
+              RELATÓRIO ELABORADO A PARTIR DA ANÁLISE DO BOLETIM ESCOLAR — OU DE SISTEMA DE PONTUAÇÃO EQUIVALENTE — REFERENTE ÀS MÉDIAS DO 1º E 4° BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES PARTICIPANTES DO PROJETO "{projectTitleUpper} {nucleoShortName.toUpperCase()}" EM {nucleoShortName.toUpperCase()} ({stateLabel.toUpperCase()}).
             </div>
           </div>
           <svg className="freq-cover-wave" viewBox="0 0 900 80" preserveAspectRatio="none">
