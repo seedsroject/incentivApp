@@ -24,6 +24,8 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
   const [isEditing, setIsEditing] = useState(true);
+  const [aiResumo, setAiResumo] = useState<string>('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const selectedNucleo = nucleos.find(n => n.id === selectedNucleoId);
@@ -36,6 +38,16 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   const projectTitleUpper = projectName.toUpperCase();
 
   const handlePrint = useCallback(() => { window.print(); }, []);
+
+  const handleGenerateAI = useCallback(async () => {
+    setIsGeneratingAI(true);
+    try {
+      // Fallback text (can be replaced with real Gemini call later)
+      setAiResumo(`O presente Relatório de Assiduidade e Aproveitamento Escolar, integrante do Anexo da Meta Qualitativa 01, apresenta o monitoramento sistemático do desempenho acadêmico dos alunos do projeto ${projectTitle}, no núcleo de ${cityLabel}/${stateLabel}. O documento consolida os registros oficiais de notas e frequência escolar dos beneficiados, possibilitando avaliar o impacto do projeto na vida acadêmica dos participantes.\n\nO acompanhamento dos Boletins Escolares evidenciou melhoria significativa nos indicadores de assiduidade e aproveitamento. A análise comparativa entre os períodos demonstrou evolução positiva no rendimento escolar da maioria dos alunos, confirmando a eficácia das estratégias pedagógicas e esportivas adotadas pelo projeto.\n\nOs resultados indicam que a participação nas atividades do projeto contribuiu positivamente para o desenvolvimento da disciplina, responsabilidade e comprometimento dos alunos com seus estudos. Com base nos indicadores coletados, conclui-se que o projeto apresentou excelente desempenho no cumprimento das metas qualitativas estabelecidas.\n\nPalavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Aproveitamento Escolar. Meta Qualitativa 01 do projeto ${projectTitle}.`);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  }, [projectTitle, cityLabel, stateLabel]);
 
   return (
     <div className="freq-report-root">
@@ -52,12 +64,17 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome.split('|')[0]?.trim()}</option>))}
+            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome}</option>))}
           </select>
           <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>
             ✏️ {isEditing ? 'Salvar' : 'Editar'}
           </button>
-          <button onClick={handlePrint} className="freq-btn freq-btn-print">🖨️ Exportar PDF</button>
+          <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">
+            {isGeneratingAI ? <span className="freq-spinner"></span> : '🤖'} Gerar Resumo IA
+          </button>
+          <button onClick={handlePrint} className="freq-btn freq-btn-print">
+            🖨️ Exportar PDF
+          </button>
         </div>
       </div>
 
@@ -155,7 +172,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         <div className="freq-page">
           <h2 style={{ textAlign: 'center', fontSize: 18, fontWeight: 800, marginBottom: 30, color: '#111' }}>RESUMO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning className="freq-resumo-text">
-            {`O presente Relatório de Assiduidade e Aproveitamento Escolar, integrante do Anexo da Meta Qualitativa 01, apresenta o monitoramento sistemático do desempenho acadêmico dos alunos do projeto ${projectTitle}, no núcleo de ${cityLabel}/${stateLabel}. O documento consolida os registros oficiais de notas e frequência escolar dos beneficiados, possibilitando avaliar o impacto do projeto na vida acadêmica dos participantes.
+            {aiResumo || `O presente Relatório de Assiduidade e Aproveitamento Escolar, integrante do Anexo da Meta Qualitativa 01, apresenta o monitoramento sistemático do desempenho acadêmico dos alunos do projeto ${projectTitle}, no núcleo de ${cityLabel}/${stateLabel}. O documento consolida os registros oficiais de notas e frequência escolar dos beneficiados, possibilitando avaliar o impacto do projeto na vida acadêmica dos participantes.
 
 O acompanhamento dos Boletins Escolares evidenciou melhoria significativa nos indicadores de assiduidade e aproveitamento. A análise comparativa entre os períodos demonstrou evolução positiva no rendimento escolar da maioria dos alunos, confirmando a eficácia das estratégias pedagógicas e esportivas adotadas pelo projeto.
 
