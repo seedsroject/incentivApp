@@ -23,9 +23,12 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   projectName = 'Escolinha de Triathlon',
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
-  const [isEditing, setIsEditing] = useState(true);
+  const [periodStart, setPeriodStart] = useState<string>('2024-04-24');
+  const [periodEnd, setPeriodEnd] = useState<string>('2025-12-23');
+  const [isEditing, setIsEditing] = useState(false);
   const [aiResumo, setAiResumo] = useState<string>('');
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [nSli, setNSli] = useState('2301005');
   const reportRef = useRef<HTMLDivElement>(null);
 
   const selectedNucleo = nucleos.find(n => n.id === selectedNucleoId);
@@ -42,7 +45,6 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   const handleGenerateAI = useCallback(async () => {
     setIsGeneratingAI(true);
     try {
-      // Fallback text (can be replaced with real Gemini call later)
       setAiResumo(`O presente Relatório de Assiduidade e Aproveitamento Escolar, integrante do Anexo da Meta Qualitativa 01, apresenta o monitoramento sistemático do desempenho acadêmico dos alunos do projeto ${projectTitle}, no núcleo de ${cityLabel}/${stateLabel}. O documento consolida os registros oficiais de notas e frequência escolar dos beneficiados, possibilitando avaliar o impacto do projeto na vida acadêmica dos participantes.\n\nO acompanhamento dos Boletins Escolares evidenciou melhoria significativa nos indicadores de assiduidade e aproveitamento. A análise comparativa entre os períodos demonstrou evolução positiva no rendimento escolar da maioria dos alunos, confirmando a eficácia das estratégias pedagógicas e esportivas adotadas pelo projeto.\n\nOs resultados indicam que a participação nas atividades do projeto contribuiu positivamente para o desenvolvimento da disciplina, responsabilidade e comprometimento dos alunos com seus estudos. Com base nos indicadores coletados, conclui-se que o projeto apresentou excelente desempenho no cumprimento das metas qualitativas estabelecidas.\n\nPalavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Aproveitamento Escolar. Meta Qualitativa 01 do projeto ${projectTitle}.`);
     } finally {
       setIsGeneratingAI(false);
@@ -51,7 +53,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 
   return (
     <div className="freq-report-root">
-      {/* ═══════════ TOOLBAR ═══════════ */}
+      {/* ═══════════ TOOLBAR (hidden on print) ═══════════ */}
       <div className="freq-report-toolbar no-print">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onBack} className="freq-btn-back" title="Voltar">
@@ -62,10 +64,28 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             <p style={{ fontSize: 12, color: '#666', margin: 0 }}>Relatório editável • {nucleoShortName}</p>
           </div>
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome}</option>))}
+          {/* Núcleo */}
+          <select
+            value={selectedNucleoId}
+            onChange={e => setSelectedNucleoId(e.target.value)}
+            className="freq-select"
+          >
+            {nucleos.map(n => (
+              <option key={n.id} value={n.id}>{n.nome.split('|')[0]?.trim()}</option>
+            ))}
           </select>
+
+          {/* Período */}
+          <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
+          <span style={{ fontSize: 12, color: '#999' }}>a</span>
+          <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />
+
+          {/* Nº SLIE */}
+          <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="Nº SLIE" title="Nº SLIE" />
+
+          {/* Botões */}
           <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>
             ✏️ {isEditing ? 'Salvar' : 'Editar'}
           </button>
