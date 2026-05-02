@@ -240,19 +240,19 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
 
           <div className="freq-cover-block">
             <div className="freq-cover-inner">
-              <div className="freq-cover-spacer" style={{ height: 180 }}></div>
+              <div className="freq-cover-spacer" style={{ height: 60 }}></div>
               <h1 contentEditable={isEditing} suppressContentEditableWarning className="freq-cover-title">
                 ANEXO META QUANTITATIVA 01 - LISTA DE<br/>FREQUÊNCIA
               </h1>
             </div>
           </div>
 
-          <div className="freq-cover-bottom">
+          <div className="freq-cover-bottom" style={{ paddingBottom: 90 }}>
             <div className="freq-cover-bottom-project" contentEditable={isEditing} suppressContentEditableWarning>
               PROJETO ESCOLINHA DE TRIATHLON
             </div>
             <div className="freq-cover-bottom-citybox" contentEditable={isEditing} suppressContentEditableWarning>
-              {nucleoShortName} – {stateLabel}<br/>{new Date().getFullYear()}
+              {nucleoShortName} | {stateLabel}<br/>{new Date().getFullYear()}
             </div>
             <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning>
               RELATÓRIO DE FREQUÊNCIA DO PROJETO "ESCOLINHA DE TRIATHLON",<br/>
