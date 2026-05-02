@@ -115,13 +115,13 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             </div>
           </div>
           <div className="freq-cover-bottom" style={{ paddingBottom: 90 }}>
-            <div className="freq-cover-bottom-project" contentEditable={isEditing} suppressContentEditableWarning>
-              PROJETO {projectTitleUpper}
+            <div className="freq-cover-bottom-project" contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 15, fontWeight: 800, color: '#2a6496', marginBottom: 12 }}>
+              {projectTitleUpper} {nucleoShortName.toUpperCase()}
             </div>
             <div className="freq-cover-bottom-citybox" contentEditable={isEditing} suppressContentEditableWarning>
               {cityLabel} | {stateLabel}<br/>{currentYear}
             </div>
-            <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 9, lineHeight: 1.4 }}>
+            <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 9, lineHeight: 1.6, textAlign: 'justify', maxWidth: '60%' }}>
               RELATÓRIO ELABORADO A PARTIR DA ANÁLISE DO BOLETIM ESCOLAR — OU DE SISTEMA DE PONTUAÇÃO EQUIVALENTE — REFERENTE ÀS MÉDIAS DO 1º E 4° BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES PARTICIPANTES DO PROJETO "{projectTitleUpper} {nucleoShortName.toUpperCase()}" EM {nucleoShortName.toUpperCase()} ({stateLabel.toUpperCase()}).
             </div>
           </div>
