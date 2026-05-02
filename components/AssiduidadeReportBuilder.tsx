@@ -28,7 +28,8 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 
   const selectedNucleo = nucleos.find(n => n.id === selectedNucleoId);
   const nucleoShortName = selectedNucleo?.nome.split('|')[0]?.trim() || 'Núcleo';
-  const stateLabel = selectedNucleo?.nome.split('|')[1]?.trim() || 'UF';
+  const rawState = selectedNucleo?.nome.split('|')[1]?.trim() || 'UF';
+  const stateLabel = rawState.split(/[\s\-–]/)[0]?.trim() || 'UF';
   const cityLabel = nucleoShortName;
   const currentYear = new Date().getFullYear();
   const projectTitle = projectName;
