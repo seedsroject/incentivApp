@@ -73,7 +73,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             className="freq-select"
           >
             {nucleos.map(n => (
-              <option key={n.id} value={n.id}>{n.nome.split('|')[0]?.trim()}</option>
+              <option key={n.id} value={n.id}>{n.nome}</option>
             ))}
           </select>
 
