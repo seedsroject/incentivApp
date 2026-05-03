@@ -13,10 +13,11 @@ interface AmbienteDesenvolvimentoProps {
   onOpenFrequencyReport?: () => void;
   onOpenPDLIEReport?: () => void;
   onOpenAssiduidadeReport?: () => void;
+  onOpenInscricaoReport?: () => void;
   onBack?: () => void;
 }
 
-export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onOpenPDLIEReport, onOpenAssiduidadeReport, onBack }: AmbienteDesenvolvimentoProps) {
+export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onOpenPDLIEReport, onOpenAssiduidadeReport, onOpenInscricaoReport, onBack }: AmbienteDesenvolvimentoProps) {
   const { loadTemplate } = usePDFBuilder();
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [selectedNucleo, setSelectedNucleo] = useState<string>('');
@@ -43,6 +44,14 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
       coverType: 'blue',
       year: '2026',
       city: 'Ilhéus – BA',
+      proponente: 'ESCOLINHA DE TRIATHLON'
+    },
+    {
+      id: 'inscricao',
+      title: 'Anexo Meta Quantitativa 02 - Ficha de Inscrição Declaração de Matrícula Escolar',
+      coverType: 'blue',
+      year: '2026',
+      city: 'Joinville – SC',
       proponente: 'ESCOLINHA DE TRIATHLON'
     },
     {
@@ -81,6 +90,12 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     if (reportDef.id === 'assiduidade') {
       setSelectedReport(null);
       if (onOpenAssiduidadeReport) onOpenAssiduidadeReport();
+      return;
+    }
+
+    if (reportDef.id === 'inscricao') {
+      setSelectedReport(null);
+      if (onOpenInscricaoReport) onOpenInscricaoReport();
       return;
     }
 

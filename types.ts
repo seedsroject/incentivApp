@@ -355,6 +355,7 @@ export enum AppView {
   FREQUENCY_REPORT = 'FREQUENCY_REPORT', // Relatório de Frequência (Anexo Meta Quantitativa 01)
   PDLIE_REPORT = 'PDLIE_REPORT', // Relatório PDLIE (Plano de Divulgação da Lei de Incentivo ao Esporte)
   ASSIDUIDADE_REPORT = 'ASSIDUIDADE_REPORT', // Relatório de Assiduidade e Aproveitamento Escolar (Meta Qualitativa 01)
+  INSCRICAO_REPORT = 'INSCRICAO_REPORT', // Anexo Meta Quantitativa 02 - Ficha de Inscrição e Declaração de Matrícula
 
   // Visualização Externa (Pai)
   PUBLIC_FORM = 'PUBLIC_FORM'

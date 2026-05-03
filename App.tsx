@@ -22,6 +22,7 @@ import { CrossReferenceView } from './components/CrossReferenceView';
 import { FrequencyReportBuilder } from './components/FrequencyReportBuilder';
 import { PDLIEReportBuilder } from './components/PDLIEReportBuilder';
 import { AssiduidadeReportBuilder } from './components/AssiduidadeReportBuilder';
+import { InscricaoReportBuilder } from './components/InscricaoReportBuilder';
 import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
@@ -987,9 +988,9 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'} />}
 
-      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
+      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT || view === AppView.INSCRICAO_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (
           <PDFBuilderSidebar onOpenPreview={() => setView(AppView.PDF_BUILDER_VIEW)} />
         )}
@@ -1147,6 +1148,7 @@ const AppContent: React.FC = () => {
               onOpenFrequencyReport={() => setView(AppView.FREQUENCY_REPORT)}
               onOpenPDLIEReport={() => setView(AppView.PDLIE_REPORT)}
               onOpenAssiduidadeReport={() => setView(AppView.ASSIDUIDADE_REPORT)}
+              onOpenInscricaoReport={() => setView(AppView.INSCRICAO_REPORT)}
               onBack={() => setView(AppView.DASHBOARD)}
             />
           </div>
@@ -1173,6 +1175,16 @@ const AppContent: React.FC = () => {
 
         {view === AppView.ASSIDUIDADE_REPORT && user && (
           <AssiduidadeReportBuilder
+            nucleos={filteredNucleos}
+            onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            headerImage={projectAssets.header}
+            projectName={projectAssets.name}
+          />
+        )}
+
+        {view === AppView.INSCRICAO_REPORT && user && (
+          <InscricaoReportBuilder
+            students={projectStudents}
             nucleos={filteredNucleos}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
