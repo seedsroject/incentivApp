@@ -211,6 +211,10 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
                 onOpenAssiduidadeReport();
                 return;
               }
+              if (report.id === 'inscricao' && onOpenInscricaoReport) {
+                onOpenInscricaoReport();
+                return;
+              }
               setSelectedReport(report.id);
             }}
             className={`
