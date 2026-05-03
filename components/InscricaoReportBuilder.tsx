@@ -173,17 +173,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <div style={{ textAlign: 'center', marginTop: 30 }}>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase' as const }}>PROJETO {pName}</p>
           </div>
-          <div className="freq-cover-block" style={{ transform: 'rotate(-8deg)', margin: '40px auto', width: '85%' }}>
-            <div style={{ padding: '60px 40px', textAlign: 'right' }}>
-              <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 28, fontWeight: 900, color: '#fff', lineHeight: 1.3, textTransform: 'uppercase' as const }}>
-                ANEXO META QUANTITATIVA 02 FICHA DE INSCRIÇÃO DECLARAÇÃO DE MATRÍCULA ESCOLAR
-              </h1>
-              <p style={{ color: '#ccc', fontSize: 11, marginTop: 12 }}>PROJETO {pName} {city.toUpperCase()}</p>
-            </div>
+          <div style={{ margin: '120px auto', width: '85%', textAlign: 'center' }}>
+            <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 28, fontWeight: 900, color: '#2a6496', lineHeight: 1.3, textTransform: 'uppercase' as const }}>
+              ANEXO META QUANTITATIVA 02<br/>FICHA DE INSCRIÇÃO E DECLARAÇÃO<br/>DE MATRÍCULA ESCOLAR
+            </h1>
+            <p style={{ color: '#666', fontSize: 11, marginTop: 12 }}>PROJETO {pName} {city.toUpperCase()}</p>
           </div>
-          <div style={{ textAlign: 'center', marginTop: 30 }}>
+          <div style={{ textAlign: 'center', marginTop: 100 }}>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 700 }}>{city.toUpperCase()} | {uf}</p>
-            <p style={{ fontSize: 14, color: '#4a8c3f', fontWeight: 700 }}>{year}</p>
+            <p style={{ fontSize: 14, color: '#2a6496', fontWeight: 700 }}>{year}</p>
           </div>
         </div>
 
@@ -199,6 +197,46 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, marginTop: 10 }}>Instrumento de Verificação:</p>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11 }}>Ficha de inscrição do projeto com indicação de escola pública ou privada.</p>
           <hr style={{ border: '1px solid #333', marginTop: 16 }}/>
+        </div>
+
+        {/* STUDENT LIST TABLE (Moved before Sumário) */}
+        <div className="freq-page" style={{ padding: '80px 60px' }}>
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase' as const }}>RELAÇÃO DE ALUNOS COM INDICAÇÃO DE ESCOLA</h3>
+          </div>
+          <div style={{ fontSize: 10, marginBottom: 4 }}>
+            <b style={{ fontWeight: 800 }}>NOME DO PROJETO:</b> {pName} &nbsp;&nbsp; — <b style={{ fontWeight: 800 }}>N.º SLI:</b> {nSli}
+          </div>
+          <div style={{ fontSize: 10, marginBottom: 16 }}>
+            <b style={{ fontWeight: 800 }}>PROPONENTE:</b> {sel?.nome || ''}
+          </div>
+          <table style={{ width: '100%', fontSize: 9, textAlign: 'left' as const, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #000' }}>
+                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nº</th>
+                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Evento/<br/>modalidade</th>
+                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nome (ordem alfabética)</th>
+                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Escola Pública<br/>ou Particular</th>
+                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nome da Escola</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((s, i) => (
+                <tr key={s.id || i}>
+                  <td style={{ padding: '6px 4px' }}>{i + 1}</td>
+                  <td style={{ padding: '6px 4px' }}>Triathlon</td>
+                  <td style={{ padding: '6px 4px' }} contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
+                  <td style={{ padding: '6px 4px' }}>{s.escola_tipo === 'PUBLICA' ? 'Pública' : s.escola_tipo === 'PARTICULAR' ? 'Particular' : '—'}</td>
+                  <td style={{ padding: '6px 4px' }} contentEditable={isEditing} suppressContentEditableWarning>{s.escola_nome || '—'}</td>
+                </tr>
+              ))}
+              {sorted.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20, color: '#999' }}>Nenhum aluno encontrado para este núcleo</td></tr>}
+            </tbody>
+          </table>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 40, fontSize: 10 }}>
+            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {city}/{uf}, {new Date().toLocaleDateString('pt-BR')}</span>
+            <span contentEditable={isEditing} suppressContentEditableWarning>NOME E ASSINATURA DO RESPONSÁVEL: _________________________</span>
+          </div>
         </div>
 
         {/* PAGE 4: SUMÁRIO */}
@@ -291,46 +329,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           ))}
         </div>
 
-        {/* PAGE 9+: STUDENT LIST TABLE */}
-        <div className="freq-page" style={{ padding: '40px 30px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <img src="/logo_lei_incentivo.png" alt="" style={{ height: 30 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <h3 style={{ fontSize: 11, fontWeight: 800, flex: 1 }}>RELAÇÃO DE ALUNOS COM INDICAÇÃO DE ESCOLA</h3>
-          </div>
-          <div style={{ fontSize: 9, marginBottom: 4 }}>
-            <b>NOME DO PROJETO:</b> {pName} &nbsp;&nbsp; — <b>N.º SLI:</b> {nSli}
-          </div>
-          <div style={{ fontSize: 9, marginBottom: 8 }}>
-            <b>PROPONENTE:</b> {sel?.nome || ''}
-          </div>
-          <table className="freq-table" style={{ width: '100%', fontSize: 8 }}>
-            <thead>
-              <tr>
-                <th style={{ width: 25 }}>Nº</th>
-                <th style={{ width: 60 }}>Evento/<br/>modalidade</th>
-                <th>Nome (ordem alfabética)</th>
-                <th style={{ width: 70 }}>Escola Pública ou Particular</th>
-                <th>Nome da Escola</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((s, i) => (
-                <tr key={s.id || i}>
-                  <td>{i + 1}</td>
-                  <td>Triathlon</td>
-                  <td contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
-                  <td>{s.escola_tipo === 'PUBLICA' ? 'Pública' : s.escola_tipo === 'PARTICULAR' ? 'Particular' : '—'}</td>
-                  <td contentEditable={isEditing} suppressContentEditableWarning>{s.escola_nome || '—'}</td>
-                </tr>
-              ))}
-              {sorted.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20, color: '#999' }}>Nenhum aluno encontrado para este núcleo</td></tr>}
-            </tbody>
-          </table>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16, fontSize: 9 }}>
-            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {city}/{uf}, {new Date().toLocaleDateString('pt-BR')}</span>
-            <span contentEditable={isEditing} suppressContentEditableWarning>NOME E ASSINATURA DO RESPONSÁVEL: _________________________</span>
-          </div>
-        </div>
+
 
         {/* PAGE FINAL: REFERÊNCIAS */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
