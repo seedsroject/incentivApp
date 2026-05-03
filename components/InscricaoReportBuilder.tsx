@@ -316,11 +316,11 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>8</div>
         </div>
 
-        {/* PAGE 9: Bar Chart - BLUE/ORANGE */}
+        {/* PAGE 9: Bar Chart + Analysis - BLUE/ORANGE */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {city}/{uf}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 250, padding: '20px 40px 0', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 200, padding: '20px 40px 0', position: 'relative' }}>
             {[
               { label: 'Ensino Fundamental I', value: eduLevel.fundI, color: '#4472C4' },
               { label: 'Ensino Fundamental II', value: eduLevel.fundII, color: '#ED7D31' },
@@ -328,100 +328,82 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             ].map((item, idx) => (
               <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 80 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, marginBottom: 4 }}>{item.value}</span>
-                <div style={{ width: 50, background: item.color, height: `${Math.max((item.value/(totalAlunos||1))*180, 8)}px`, borderRadius: '2px 2px 0 0' }}></div>
+                <div style={{ width: 50, background: item.color, height: `${Math.max((item.value/(totalAlunos||1))*160, 8)}px`, borderRadius: '2px 2px 0 0' }}></div>
                 <span style={{ fontSize: 8, marginTop: 6, textAlign: 'center' }}>{item.label}</span>
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 12 }}>
             <span><span style={{ color: '#4472C4' }}>■</span> Ensino Fundamental I</span>
             <span><span style={{ color: '#ED7D31' }}>■</span> Ensino Fundamental II</span>
             <span><span style={{ color: '#A5A5A5' }}>■</span> Ensino Médio</span>
           </div>
-          <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>9</div>
-        </div>
-
-        {/* PAGE 10: Quantitative analysis */}
-        <div className="freq-page" style={{ padding: '80px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
+          <p style={{ fontSize: 8, marginTop: 12 }}>Fonte: {projectName} ({year}).</p>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 20, borderTop: '1px solid #eee', paddingTop: 16 }}>
             <p>Observa-se que a maioria dos alunos matriculados ({Math.round(eduLevel.fundII/(totalAlunos||1)*100)}%) cursam o Ensino Fundamental II, seguido de {Math.round(eduLevel.fundI/(totalAlunos||1)*100)}% no Ensino Fundamental I.</p>
-            <p style={{ marginTop: 16 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
+            <p style={{ marginTop: 8 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
           </div>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>10</div>
         </div>
 
-        {/* PAGE 11: 2.2 Pública vs Particular - BLUE/ORANGE PIE */}
+        {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> — Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>Distribuição por Rede de Ensino em {city}/{uf}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 220 }}>
-            <div style={{ width: 180, height: 180, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 12 }}>Pública<br/>{pctPublica}%</div>
-              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Particular<br/>{pctParticular}%</div>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Rede de Ensino em {city}/{uf}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
+            <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Pública<br/>{pctPublica}%</div>
+              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Particular<br/>{pctParticular}%</div>
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
             <span><span style={{ color: '#4472C4' }}>■</span> Escola Pública</span>
             <span><span style={{ color: '#ED7D31' }}>■</span> Escola Particular</span>
           </div>
-          <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>11</div>
-        </div>
-
-        {/* PAGE 12: Conformidade */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
+          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             <p>Em conformidade com a Meta Quantitativa 02 do projeto, que estabelece o mínimo de 65% das vagas para estudantes da rede pública, o núcleo atingiu {pctPublica}%, cumprindo o indicador previsto.</p>
-            <ul style={{ marginTop: 16, paddingLeft: 20 }}>
+            <ul style={{ marginTop: 8, paddingLeft: 20 }}>
               <li>Total atendimento do público alvo.</li>
               <li>Superação da meta de inclusão de alunos de escolas públicas.</li>
               <li>Integração harmoniosa das diferentes redes de ensino.</li>
             </ul>
           </div>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>12</div>
         </div>
 
-        {/* PAGE 13: 2.3 Gênero - BLUE/ORANGE PIE */}
+        {/* PAGE 11: 2.3 Gênero + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> — Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {city}/{uf}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 220 }}>
-            <div style={{ width: 180, height: 180, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${(genderStats.masculino/(totalAlunos||1))*100}%, #ED7D31 ${(genderStats.masculino/(totalAlunos||1))*100}% 100%)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 12 }}>Masculino<br/>{Math.round((genderStats.masculino/(totalAlunos||1))*100)}%</div>
-              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Feminino<br/>{Math.round((genderStats.feminino/(totalAlunos||1))*100)}%</div>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {city}/{uf}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
+            <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${(genderStats.masculino/(totalAlunos||1))*100}%, #ED7D31 ${(genderStats.masculino/(totalAlunos||1))*100}% 100%)`, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round((genderStats.masculino/(totalAlunos||1))*100)}%</div>
+              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round((genderStats.feminino/(totalAlunos||1))*100)}%</div>
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
             <span><span style={{ color: '#4472C4' }}>■</span> Masculino</span>
             <span><span style={{ color: '#ED7D31' }}>■</span> Feminino</span>
           </div>
-          <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>13</div>
-        </div>
-
-        {/* PAGE 14: Gender Analysis */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
+          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             A análise da distribuição por gênero revela um equilíbrio na participação, com {Math.round((genderStats.masculino/(totalAlunos||1))*100)}% de meninos e {Math.round((genderStats.feminino/(totalAlunos||1))*100)}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.
           </div>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>14</div>
         </div>
 
-        {/* PAGE 15: 2.4 Idade - BLUE/ORANGE BARS */}
+        {/* PAGE 12: 2.4 Idade + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 16, marginBottom: 8 }}>Distribuição Etária dos alunos em {city}/{uf}</p>
-          <div style={{ marginTop: 12 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {city}/{uf}</p>
+          <div style={{ marginTop: 8 }}>
             {Object.entries(ages).map(([range, count], idx) => {
               const colors = ['#4472C4', '#ED7D31', '#A5A5A5', '#FFC000', '#5B9BD5'];
               return (
-                <div key={range} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div key={range} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ width: 80, fontSize: 10, textAlign: 'right' }}>{range} anos</span>
-                  <div style={{ flex: 1, background: '#f0f0f0', borderRadius: 4, height: 22 }}>
+                  <div style={{ flex: 1, background: '#f0f0f0', borderRadius: 4, height: 20 }}>
                     <div style={{ width: `${totalAlunos ? (count/totalAlunos)*100 : 0}%`, background: colors[idx % colors.length], borderRadius: 4, height: '100%', minWidth: count ? 30 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{count} ({totalAlunos ? Math.round((count/totalAlunos)*100) : 0}%)</span>
                     </div>
@@ -430,16 +412,10 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               );
             })}
           </div>
-          <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>15</div>
-        </div>
-
-        {/* PAGE 16: Age Analysis */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
+          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             A faixa etária predominante atende perfeitamente ao regulamento técnico e pedagógico estipulado pelo projeto, garantindo a formação de turmas coesas em relação ao desenvolvimento motor e cognitivo.
           </div>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>16</div>
         </div>
 
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
