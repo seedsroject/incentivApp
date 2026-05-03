@@ -154,6 +154,7 @@ export interface StudentDraft {
   questionario_quantitativo?: { url: string; timestamp: string };   // Questionário Quantitativo (arquivo)
   pesquisa_socioeconomica?: { url: string; timestamp: string };      // Pesquisa Socioeconômica (arquivo)
   boletim_escolar?: { url: string; timestamp: string; parcial?: boolean }; // Boletim Escolar (parcial = só 1 bimestre)
+  declaracao_matricula?: { url: string; timestamp: string }; // Declaração de Matrícula Escolar (imagem ou PDF)
 }
 
 export type EvidenceType = 'ACESSIBILIDADE' | 'DIVULGACAO' | 'MATERIAIS' | 'MATERIAIS_CONSUMO' | 'UNIFORMES' | 'HOSPEDAGEM' | 'OUTROS';

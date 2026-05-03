@@ -1,7 +1,8 @@
 /* Base styles */
-body {
+html, body {
   margin: 0;
   font-family: 'Rawline', sans-serif;
+  overflow-x: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════════
