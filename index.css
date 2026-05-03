@@ -164,21 +164,23 @@ html, body {
 
 /* ─── REPORT CONTENT ─── */
 .freq-report-content {
-  max-width: 900px;
+  max-width: 820px;
   margin: 0 auto;
   padding: 30px 20px 60px;
 }
 
-/* ─── PAGES ─── */
+/* ─── PAGES (A4 Portrait: 210mm x 297mm) ─── */
 .freq-page {
   background: #ffffff;
+  width: 794px;    /* 210mm @ 96dpi */
+  min-height: 1123px; /* 297mm @ 96dpi */
   padding: 50px 55px;
-  margin-bottom: 30px;
+  margin: 0 auto 30px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.12);
   border-radius: 2px;
-  min-height: 600px;
   position: relative;
   page-break-after: always;
+  box-sizing: border-box;
 }
 
 /* ─── COVER PAGE 1 ─── */
@@ -186,7 +188,7 @@ html, body {
   padding: 0 !important;
   display: flex;
   flex-direction: column;
-  min-height: 1100px;
+  min-height: 1123px;
   overflow: hidden;
   position: relative;
 }
@@ -540,7 +542,7 @@ html, body {
 
   @page {
     margin: 0.5cm;
-    size: A4;
+    size: A4 portrait;
   }
 }
 
