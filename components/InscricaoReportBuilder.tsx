@@ -221,42 +221,51 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* STUDENT LIST TABLE (Moved before Sumário) */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
-          <div style={{ marginBottom: 16 }}>
-            <h3 style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase' as const }}>RELAÇÃO DE ALUNOS COM INDICAÇÃO DE ESCOLA</h3>
+        <div className="freq-page" style={{ padding: '40px 40px' }}>
+
+          {/* Header: Logo + Título */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, borderBottom: '2px solid #000', paddingBottom: 8 }}>
+            <img src="/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ width: 70, height: 'auto', marginRight: 16 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <h3 style={{ fontSize: 11, fontWeight: 800, textAlign: 'center', flex: 1, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>RELAÇÃO DE ALUNOS COM INDICAÇÃO DE ESCOLA</h3>
           </div>
-          <div style={{ fontSize: 10, marginBottom: 4 }}>
-            <b style={{ fontWeight: 800 }}>NOME DO PROJETO:</b> {pName} &nbsp;&nbsp; — <b style={{ fontWeight: 800 }}>N.º SLI:</b> {nSli}
+
+          {/* Info do Projeto */}
+          <div style={{ border: '1px solid #000', borderBottom: 'none', padding: '4px 6px', fontSize: 9 }}>
+            <b>NOME DO PROJETO:</b> {' '} {pName} {' '} — N.º SLI: {' '} {nSli}
           </div>
-          <div style={{ fontSize: 10, marginBottom: 16 }}>
-            <b style={{ fontWeight: 800 }}>PROPONENTE:</b> {sel?.nome || ''}
+          <div style={{ border: '1px solid #000', borderBottom: 'none', padding: '4px 6px', fontSize: 9 }}>
+            <b>PROPONENTE:</b> {' '} {sel?.nome || ''}
           </div>
-          <table style={{ width: '100%', fontSize: 9, textAlign: 'left' as const, borderCollapse: 'collapse' }}>
+
+          {/* Tabela com bordas */}
+          <table style={{ width: '100%', fontSize: 8, textAlign: 'left' as const, borderCollapse: 'collapse', border: '1px solid #000' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #000' }}>
-                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nº</th>
-                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Evento/<br/>modalidade</th>
-                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nome (ordem alfabética)</th>
-                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Escola Pública<br/>ou Particular</th>
-                <th style={{ padding: '8px 4px', fontWeight: 800 }}>Nome da Escola</th>
+              <tr>
+                <th style={{ padding: '4px 3px', fontWeight: 700, borderRight: '1px solid #000', borderBottom: '1px solid #000', width: 22 }}>Nº</th>
+                <th style={{ padding: '4px 3px', fontWeight: 700, borderRight: '1px solid #000', borderBottom: '1px solid #000', width: 60 }}>Evento/<br/>modalidade</th>
+                <th style={{ padding: '4px 3px', fontWeight: 700, borderRight: '1px solid #000', borderBottom: '1px solid #000' }}>Nome (ordem alfabética)</th>
+                <th style={{ padding: '4px 3px', fontWeight: 700, borderRight: '1px solid #000', borderBottom: '1px solid #000', width: 75, textAlign: 'center' }}>Escola Pública ou<br/>Particular</th>
+                <th style={{ padding: '4px 3px', fontWeight: 700, borderBottom: '1px solid #000' }}>Nome da Escola</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((s, i) => (
                 <tr key={s.id || i}>
-                  <td style={{ padding: '6px 4px' }}>{i + 1}</td>
-                  <td style={{ padding: '6px 4px' }}>Triathlon</td>
-                  <td style={{ padding: '6px 4px' }} contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
-                  <td style={{ padding: '6px 4px' }}>{s.escola_tipo === 'PUBLICA' ? 'Pública' : s.escola_tipo === 'PARTICULAR' ? 'Particular' : '—'}</td>
-                  <td style={{ padding: '6px 4px' }} contentEditable={isEditing} suppressContentEditableWarning>{s.escola_nome || '—'}</td>
+                  <td style={{ padding: '3px', borderRight: '1px solid #000', borderBottom: '1px solid #ccc', textAlign: 'center' }}>{i + 1}</td>
+                  <td style={{ padding: '3px', borderRight: '1px solid #000', borderBottom: '1px solid #ccc' }}>Triathlon</td>
+                  <td style={{ padding: '3px', borderRight: '1px solid #000', borderBottom: '1px solid #ccc' }} contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
+                  <td style={{ padding: '3px', borderRight: '1px solid #000', borderBottom: '1px solid #ccc', textAlign: 'center' }}>{s.escola_tipo === 'PUBLICA' ? 'Pública' : s.escola_tipo === 'PARTICULAR' ? 'Particular' : '—'}</td>
+                  <td style={{ padding: '3px', borderBottom: '1px solid #ccc' }} contentEditable={isEditing} suppressContentEditableWarning>{s.escola_nome || '—'}</td>
                 </tr>
               ))}
               {sorted.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20, color: '#999' }}>Nenhum aluno encontrado para este núcleo</td></tr>}
             </tbody>
           </table>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 40, fontSize: 10 }}>
-            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {`${city}/${uf}`}, {new Date().toLocaleDateString('pt-BR')}</span>
-            <span contentEditable={isEditing} suppressContentEditableWarning>NOME E ASSINATURA DO RESPONSÁVEL: _________________________</span>
+
+          {/* Rodapé oficial */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20, fontSize: 9, borderTop: '1px solid #000', paddingTop: 8 }}>
+            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {' '} {`${city}/${uf}`}, {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+            <span contentEditable={isEditing} suppressContentEditableWarning>NOME E ASSINATURA DO RESPONSÁVEL: {' '} _________________________</span>
           </div>
         </div>
 
