@@ -46,16 +46,12 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   // Age distribution
   const ages = useMemo(() => {
     const now = new Date();
-    const groups: Record<string, number> = { '6-8': 0, '9-11': 0, '12-14': 0, '15-17': 0, '18+': 0 };
+    const groups: Record<string, number> = {};
     sorted.forEach(s => {
       if (!s.data_nascimento) return;
       const birth = new Date(s.data_nascimento);
       const age = Math.floor((now.getTime() - birth.getTime()) / 31557600000);
-      if (age <= 8) groups['6-8']++;
-      else if (age <= 11) groups['9-11']++;
-      else if (age <= 14) groups['12-14']++;
-      else if (age <= 17) groups['15-17']++;
-      else groups['18+']++;
+      groups[age.toString()] = (groups[age.toString()] || 0) + 1;
     });
     return groups;
   }, [sorted]);
@@ -716,24 +712,98 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 12: 2.4 Idade + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 6</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {`${city}/${uf}`}</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
-            {Object.entries(ages).map(([range, count], idx) => {
-              const colors = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5'];
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figuras 6 e 7</b> {"\u2014"} Distribuição etária dos alunos regularmente matriculados no projeto "{projectName}" em {city} ({uf})</p>
+
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 12 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 16 }}>
+              {`Distribuição etária dos alunos regularmente inscritos no projeto "${projectName}" em ${city} (${uf})`}
+            </p>
+
+            {(() => {
+              const entries = Object.entries(ages).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+              const t = totalAlunos || 1;
+              const COLORS = ['#4472C4', '#ED7D31', '#C9C9C9', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
+              
+              // Map to chart slice format
+              const slices = entries.map(([age, count], idx) => ({
+                label: `${age} anos`,
+                value: count,
+                color: COLORS[idx % COLORS.length],
+                pct: Math.round((count * 100) / t)
+              })).filter(s => s.value > 0);
+
+              // 1. Pie Chart (Figura 6 equivalent)
+              const CX = 160; const CY = 100; const R = 80;
+              let cumAngle = -90;
+              const paths = slices.map((s) => {
+                const angle = (s.pct * 360) / 100;
+                const startA = cumAngle;
+                const endA = cumAngle + angle;
+                const midA = startA + angle / 2;
+                cumAngle = endA;
+                const toRad = (a: number) => (a * Math.PI) / 180;
+                const largeArc = angle > 180 ? 1 : 0;
+                const x1 = CX + R * Math.cos(toRad(startA));
+                const y1 = CY + R * Math.sin(toRad(startA));
+                const x2 = CX + R * Math.cos(toRad(endA));
+                const y2 = CY + R * Math.sin(toRad(endA));
+                const labelR = R * 0.65;
+                const lx = CX + labelR * Math.cos(toRad(midA));
+                const ly = CY + labelR * Math.sin(toRad(midA));
+                const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                return { ...s, d, lx, ly };
+              });
+
               return (
-                <div key={range} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ width: 80, fontSize: 10, textAlign: 'right' }}>{range} anos</span>
-                  <div style={{ flex: 1, background: '#f0f0f0', borderRadius: 4, height: 20 }}>
-                    <div style={{ width: `${totalAlunos ? ((count * 100) / totalAlunos) : 0}%`, background: colors[idx % colors.length], borderRadius: 4, height: '100%', minWidth: count ? 30 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{count} ({totalAlunos ? Math.round(((count * 100) / totalAlunos)) : 0}%)</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {/* Pie Chart Section */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <svg width={320} height={200} viewBox="0 0 320 200">
+                        {paths.map((p, i) => (<path key={`s${i}`} d={p.d} fill={p.color} stroke="#fff" strokeWidth={1} />))}
+                        {paths.map((p, i) => (
+                          <g key={`l${i}`}>
+                            <text x={p.lx} y={p.ly - 2} textAnchor="middle" fontSize={6} fill="#000" fontWeight={700}>{p.label}</text>
+                            <text x={p.lx} y={p.ly + 6} textAnchor="middle" fontSize={7} fill="#000" fontWeight={800}>{p.pct}%</text>
+                          </g>
+                        ))}
+                      </svg>
+                    </div>
+                    {/* Legend */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 12px', marginTop: 10 }}>
+                      {slices.map((it, i) => (
+                        <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 8 }}>
+                          <span style={{ display: 'inline-block', width: 8, height: 8, background: it.color, border: '1px solid #666' }}></span>
+                          {it.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <hr style={{ border: 'none', borderTop: '1px dashed #ccc' }} />
+
+                  {/* Column Chart Section (Figura 7 equivalent) */}
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 16 }}>
+                      {`DISTRIBUIÇÃO ETÁRIA DOS ALUNOS REGULARMENTE INSCRITOS NO PROJETO "${projectName}" EM ${city} (${uf})`}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 12, height: 160, padding: '16px 10px 0', position: 'relative' }}>
+                      {slices.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, maxWidth: 40 }}>
+                          <div style={{ background: item.color, color: '#fff', fontSize: 9, fontWeight: 700, padding: '2px 4px', border: '1px solid #fff', marginBottom: 2 }}>{item.value}</div>
+                          <div style={{ width: '100%', background: item.color, height: `${Math.max(((item.value * 120) / (Math.max(...slices.map(s => s.value)) || 1)), 10)}px`, border: '1px solid #333', borderBottom: 'none' }}></div>
+                          <span style={{ fontSize: 8, marginTop: 6, textAlign: 'center', color: '#000' }}>{item.label}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               );
-            })}
-            <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
+            })()}
+
+            <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
           </div>
+
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             A faixa etária predominante atende perfeitamente ao regulamento técnico e pedagógico estipulado pelo projeto, garantindo a formação de turmas coesas em relação ao desenvolvimento motor e cognitivo.
           </div>
