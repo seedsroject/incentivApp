@@ -70,19 +70,44 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
     return { masculino: m, feminino: f };
   }, [sorted]);
 
-  // Education level (mock distribution based on age)
-  const eduLevel = useMemo(() => {
-    const levels = { fundI: 0, fundII: 0, medio: 0 };
+  // Detailed grade distribution (mapped from age to Brazilian school year)
+  const gradeDistribution = useMemo(() => {
+    const grades: Record<string, number> = {
+      'ei': 0, '1ano': 0, '2ano': 0, '3ano': 0, '4ano': 0, '5ano': 0,
+      '6ano': 0, '7ano': 0, '8ano': 0, '9ano': 0,
+      'em1': 0, 'em2': 0, 'em3': 0,
+    };
     const now = new Date();
     sorted.forEach(s => {
-      if (!s.data_nascimento) { levels.fundI++; return; }
+      if (!s.data_nascimento) { grades['ei']++; return; }
       const age = Math.floor((now.getTime() - new Date(s.data_nascimento).getTime()) / 31557600000);
-      if (age <= 10) levels.fundI++;
-      else if (age <= 14) levels.fundII++;
-      else levels.medio++;
+      if (age <= 5) grades['ei']++;
+      else if (age <= 6) grades['1ano']++;
+      else if (age <= 7) grades['2ano']++;
+      else if (age <= 8) grades['3ano']++;
+      else if (age <= 9) grades['4ano']++;
+      else if (age <= 10) grades['5ano']++;
+      else if (age <= 11) grades['6ano']++;
+      else if (age <= 12) grades['7ano']++;
+      else if (age <= 13) grades['8ano']++;
+      else if (age <= 14) grades['9ano']++;
+      else if (age <= 15) grades['em1']++;
+      else if (age <= 16) grades['em2']++;
+      else grades['em3']++;
     });
-    return levels;
+    return grades;
   }, [sorted]);
+
+  // Aggregated education levels from grade distribution
+  const eduLevel = useMemo(() => {
+    const g = gradeDistribution;
+    return {
+      fundI: g['1ano'] + g['2ano'] + g['3ano'] + g['4ano'] + g['5ano'],
+      fundII: g['6ano'] + g['7ano'] + g['8ano'] + g['9ano'],
+      medio: g['em1'] + g['em2'] + g['em3'],
+      ei: g['ei'],
+    };
+  }, [gradeDistribution]);
 
   const handlePrint = useCallback(() => window.print(), []);
 
@@ -271,26 +296,120 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>6</div>
         </div>
 
-        {/* PAGE 7: 2.1 Distribution Table */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
-          <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 800, marginBottom: 16 }}>2. DISTRIBUIÇÃO DAS ALUNAS MATRICULADAS NA ESCOLINHA DE TRIATHLON</h2>
-          <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 16 }}>2.1 Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio</h3>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Tabela 1 — Nº de crianças/Adolescente por matrículas...</p>
-          <table className="freq-table" style={{ width: '100%', fontSize: 9 }}>
-            <thead>
-              <tr style={{ background: '#4472C4', color: '#fff' }}>
-                <th>Ensino</th>
-                <th>Ensino Fundamental I</th>
-                <th>Ensino Fundamental II</th>
-                <th>Ensino Médio</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td style={{ fontWeight: 700 }}>Total</td><td>{eduLevel.fundI}</td><td>{eduLevel.fundII}</td><td>{eduLevel.medio}</td></tr>
-            </tbody>
-          </table>
-          <p style={{ fontSize: 8, marginTop: 4 }}>Fonte: Escolinha de Triathlon ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>7</div>
+        {/* PAGE 7: 2.1 Distribution Table - Detailed by Grade */}
+        <div className="freq-page" style={{ padding: '50px 40px' }}>
+          <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>2 DISTRIBUIÇÃO DAS ALUNAS MATRICULADAS NA {pName}</h2>
+          <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, marginBottom: 10 }}>2.1 Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio das alunas das escolas públicas e particulares participantes do projeto "{projectName}"</h3>
+          <p style={{ fontSize: 9, textAlign: 'center', marginBottom: 8 }}>Tabela 1 — Nº de crianças/Adolescente por matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio</p>
+
+          {(() => {
+            const g = gradeDistribution;
+            const t = totalAlunos || 1;
+            const pct = (v: number) => t ? (v / t * 100).toFixed(2) + '%' : '0,00%';
+            const fundITotal = eduLevel.fundI;
+            const fundIITotal = eduLevel.fundII;
+            const medioTotal = eduLevel.medio;
+            const thStyle: React.CSSProperties = { padding: '4px 2px', border: '1px solid #999', textAlign: 'center', fontWeight: 700, fontSize: 7, background: '#4472C4', color: '#fff' };
+            const thSub: React.CSSProperties = { ...thStyle, background: '#D6E4F0', color: '#000', writingMode: 'vertical-rl' as const, transform: 'rotate(180deg)', height: 60, fontSize: 7, whiteSpace: 'nowrap' as const };
+            const tdS: React.CSSProperties = { padding: '3px 2px', border: '1px solid #ccc', textAlign: 'center', fontSize: 7 };
+            const tdB: React.CSSProperties = { ...tdS, fontWeight: 700 };
+            return (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 7 }}>
+                <thead>
+                  <tr>
+                    <th colSpan={16} style={thStyle}>Ensino</th>
+                  </tr>
+                  <tr>
+                    <th rowSpan={2} style={thStyle}></th>
+                    <th colSpan={9} style={thStyle}>Ensino fundamental</th>
+                    <th colSpan={3} style={thStyle}>Ensino Médio</th>
+                    <th colSpan={2} style={thStyle}>Escola</th>
+                  </tr>
+                  <tr>
+                    <th colSpan={4} style={{...thStyle, background: '#B4C6E7'}}>Ensino fundamental I</th>
+                    <th colSpan={5} style={{...thStyle, background: '#B4C6E7'}}>Ensino fundamental II</th>
+                    <th colSpan={3} style={{...thStyle, background: '#B4C6E7'}}></th>
+                    <th colSpan={2} style={{...thStyle, background: '#B4C6E7'}}></th>
+                  </tr>
+                  <tr>
+                    <th style={thSub}>Educação Infantil/Classe Especial</th>
+                    <th style={thSub}>1° ano</th>
+                    <th style={thSub}>2° ano</th>
+                    <th style={thSub}>3° ano</th>
+                    <th style={thSub}>4° ano</th>
+                    <th style={thSub}>5° ano</th>
+                    <th style={thSub}>6° ano</th>
+                    <th style={thSub}>7° ano</th>
+                    <th style={thSub}>8° ano</th>
+                    <th style={thSub}>9° ano</th>
+                    <th style={thSub}>1° ano</th>
+                    <th style={thSub}>2° ano</th>
+                    <th style={thSub}>3° ano</th>
+                    <th style={thSub}>Pública</th>
+                    <th style={thSub}>Particular</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={tdS}>{g['ei']}</td>
+                    <td style={tdS}>{g['1ano']}</td>
+                    <td style={tdS}>{g['2ano']}</td>
+                    <td style={tdS}>{g['3ano']}</td>
+                    <td style={tdS}>{g['4ano']}</td>
+                    <td style={tdS}>{g['5ano']}</td>
+                    <td style={tdS}>{g['6ano']}</td>
+                    <td style={tdS}>{g['7ano']}</td>
+                    <td style={tdS}>{g['8ano']}</td>
+                    <td style={tdS}>{g['9ano']}</td>
+                    <td style={tdS}>{g['em1']}</td>
+                    <td style={tdS}>{g['em2']}</td>
+                    <td style={tdS}>{g['em3']}</td>
+                    <td style={tdS}>{publica}</td>
+                    <td style={tdS}>{particular}</td>
+                  </tr>
+                  <tr>
+                    <td style={tdS}>{pct(g['ei'])}</td>
+                    <td style={tdS}>{pct(g['1ano'])}</td>
+                    <td style={tdS}>{pct(g['2ano'])}</td>
+                    <td style={tdS}>{pct(g['3ano'])}</td>
+                    <td style={tdS}>{pct(g['4ano'])}</td>
+                    <td style={tdS}>{pct(g['5ano'])}</td>
+                    <td style={tdS}>{pct(g['6ano'])}</td>
+                    <td style={tdS}>{pct(g['7ano'])}</td>
+                    <td style={tdS}>{pct(g['8ano'])}</td>
+                    <td style={tdS}>{pct(g['9ano'])}</td>
+                    <td style={tdS}>{pct(g['em1'])}</td>
+                    <td style={tdS}>{pct(g['em2'])}</td>
+                    <td style={tdS}>{pct(g['em3'])}</td>
+                    <td style={tdS}>{pctPublica}%</td>
+                    <td style={tdS}>{pctParticular}%</td>
+                  </tr>
+                  <tr style={{ background: '#E9EDF4' }}>
+                    <td style={tdB}>{pct(g['ei'])}</td>
+                    <td colSpan={4} style={tdB}>{totalAlunos ? (fundITotal / t * 100).toFixed(2) : '0,00'}%</td>
+                    <td colSpan={5} style={tdB}>{totalAlunos ? (fundIITotal / t * 100).toFixed(2) : '0,00'}%</td>
+                    <td colSpan={3} style={tdB}>{totalAlunos ? (medioTotal / t * 100).toFixed(2) : '0,00'}%</td>
+                    <td colSpan={2} style={tdB}>100,00%</td>
+                  </tr>
+                </tbody>
+              </table>
+            );
+          })()}
+          <p style={{ fontSize: 7, marginTop: 4 }}>Fonte: {projectName} ({year}).</p>
+
+          {/* Dynamic explanatory text */}
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
+            <p>O projeto {projectName}, executado em {city} ({uf}), teve início em {new Date(periodStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} e seguiu até {new Date(periodEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
+            <p style={{ marginTop: 6 }}>A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II{(() => { const g = gradeDistribution; const maxGrade = Object.entries({
+              '5° ano': g['5ano'], '6° ano': g['6ano'], '7° ano': g['7ano'], '8° ano': g['8ano'], '9° ano': g['9ano']
+            }).sort((a,b) => b[1]-a[1])[0]; return maxGrade && maxGrade[1] > 0 ? `, especialmente no ${maxGrade[0]}, que concentrou ${totalAlunos ? Math.round(maxGrade[1]/totalAlunos*100) : 0}% dos inscritos` : ''; })()}. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.</p>
+            <p style={{ marginTop: 6 }}>Nos anos iniciais do Ensino Fundamental I, a adesão foi {eduLevel.fundI > eduLevel.fundII ? 'expressiva' : 'mais moderada'}, somando {totalAlunos ? Math.round(eduLevel.fundI/totalAlunos*100) : 0}% dos participantes{(() => { const g = gradeDistribution; const maxFI = Object.entries({
+              '1° ano': g['1ano'], '2° ano': g['2ano'], '3° ano': g['3ano'], '4° ano': g['4ano']
+            }).sort((a,b) => b[1]-a[1])[0]; return maxFI && maxFI[1] > 0 ? `. O ${maxFI[0]}, com ${totalAlunos ? Math.round(maxFI[1]/totalAlunos*100) : 0}%, foi o mais representativo desse grupo` : ''; })()}.</p>
+            <p style={{ marginTop: 6 }}>No Ensino Fundamental II, {totalAlunos ? Math.round(eduLevel.fundII/totalAlunos*100) : 0}% dos alunos estão matriculados, revelando uma participação consistente entre pré-adolescentes e adolescentes, faixa etária que costuma buscar desafios esportivos e atividades coletivas.</p>
+            <p style={{ marginTop: 6 }}>Já no Ensino Médio, a presença foi {eduLevel.medio > 0 ? `de ${totalAlunos ? Math.round(eduLevel.medio/totalAlunos*100) : 0}% dos inscritos` : 'inexistente'}. {eduLevel.medio <= Math.ceil(totalAlunos*0.1) ? 'Essa baixa adesão pode estar relacionada à rotina mais intensa de estudos e à menor disponibilidade de tempo para atividades extracurriculares.' : 'Esse percentual demonstra engajamento do público mais velho no projeto.'}</p>
+            <p style={{ marginTop: 6 }}>O projeto demonstrou {eduLevel.fundII >= eduLevel.fundI ? 'forte aceitação entre estudantes do Ensino Fundamental II' : 'forte aceitação entre estudantes do Ensino Fundamental I'} e {eduLevel.medio <= Math.ceil(totalAlunos*0.1) ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio'}. Esses dados podem orientar futuras edições, permitindo ajustar estratégias de divulgação, horários e formatos das atividades para ampliar o alcance entre faixas etárias menos representadas.</p>
+          </div>
         </div>
 
         {/* PAGE 8: Analysis + Pie Chart - BLUE/ORANGE SCHEME */}
