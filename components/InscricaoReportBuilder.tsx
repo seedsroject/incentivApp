@@ -872,81 +872,106 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             
             <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Ficha de Inscrição</h4>
             {hasInscricao ? (
-              <div style={{ border: '1px solid #ccc', borderRadius: 4, padding: '16px 20px', fontSize: 9, lineHeight: 1.7, background: '#fff' }}>
-                {/* Header do projeto */}
-                <div style={{ textAlign: 'center', borderBottom: '1px solid #ddd', paddingBottom: 10, marginBottom: 12 }}>
-                  <p style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1 }}>FICHA DE INSCRIÇÃO</p>
-                  <p style={{ fontSize: 10, fontWeight: 800, color: '#4472C4', marginTop: 4 }}>{projectName}</p>
+              <div style={{ border: '1px solid #000', background: '#fff', padding: '30px 40px', fontSize: 10, lineHeight: 1.8, fontFamily: 'serif' }}>
+                {/* Banner do projeto */}
+                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                  <img src={headerImage} alt="Header" style={{ width: '100%', maxHeight: 70, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 </div>
 
-                {/* Dados do Projeto */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
-                  <div><b>N.º SLI:</b> {s.n_sli || nSli}</div>
-                  <div><b>Projeto:</b> {s.nome_projeto || projectName}</div>
-                  <div style={{ gridColumn: '1 / -1' }}><b>Proponente:</b> {s.proponente || sel?.nome || ''}</div>
+                {/* Títulos centralizados */}
+                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>FICHA DE INSCRIÇÃO</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>PROJETO {pName}</p>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
-
-                {/* Dados do Aluno */}
-                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>DADOS DO ALUNO</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
-                  <div style={{ gridColumn: '1 / -1' }}><b>Nome:</b> {s.nome}</div>
-                  <div><b>Data de Nascimento:</b> {s.data_nascimento ? new Date(s.data_nascimento).toLocaleDateString('pt-BR') : ''}</div>
-                  <div><b>Idade:</b> {studentAge} anos</div>
-                  <div><b>RG/CPF:</b> {s.rg_cpf || ''}</div>
-                  <div><b>Escola:</b> {s.escola_nome}</div>
-                  <div><b>Tipo:</b> {s.escola_tipo === 'PUBLICA' ? 'Pública' : 'Particular'}</div>
-                  <div style={{ gridColumn: '1 / -1' }}><b>Endereço:</b> {s.endereco || ''}</div>
+                {/* Campo: Nome do aluno */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Nome do aluno(a): </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.nome} </span>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
-
-                {/* Dados do Responsável */}
-                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>DADOS DO RESPONSÁVEL</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
-                  <div style={{ gridColumn: '1 / -1' }}><b>Responsável Legal:</b> {s.nome_responsavel || ''}</div>
-                  <div><b>Telefone:</b> {s.telefone || ''}</div>
-                  <div><b>Email:</b> {s.email_contato || ''}</div>
+                {/* Campo: Data Nasc + Idade */}
+                <div style={{ marginBottom: 6, display: 'flex', gap: 20 }}>
+                  <span>Data de Nascimento: <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.data_nascimento || ''} </span></span>
+                  <span> / Idade no dia da inscrição: <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {studentAge} </span></span>
                 </div>
 
-                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
+                {/* Campo: RG/CPF */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>RG/CPF do aluno(a): </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.rg_cpf || ''} </span>
+                </div>
 
-                {/* Termo de Aceite */}
-                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>TERMO DE AUTORIZAÇÃO E RESPONSABILIDADE</p>
-                <div style={{ fontSize: 7.5, lineHeight: 1.5, textAlign: 'justify' as const, color: '#444', background: '#fafafa', border: '1px solid #eee', borderRadius: 3, padding: '8px 10px', marginBottom: 10 }}>
-                  <p style={{ marginBottom: 4 }}>Declaro que o aluno acima identificado está frequentando a escola regularmente e está ciente que como critério de permanência no projeto será exigido do aluno, o bom rendimento escolar em regular instituição de ensino da região, através da apresentação frequente do boletim escolar, declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.</p>
-                  <p style={{ marginBottom: 4 }}>Os uniformes que serão entregues aos alunos, são de responsabilidade do aluno, e em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso, por isso a boa conservação e cuidado são fundamentais.</p>
-                  <p style={{ marginBottom: 4 }}>O(a) Responsável legal, infra assinados(s), com fundamento no art. 5º, X e XXVIII da Constituição Federal de 1988, e no art. 18, da Lei 10.406, de 10 de janeiro de 2002, AUTORIZA o uso da imagem e/ou nome do aluno inscrito do projeto, para fins de divulgação das atividades e propaganda, podendo, para tanto, reproduzi-la e/ou divulgá-la pela internet, mídia eletrônica, por jornais, revistas, folders; bem como por todo e qualquer material e veículo de comunicação, público e/ou privado, por parceiros e patrocinadores do projeto, com finalidade informativa, de utilidade pública e de marketing, por tempo indeterminado. O(a) Cedente declara ainda que não há nada a ser reclamado, a título de direitos conexos; referentes ao uso de sua imagem e/ou nome. A presente autorização é concedida a título gratuito.</p>
+                {/* Campo: Responsável */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Nome do(a) Responsável legal: </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.nome_responsavel || ''} </span>
+                </div>
+
+                {/* Campo: Telefone */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Telefone de contato: </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.telefone || ''} </span>
+                </div>
+
+                {/* Campo: Endereço */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Endereço Completo (Rua, nº, cep, cidade/estado): </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.endereco || ''} </span>
+                </div>
+
+                {/* Campo: Escola */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Escola em que estuda é: </span>
+                  <span style={{ fontWeight: 700 }}>
+                    Pública ({s.escola_tipo === 'PUBLICA' ? 'X' : ' '}) {' '} Particular ({s.escola_tipo === 'PARTICULAR' ? 'X' : ' '})
+                  </span>
+                </div>
+
+                {/* Campo: Email */}
+                <div style={{ marginBottom: 6 }}>
+                  <span>Email: </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.email_contato || ''} </span>
+                </div>
+
+                {/* Linha: SLI + Proponente */}
+                <div style={{ marginBottom: 6, display: 'flex', gap: 30 }}>
+                  <span>N° SLI: <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.n_sli || nSli} </span></span>
+                  <span>Proponente: <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.proponente || sel?.nome || ''} </span></span>
+                </div>
+
+                {/* Campo: Responsável da Organização */}
+                <div style={{ marginBottom: 16 }}>
+                  <span>Responsável da Organização: </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}> {s.nome_responsavel_organizacao || ''} </span>
+                </div>
+
+                {/* Termos legais */}
+                <div style={{ fontSize: 9, lineHeight: 1.6, textAlign: 'justify' as const, color: '#000', marginBottom: 16 }}>
+                  <p style={{ marginBottom: 6 }}>Declaro que o aluno acima identificado está frequentando a escola regularmente e está ciente que como critério de permanência no projeto será exigido do aluno, o bom rendimento escolar em regular instituição de ensino da região, através da apresentação frequente do boletim escolar, declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.</p>
+                  <p style={{ marginBottom: 6 }}>Os uniformes que serão entregues aos alunos, são de responsabilidade do aluno, e em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso, por isso a boa conservação e cuidado são fundamentais.</p>
+                  <p style={{ marginBottom: 6 }}>O(a) Responsável legal, infra assinados(s), com fundamento no art. 5º, X e XXVIII da Constituição Federal/ 1988, e no art. 18, da Lei 10.406, de 10/01/2002, AUTORIZA o uso da imagem e/ou nome do aluno inscrito do projeto, para fins de divulgação das atividades e propaganda, podendo, para tanto, reproduzi-la e/ou divulgá-la pela internet, mídia eletrônica, por jornais, revistas, folders; bem como por todo e qualquer material e veículo de comunicação, público e/ou privado, por parceiros e patrocinadores do projeto, com finalidade informativa, de utilidade pública e de marketing, por tempo indeterminado. O(a) Cedente declara ainda que não há nada a ser reclamado, a título de direitos conexos; referentes ao uso de sua imagem e/ou nome. A presente autorização é concedida a título gratuito.</p>
                   <p>1. Anexar cópia do último boletim escolar do aluno e declaração de matrícula em escola regular.</p>
                 </div>
 
-                {/* Assinatura */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 }}>
-                  <div>
-                    <p style={{ fontSize: 8, color: '#666' }}>Data da Assinatura</p>
-                    <p style={{ fontSize: 10, fontWeight: 700 }}>{s.data_assinatura || ''}</p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: 8, color: '#666', marginBottom: 4 }}>Assinatura do Responsável Legal</p>
-                    {s.assinatura ? (
-                      <img src={s.assinatura} alt="Assinatura" style={{ height: 40, maxWidth: 180, objectFit: 'contain' }} />
-                    ) : (
-                      <div style={{ width: 180, height: 1, background: '#333', marginTop: 30 }}></div>
-                    )}
-                  </div>
+                {/* Data */}
+                <div style={{ marginBottom: 30 }}>
+                  <span>Data: </span>
+                  <span style={{ fontWeight: 700, borderBottom: '1px solid #000', paddingBottom: 1 }}>{s.data_assinatura || ''}</span>
                 </div>
 
-                {s.fichaUrl && (
-                  <div style={{ marginTop: 12, borderTop: '1px dashed #ddd', paddingTop: 8 }}>
-                    <p style={{ fontSize: 8, color: '#666', marginBottom: 4 }}>Documento Original Digitalizado:</p>
-                    {s.fichaUrl.startsWith('data:application/pdf') ? (
-                      <p style={{ fontSize: 8, color: '#4472C4' }}>PDF anexado ao sistema</p>
-                    ) : (
-                      <img src={s.fichaUrl} alt={`Ficha digitalizada - ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', border: '1px solid #eee', borderRadius: 2 }} />
-                    )}
-                  </div>
-                )}
+                {/* Linha de assinatura */}
+                <div style={{ textAlign: 'center', marginTop: 20 }}>
+                  {s.assinatura ? (
+                    <div>
+                      <img src={s.assinatura} alt="Assinatura" style={{ height: 50, maxWidth: 250, objectFit: 'contain', display: 'block', margin: '0 auto 4px' }} />
+                      <div style={{ width: 280, height: 1, background: '#000', margin: '0 auto' }}></div>
+                    </div>
+                  ) : (
+                    <div style={{ width: 280, height: 1, background: '#000', margin: '40px auto 0' }}></div>
+                  )}
+                  <p style={{ fontSize: 10, marginTop: 6 }}>Assinatura do (a) responsável legal</p>
+                </div>
               </div>
             ) : (
               <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
