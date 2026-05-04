@@ -503,8 +503,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                     ))}
                     {paths.map((p, i) => (
                       <g key={`l${i}`}>
-                        <text x={p.lx} y={p.ly - 3} textAnchor="middle" fontSize={6.5} fill="#fff" fontWeight={700} stroke="#333" strokeWidth={0.2}>{p.label}</text>
-                        <text x={p.lx} y={p.ly + 8} textAnchor="middle" fontSize={8} fill="#fff" fontWeight={800} stroke="#333" strokeWidth={0.3}>{p.pct}%</text>
+                        <text x={p.lx} y={p.ly - 3} textAnchor="middle" fontSize={6.5} fill="#000" fontWeight={700}>{p.label}</text>
+                        <text x={p.lx} y={p.ly + 8} textAnchor="middle" fontSize={8} fill="#000" fontWeight={800}>{p.pct}%</text>
                       </g>
                     ))}
                   </svg>
@@ -572,18 +572,54 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> — Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Rede de Ensino em {`${city}/${uf}`}</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
-              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Pública<br/>{pctPublica}%</div>
-                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Particular<br/>{pctParticular}%</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
-              <span><span style={{ color: '#4472C4' }}>■</span> Escola Pública</span>
-              <span><span style={{ color: '#ED7D31' }}>■</span> Escola Particular</span>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
+              {`Distribuição por Rede de Ensino em ${city}/${uf}`}
+            </p>
+            {(() => {
+              const t = totalAlunos || 1;
+              const slices = [
+                { label: 'Escola Pública', value: publica, color: '#4472C4', pct: Number(pctPublica) },
+                { label: 'Escola Particular', value: particular, color: '#ED7D31', pct: Number(pctParticular) },
+              ].filter(s => s.value > 0);
+              const CX = 160; const CY = 110; const R = 85;
+              let cumAngle = -90;
+              const paths = slices.map((s) => {
+                const angle = (s.pct * 360) / 100;
+                const startA = cumAngle;
+                const endA = cumAngle + angle;
+                const midA = startA + angle / 2;
+                cumAngle = endA;
+                const toRad = (a: number) => (a * Math.PI) / 180;
+                const largeArc = angle > 180 ? 1 : 0;
+                const x1 = CX + R * Math.cos(toRad(startA));
+                const y1 = CY + R * Math.sin(toRad(startA));
+                const x2 = CX + R * Math.cos(toRad(endA));
+                const y2 = CY + R * Math.sin(toRad(endA));
+                const labelR = R * 0.55;
+                const lx = CX + labelR * Math.cos(toRad(midA));
+                const ly = CY + labelR * Math.sin(toRad(midA));
+                const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                return { ...s, d, lx, ly };
+              });
+              return (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <svg width={320} height={240} viewBox="0 0 320 240">
+                    {paths.map((p, i) => (<path key={`s${i}`} d={p.d} fill={p.color} stroke="#fff" strokeWidth={1.5} />))}
+                    {paths.map((p, i) => (
+                      <g key={`l${i}`}>
+                        <text x={p.lx} y={p.ly - 3} textAnchor="middle" fontSize={8} fill="#000" fontWeight={700}>{p.label}</text>
+                        <text x={p.lx} y={p.ly + 10} textAnchor="middle" fontSize={10} fill="#000" fontWeight={800}>{p.pct}%</text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+              );
+            })()}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 10 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Escola Pública</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Escola Particular</span>
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
@@ -600,23 +636,61 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 11: 2.3 Gênero + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> — Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
-              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${((genderStats.masculino * 100) / (totalAlunos||1))}%, #ED7D31 ${((genderStats.masculino * 100) / (totalAlunos||1))}% 100%)`, position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round(((genderStats.masculino * 100) / (totalAlunos||1)))}%</div>
-                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round(((genderStats.feminino * 100) / (totalAlunos||1)))}%</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
-              <span><span style={{ color: '#4472C4' }}>■</span> Masculino</span>
-              <span><span style={{ color: '#ED7D31' }}>■</span> Feminino</span>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
+              {`Distribuição por Gênero dos alunos do projeto "${projectName}" em ${city}/${uf}`}
+            </p>
+            {(() => {
+              const t = totalAlunos || 1;
+              const pctMasc = Math.round((genderStats.masculino * 100) / t);
+              const pctFem = Math.round((genderStats.feminino * 100) / t);
+              const slices = [
+                { label: 'Masculino', value: genderStats.masculino, color: '#4472C4', pct: pctMasc },
+                { label: 'Feminino', value: genderStats.feminino, color: '#ED7D31', pct: pctFem },
+              ].filter(s => s.value > 0);
+              const CX = 160; const CY = 110; const R = 85;
+              let cumAngle = -90;
+              const paths = slices.map((s) => {
+                const angle = (s.pct * 360) / 100;
+                const startA = cumAngle;
+                const endA = cumAngle + angle;
+                const midA = startA + angle / 2;
+                cumAngle = endA;
+                const toRad = (a: number) => (a * Math.PI) / 180;
+                const largeArc = angle > 180 ? 1 : 0;
+                const x1 = CX + R * Math.cos(toRad(startA));
+                const y1 = CY + R * Math.sin(toRad(startA));
+                const x2 = CX + R * Math.cos(toRad(endA));
+                const y2 = CY + R * Math.sin(toRad(endA));
+                const labelR = R * 0.55;
+                const lx = CX + labelR * Math.cos(toRad(midA));
+                const ly = CY + labelR * Math.sin(toRad(midA));
+                const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                return { ...s, d, lx, ly };
+              });
+              return (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <svg width={320} height={240} viewBox="0 0 320 240">
+                    {paths.map((p, i) => (<path key={`s${i}`} d={p.d} fill={p.color} stroke="#fff" strokeWidth={1.5} />))}
+                    {paths.map((p, i) => (
+                      <g key={`l${i}`}>
+                        <text x={p.lx} y={p.ly - 3} textAnchor="middle" fontSize={8} fill="#000" fontWeight={700}>{p.label}</text>
+                        <text x={p.lx} y={p.ly + 10} textAnchor="middle" fontSize={10} fill="#000" fontWeight={800}>{p.pct}%</text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+              );
+            })()}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 10 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Masculino</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Feminino</span>
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
-            A análise da distribuição por gênero revela um equilíbrio na participação, com {Math.round(((genderStats.masculino * 100) / (totalAlunos||1)))}% de meninos e {Math.round(((genderStats.feminino * 100) / (totalAlunos||1)))}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.
+            {`A análise da distribuição por gênero revela um equilíbrio na participação, com ${Math.round((genderStats.masculino * 100) / (totalAlunos || 1))}% de meninos e ${Math.round((genderStats.feminino * 100) / (totalAlunos || 1))}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.`}
           </div>
         </div>
 
