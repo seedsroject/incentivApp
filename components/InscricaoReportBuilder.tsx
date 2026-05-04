@@ -441,90 +441,95 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           })()}
         </div>
 
-        {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
+                {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
         <div className="freq-page" style={{ padding: '50px 50px' }}>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> — Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
-          {/* White background chart container with black border */}
           <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12 }}>
             <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12, lineHeight: 1.4 }}>
-              Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "{projectName}" em {city} ({uf})
+              {`Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "${projectName}" em ${city} (${uf})`}
             </p>
 
             {(() => {
               const g = gradeDistribution;
               const t = totalAlunos || 1;
-              // Colors: Blue, Orange, Gray, Green cycle
-              const palette = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#C9C9C9', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
+              const COLORS = ['#4472C4', '#ED7D31', '#C9C9C9', '#70AD47'];
               const allSlices = [
-                { key: '1ano', label: '1° ano E.F.I', value: g['1ano'] },
-                { key: '2ano', label: '2° ano E.F.I', value: g['2ano'] },
-                { key: '3ano', label: '3° ano E.F.I', value: g['3ano'] },
-                { key: '4ano', label: '4° ano E.F.I', value: g['4ano'] },
-                { key: '5ano', label: '5° ano E.F.I', value: g['5ano'] },
-                { key: '6ano', label: '6° ano E.F.II', value: g['6ano'] },
-                { key: '7ano', label: '7° ano E.F.II', value: g['7ano'] },
-                { key: '8ano', label: '8° ano E.F.II', value: g['8ano'] },
-                { key: '9ano', label: '9° ano E.F.II', value: g['9ano'] },
-                { key: 'em1', label: '1° ano E.M.', value: g['em1'] },
-                { key: 'em2', label: '2° ano E.M.', value: g['em2'] },
-                { key: 'em3', label: '3° ano E.M.', value: g['em3'] },
+                { key: '1ano', label: '1\u00b0 ano E.F.I' },
+                { key: '2ano', label: '2\u00b0 ano E.F.I' },
+                { key: '3ano', label: '3\u00b0 ano E.F.I' },
+                { key: '4ano', label: '4\u00b0 ano E.F.I' },
+                { key: '5ano', label: '5\u00b0 ano E.F.I' },
+                { key: '6ano', label: '6\u00b0 ano E.F.II' },
+                { key: '7ano', label: '7\u00b0 ano E.F.II' },
+                { key: '8ano', label: '8\u00b0 ano E.F.II' },
+                { key: '9ano', label: '9\u00b0 ano E.F.II' },
+                { key: 'em1', label: '1\u00b0 ano E.M.' },
+                { key: 'em2', label: '2\u00b0 ano E.M.' },
+                { key: 'em3', label: '3\u00b0 ano E.M.' },
               ];
-              const slices = allSlices.filter(s => s.value > 0).map((s, i) => ({ ...s, color: palette[allSlices.indexOf(s) % palette.length] }));
+              const slices = allSlices
+                .map((s, idx) => ({ ...s, value: g[s.key], color: COLORS[idx % COLORS.length], pct: Math.round((g[s.key] * 100) / t) }))
+                .filter(s => s.value > 0);
 
-              let cumPct = 0;
-              const gradientParts = [] as string[];
-              const labelPositions = [] as { label: string; angle: number; pct: number; color: string }[];
+              const CX = 160; const CY = 125; const R = 95;
+              let cumAngle = -90;
+              const paths = slices.map((s) => {
+                const pctE = (s.value * 100) / t;
+                const angle = (pctE * 360) / 100;
+                const startA = cumAngle;
+                const endA = cumAngle + angle;
+                const midA = startA + angle / 2;
+                cumAngle = endA;
 
-              slices.forEach(s => {
-                const pct = (s.value * 100) / t;
-                gradientParts.push(`${s.color} ${cumPct}% ${cumPct + pct}%`);
-                labelPositions.push({ label: s.label, angle: cumPct + pct / 2, pct: Math.round(pct), color: s.color });
-                cumPct += pct;
+                const toRad = (a: number) => (a * Math.PI) / 180;
+                const largeArc = angle > 180 ? 1 : 0;
+                const x1 = CX + R * Math.cos(toRad(startA));
+                const y1 = CY + R * Math.sin(toRad(startA));
+                const x2 = CX + R * Math.cos(toRad(endA));
+                const y2 = CY + R * Math.sin(toRad(endA));
+                const labelR = R * 0.62;
+                const lx = CX + labelR * Math.cos(toRad(midA));
+                const ly = CY + labelR * Math.sin(toRad(midA));
+                const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                return { ...s, d, lx, ly };
               });
 
-              const R = 85;
-              const CX = 150;
-              const CY = 110;
-              const LR = 110;
-
               return (
-                <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                  <svg width={300} height={240} viewBox="0 0 300 240">
-                    <foreignObject x={CX - R} y={CY - R} width={R * 2} height={R * 2}>
-                      <div style={{ width: R * 2, height: R * 2, borderRadius: '50%', background: `conic-gradient(${gradientParts.join(', ')})` }}></div>
-                    </foreignObject>
-                    {labelPositions.map((lp, i) => {
-                      const rad = (lp.angle - 90) * Math.PI / 180;
-                      const lx = CX + LR * Math.cos(rad);
-                      const ly = CY + LR * Math.sin(rad);
-                      const anchor = lx > CX ? 'start' : 'end';
-                      return (
-                        <text key={i} x={lx} y={ly} textAnchor={anchor} fontSize={7} fill="#333" fontWeight={600}>
-                          {lp.label} {lp.pct}%
-                        </text>
-                      );
-                    })}
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <svg width={320} height={270} viewBox="0 0 320 270">
+                    {paths.map((p, i) => (
+                      <path key={`s${i}`} d={p.d} fill={p.color} stroke="#fff" strokeWidth={1.5} />
+                    ))}
+                    {paths.map((p, i) => (
+                      <g key={`l${i}`}>
+                        <text x={p.lx} y={p.ly - 3} textAnchor="middle" fontSize={6.5} fill="#fff" fontWeight={700} stroke="#333" strokeWidth={0.2}>{p.label}</text>
+                        <text x={p.lx} y={p.ly + 8} textAnchor="middle" fontSize={8} fill="#fff" fontWeight={800} stroke="#333" strokeWidth={0.3}>{p.pct}%</text>
+                      </g>
+                    ))}
                   </svg>
                 </div>
               );
             })()}
 
-            {/* Legend grid */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 12px', fontSize: 8, marginTop: 6, color: '#333' }}>
+            {/* Legend */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 18px', marginTop: 10 }}>
               {(() => {
                 const g = gradeDistribution;
-                const palette = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#C9C9C9', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
+                const COLORS = ['#4472C4', '#ED7D31', '#C9C9C9', '#70AD47'];
                 const items = [
-                  { label: '1° ano E.F.I', key: '1ano' }, { label: '2° ano E.F.I', key: '2ano' },
-                  { label: '3° ano E.F.I', key: '3ano' }, { label: '4° ano E.F.I', key: '4ano' },
-                  { label: '5° ano E.F.I', key: '5ano' }, { label: '6° ano E.F.II', key: '6ano' },
-                  { label: '7° ano E.F.II', key: '7ano' }, { label: '8° ano E.F.II', key: '8ano' },
-                  { label: '9° ano E.F.II', key: '9ano' }, { label: '1° ano E.M.', key: 'em1' },
-                  { label: '2° ano E.M.', key: 'em2' }, { label: '3° ano E.M.', key: 'em3' },
+                  { label: '1\u00b0 ano E.F.I', key: '1ano', idx: 0 }, { label: '2\u00b0 ano E.F.I', key: '2ano', idx: 1 },
+                  { label: '3\u00b0 ano E.F.I', key: '3ano', idx: 2 }, { label: '4\u00b0 ano E.F.I', key: '4ano', idx: 3 },
+                  { label: '5\u00b0 ano E.F.I', key: '5ano', idx: 4 }, { label: '6\u00b0 ano E.F.II', key: '6ano', idx: 5 },
+                  { label: '7\u00b0 ano E.F.II', key: '7ano', idx: 6 }, { label: '8\u00b0 ano E.F.II', key: '8ano', idx: 7 },
+                  { label: '9\u00b0 ano E.F.II', key: '9ano', idx: 8 }, { label: '1\u00b0 ano E.M.', key: 'em1', idx: 9 },
+                  { label: '2\u00b0 ano E.M.', key: 'em2', idx: 10 }, { label: '3\u00b0 ano E.M.', key: 'em3', idx: 11 },
                 ];
                 return items.filter(it => g[it.key] > 0).map((it, i) => (
-                  <span key={i}><span style={{ color: palette[items.indexOf(it)] }}>■</span> {it.label}</span>
+                  <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                    <span style={{ display: 'inline-block', width: 10, height: 10, background: COLORS[it.idx % COLORS.length], border: '1px solid #666' }}></span>
+                    {it.label}
+                  </span>
                 ));
               })()}
             </div>
