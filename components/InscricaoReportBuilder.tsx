@@ -567,12 +567,31 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             <p>Observa-se que a maioria dos alunos matriculados ({Math.round((eduLevel.fundII * 100) / (totalAlunos||1))}%) cursam o Ensino Fundamental II, seguido de {Math.round((eduLevel.fundI * 100) / (totalAlunos||1))}% no Ensino Fundamental I.</p>
             <p style={{ marginTop: 8 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
           </div>
+
+          <p style={{ fontSize: 10, marginBottom: 4, marginTop: 24 }}><b>Figura 3</b> {"\u2014"} Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritas no projeto "{projectName}" em {city} ({uf})</p>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 60, height: 170, padding: '16px 20px 0', position: 'relative' }}>
+              {[
+                { label: 'Fundamental I', value: eduLevel.fundI, color: '#4472C4', pct: ((eduLevel.fundI * 100) / (totalAlunos||1)).toFixed(2).replace('.', ',') },
+                { label: 'Fundamental II', value: eduLevel.fundII, color: '#ED7D31', pct: ((eduLevel.fundII * 100) / (totalAlunos||1)).toFixed(2).replace('.', ',') },
+                { label: 'Ensino Médio', value: eduLevel.medio, color: '#A5A5A5', pct: ((eduLevel.medio * 100) / (totalAlunos||1)).toFixed(2).replace('.', ',') },
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 80 }}>
+                  <div style={{ background: item.color, color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 6px', border: '1px solid #fff', marginBottom: 2 }}>{item.value}</div>
+                  <div style={{ width: 45, background: item.color, height: `${Math.max(((item.value * 120) / (totalAlunos||1)), 10)}px`, border: '1px solid #333', borderBottom: 'none' }}></div>
+                  <div style={{ background: '#ED7D31', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', border: '1px solid #fff', zIndex: 2, transform: 'translateY(2px)' }}>{item.pct}%</div>
+                  <span style={{ fontSize: 9, marginTop: 8, textAlign: 'center', color: '#000' }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
+          </div>
         </div>
 
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
             <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Rede de Ensino em ${city}/${uf}`}
@@ -636,7 +655,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 11: 2.3 Gênero + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
             <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Gênero dos alunos do projeto "${projectName}" em ${city}/${uf}`}
@@ -697,7 +716,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 12: 2.4 Idade + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 6</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
             {Object.entries(ages).map(([range, count], idx) => {
