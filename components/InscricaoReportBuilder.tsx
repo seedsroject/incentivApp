@@ -855,20 +855,93 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* Individual student ficha + declaração pages */}
-        {sorted.map((s, i) => (
-          <div key={`ficha-${s.id || i}`} className="freq-page" style={{ padding: '60px 60px' }}>
+        {sorted.map((s, i) => {
+          const hasInscricao = !!(s.assinatura || s.data_assinatura || s.fichaUrl);
+          const studentAge = (() => {
+            if (!s.data_nascimento) return '';
+            const birth = new Date(s.data_nascimento);
+            const today = new Date();
+            let a = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) a--;
+            return a.toString();
+          })();
+          return (
+          <div key={`ficha-${s.id || i}`} className="freq-page" style={{ padding: '50px 50px' }}>
             <h3 style={{ fontSize: 13, fontWeight: 800, color: '#4472C4', marginBottom: 16, borderBottom: '2px solid #4472C4', paddingBottom: 8 }}>{s.nome}</h3>
             
             <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Ficha de Inscrição</h4>
-            {s.fichaUrl ? (
-              s.fichaUrl.startsWith('data:application/pdf') ? (
-                <iframe src={s.fichaUrl} style={{ width: '100%', height: 400, border: '1px solid #ddd', borderRadius: 4 }} title={`Ficha - ${s.nome}`}></iframe>
-              ) : (
-                <img src={s.fichaUrl} alt={`Ficha de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
-              )
+            {hasInscricao ? (
+              <div style={{ border: '1px solid #ccc', borderRadius: 4, padding: '16px 20px', fontSize: 9, lineHeight: 1.7, background: '#fff' }}>
+                {/* Header do projeto */}
+                <div style={{ textAlign: 'center', borderBottom: '1px solid #ddd', paddingBottom: 10, marginBottom: 12 }}>
+                  <p style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: 1 }}>FICHA DE INSCRIÇÃO</p>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: '#4472C4', marginTop: 4 }}>{projectName}</p>
+                </div>
+
+                {/* Dados do Projeto */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
+                  <div><b>N.º SLI:</b> {s.n_sli || nSli}</div>
+                  <div><b>Projeto:</b> {s.nome_projeto || projectName}</div>
+                  <div style={{ gridColumn: '1 / -1' }}><b>Proponente:</b> {s.proponente || sel?.nome || ''}</div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
+
+                {/* Dados do Aluno */}
+                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>DADOS DO ALUNO</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
+                  <div style={{ gridColumn: '1 / -1' }}><b>Nome:</b> {s.nome}</div>
+                  <div><b>Data de Nascimento:</b> {s.data_nascimento ? new Date(s.data_nascimento).toLocaleDateString('pt-BR') : ''}</div>
+                  <div><b>Idade:</b> {studentAge} anos</div>
+                  <div><b>RG/CPF:</b> {s.rg_cpf || ''}</div>
+                  <div><b>Escola:</b> {s.escola_nome}</div>
+                  <div><b>Tipo:</b> {s.escola_tipo === 'PUBLICA' ? 'Pública' : 'Particular'}</div>
+                  <div style={{ gridColumn: '1 / -1' }}><b>Endereço:</b> {s.endereco || ''}</div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
+
+                {/* Dados do Responsável */}
+                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>DADOS DO RESPONSÁVEL</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', marginBottom: 10 }}>
+                  <div style={{ gridColumn: '1 / -1' }}><b>Responsável Legal:</b> {s.nome_responsavel || ''}</div>
+                  <div><b>Telefone:</b> {s.telefone || ''}</div>
+                  <div><b>Email:</b> {s.email_contato || ''}</div>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
+
+                {/* Assinatura */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 8, color: '#666' }}>Data da Assinatura</p>
+                    <p style={{ fontSize: 10, fontWeight: 700 }}>{s.data_assinatura || ''}</p>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: 8, color: '#666', marginBottom: 4 }}>Assinatura do Responsável Legal</p>
+                    {s.assinatura ? (
+                      <img src={s.assinatura} alt="Assinatura" style={{ height: 40, maxWidth: 180, objectFit: 'contain' }} />
+                    ) : (
+                      <div style={{ width: 180, height: 1, background: '#333', marginTop: 30 }}></div>
+                    )}
+                  </div>
+                </div>
+
+                {s.fichaUrl && (
+                  <div style={{ marginTop: 12, borderTop: '1px dashed #ddd', paddingTop: 8 }}>
+                    <p style={{ fontSize: 8, color: '#666', marginBottom: 4 }}>Documento Original Digitalizado:</p>
+                    {s.fichaUrl.startsWith('data:application/pdf') ? (
+                      <p style={{ fontSize: 8, color: '#4472C4' }}>PDF anexado ao sistema</p>
+                    ) : (
+                      <img src={s.fichaUrl} alt={`Ficha digitalizada - ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', border: '1px solid #eee', borderRadius: 2 }} />
+                    )}
+                  </div>
+                )}
+              </div>
             ) : (
               <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
-                Ficha de inscrição não disponível no sistema
+                {`Ficha de inscrição não disponível no sistema`}
               </div>
             )}
 
@@ -881,12 +954,13 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               )
             ) : (
               <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
-                Declaração de matrícula escolar não disponível no sistema
+                {`Declaração de matrícula escolar não disponível no sistema`}
               </div>
             )}
             <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>{19 + i + 1}</div>
           </div>
-        ))}
+          );
+        })}
 
         {/* REFERÊNCIAS */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
