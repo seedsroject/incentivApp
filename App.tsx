@@ -1189,6 +1189,7 @@ const AppContent: React.FC = () => {
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
+            history={collectedDocuments}
           />
         )}
       </main>

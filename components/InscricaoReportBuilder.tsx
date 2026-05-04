@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { StudentDraft, Nucleo } from '../types';
+import { StudentDraft, Nucleo, DocumentLog } from '../types';
 
 interface Props {
   students: StudentDraft[];
@@ -7,10 +7,14 @@ interface Props {
   onBack: () => void;
   headerImage?: string;
   projectName?: string;
+  history?: DocumentLog[];
 }
 
+// Normalize name helper (inline to avoid circular dep)
+const normName = (n: string) => n ? n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim() : '';
+
 export const InscricaoReportBuilder: React.FC<Props> = ({
-  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon',
+  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [],
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
   const [periodStart, setPeriodStart] = useState('2024-04-24');
@@ -989,17 +993,25 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             )}
 
             <h4 style={{ fontSize: 11, fontWeight: 700, marginTop: 20, marginBottom: 10, color: '#333' }}>Declaração de Matrícula Escolar</h4>
-            {s.declaracao_matricula?.url ? (
-              s.declaracao_matricula.url.startsWith('data:application/pdf') ? (
-                <iframe src={s.declaracao_matricula.url} style={{ width: '100%', height: 400, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
-              ) : (
-                <img src={s.declaracao_matricula.url} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
-              )
-            ) : (
-              <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
-                {`Declaração de matrícula escolar não disponível no sistema`}
-              </div>
-            )}
+            {(() => {
+              // 1. Check StudentDraft field first
+              const directUrl = s.declaracao_matricula?.url;
+              // 2. Fallback: match from history by normalized name
+              const matchedDoc = !directUrl ? history.filter(d => d.type === 'DECLARACAO_MATRICULA').find(d => normName(d.metaData?.studentName || '') === normName(s.nome)) : null;
+              const docUrl = directUrl || matchedDoc?.metaData?.imageUrl;
+              if (docUrl) {
+                return docUrl.startsWith('data:application/pdf') ? (
+                  <iframe src={docUrl} style={{ width: '100%', height: 400, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
+                ) : (
+                  <img src={docUrl} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
+                );
+              }
+              return (
+                <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
+                  {`Declaração de matrícula escolar não disponível no sistema`}
+                </div>
+              );
+            })()}
             <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>{19 + i + 1}</div>
           </div>
           );
