@@ -413,35 +413,37 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* PAGE 8: Analysis + Pie Chart by Grade */}
+        {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
         <div className="freq-page" style={{ padding: '50px 50px' }}>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> — Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
-          {/* Dark background chart container */}
-          <div style={{ background: 'linear-gradient(145deg, #404040, #2a2a2a)', borderRadius: 8, padding: '16px 20px', marginTop: 12 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#fff', marginBottom: 12, lineHeight: 1.4 }}>
+          {/* White background chart container with black border */}
+          <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12, lineHeight: 1.4 }}>
               Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "{projectName}" em {city} ({uf})
             </p>
 
             {(() => {
               const g = gradeDistribution;
               const t = totalAlunos || 1;
-              const slices = [
-                { key: '1ano', label: '1° ano E.F.I', value: g['1ano'], color: '#4472C4' },
-                { key: '2ano', label: '2° ano E.F.I', value: g['2ano'], color: '#5B9BD5' },
-                { key: '3ano', label: '3° ano E.F.I', value: g['3ano'], color: '#ED7D31' },
-                { key: '4ano', label: '4° ano E.F.I', value: g['4ano'], color: '#FFC000' },
-                { key: '5ano', label: '5° ano E.F.I', value: g['5ano'], color: '#A5A5A5' },
-                { key: '6ano', label: '6° ano E.F.II', value: g['6ano'], color: '#70AD47' },
-                { key: '7ano', label: '7° ano E.F.II', value: g['7ano'], color: '#264478' },
-                { key: '8ano', label: '8° ano E.F.II', value: g['8ano'], color: '#9B57A0' },
-                { key: '9ano', label: '9° ano E.F.II', value: g['9ano'], color: '#636363' },
-                { key: 'em1', label: '1° ano E.M.', value: g['em1'], color: '#BDD7EE' },
-                { key: 'em2', label: '2° ano E.M.', value: g['em2'], color: '#F4B183' },
-                { key: 'em3', label: '3° ano E.M.', value: g['em3'], color: '#C9C9C9' },
-              ].filter(s => s.value > 0);
+              // Colors: Blue, Orange, Gray, Green cycle
+              const palette = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#C9C9C9', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
+              const allSlices = [
+                { key: '1ano', label: '1° ano E.F.I', value: g['1ano'] },
+                { key: '2ano', label: '2° ano E.F.I', value: g['2ano'] },
+                { key: '3ano', label: '3° ano E.F.I', value: g['3ano'] },
+                { key: '4ano', label: '4° ano E.F.I', value: g['4ano'] },
+                { key: '5ano', label: '5° ano E.F.I', value: g['5ano'] },
+                { key: '6ano', label: '6° ano E.F.II', value: g['6ano'] },
+                { key: '7ano', label: '7° ano E.F.II', value: g['7ano'] },
+                { key: '8ano', label: '8° ano E.F.II', value: g['8ano'] },
+                { key: '9ano', label: '9° ano E.F.II', value: g['9ano'] },
+                { key: 'em1', label: '1° ano E.M.', value: g['em1'] },
+                { key: 'em2', label: '2° ano E.M.', value: g['em2'] },
+                { key: 'em3', label: '3° ano E.M.', value: g['em3'] },
+              ];
+              const slices = allSlices.filter(s => s.value > 0).map((s, i) => ({ ...s, color: palette[allSlices.indexOf(s) % palette.length] }));
 
-              // Build conic-gradient segments
               let cumPct = 0;
               const gradientParts: string[] = [];
               const labelPositions: { label: string; angle: number; pct: number; color: string }[] = [];
@@ -453,27 +455,25 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 cumPct += pct;
               });
 
-              const R = 90; // radius
+              const R = 85;
               const CX = 150;
-              const CY = 120;
-              const LR = 115; // label radius
+              const CY = 110;
+              const LR = 110;
 
               return (
                 <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                  <svg width={300} height={260} viewBox="0 0 300 260">
-                    {/* Pie */}
+                  <svg width={300} height={240} viewBox="0 0 300 240">
                     <foreignObject x={CX - R} y={CY - R} width={R * 2} height={R * 2}>
-                      <div style={{ width: R * 2, height: R * 2, borderRadius: '50%', background: `conic-gradient(${gradientParts.join(', ')})`, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}></div>
+                      <div style={{ width: R * 2, height: R * 2, borderRadius: '50%', background: `conic-gradient(${gradientParts.join(', ')})` }}></div>
                     </foreignObject>
-                    {/* Labels around */}
                     {labelPositions.map((lp, i) => {
                       const rad = (lp.angle - 90) * Math.PI / 180;
                       const lx = CX + LR * Math.cos(rad);
                       const ly = CY + LR * Math.sin(rad);
                       const anchor = lx > CX ? 'start' : 'end';
                       return (
-                        <text key={i} x={lx} y={ly} textAnchor={anchor} fontSize={7} fill="#e0e0e0" fontWeight={600}>
-                          {lp.label}
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} fontSize={7} fill="#333" fontWeight={600}>
+                          {lp.label} {lp.pct}%
                         </text>
                       );
                     })}
@@ -483,38 +483,34 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             })()}
 
             {/* Legend grid */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 14px', fontSize: 8, marginTop: 8, color: '#e0e0e0' }}>
-              {[
-                { label: '1° ano E.F.I', color: '#4472C4' },
-                { label: '2° ano E.F.I', color: '#5B9BD5' },
-                { label: '3° ano E.F.I', color: '#ED7D31' },
-                { label: '4° ano E.F.I', color: '#FFC000' },
-                { label: '5° ano E.F.I', color: '#A5A5A5' },
-                { label: '6° ano E.F.II', color: '#70AD47' },
-                { label: '7° ano E.F.II', color: '#264478' },
-                { label: '8° ano E.F.II', color: '#9B57A0' },
-                { label: '9° ano E.F.II', color: '#636363' },
-                { label: '1° ano E.M.', color: '#BDD7EE' },
-                { label: '2° ano E.M.', color: '#F4B183' },
-                { label: '3° ano E.M.', color: '#C9C9C9' },
-              ].filter((_, i) => {
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 12px', fontSize: 8, marginTop: 6, color: '#333' }}>
+              {(() => {
                 const g = gradeDistribution;
-                const keys = ['1ano','2ano','3ano','4ano','5ano','6ano','7ano','8ano','9ano','em1','em2','em3'];
-                return g[keys[i]] > 0;
-              }).map((item, i) => (
-                <span key={i}><span style={{ color: item.color }}>■</span> {item.label}</span>
-              ))}
+                const palette = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#C9C9C9', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
+                const items = [
+                  { label: '1° ano E.F.I', key: '1ano' }, { label: '2° ano E.F.I', key: '2ano' },
+                  { label: '3° ano E.F.I', key: '3ano' }, { label: '4° ano E.F.I', key: '4ano' },
+                  { label: '5° ano E.F.I', key: '5ano' }, { label: '6° ano E.F.II', key: '6ano' },
+                  { label: '7° ano E.F.II', key: '7ano' }, { label: '8° ano E.F.II', key: '8ano' },
+                  { label: '9° ano E.F.II', key: '9ano' }, { label: '1° ano E.M.', key: 'em1' },
+                  { label: '2° ano E.M.', key: 'em2' }, { label: '3° ano E.M.', key: 'em3' },
+                ];
+                return items.filter(it => g[it.key] > 0).map((it, i) => (
+                  <span key={i}><span style={{ color: palette[items.indexOf(it)] }}>■</span> {it.label}</span>
+                ));
+              })()}
             </div>
           </div>
 
           <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
         </div>
 
-        {/* PAGE 9: Bar Chart + Analysis - BLUE/ORANGE */}
+        {/* PAGE 9: Bar Chart + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {city}/{uf}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 200, padding: '20px 40px 0', position: 'relative' }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 180, padding: '16px 40px 0', position: 'relative' }}>
             {[
               { label: 'Ensino Fundamental I', value: eduLevel.fundI, color: '#4472C4' },
               { label: 'Ensino Fundamental II', value: eduLevel.fundII, color: '#ED7D31' },
@@ -532,7 +528,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             <span><span style={{ color: '#ED7D31' }}>■</span> Ensino Fundamental II</span>
             <span><span style={{ color: '#A5A5A5' }}>■</span> Ensino Médio</span>
           </div>
-          <p style={{ fontSize: 8, marginTop: 12 }}>Fonte: {projectName} ({year}).</p>
+          <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
+          </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 20, borderTop: '1px solid #eee', paddingTop: 16 }}>
             <p>Observa-se que a maioria dos alunos matriculados ({Math.round(eduLevel.fundII/(totalAlunos||1)*100)}%) cursam o Ensino Fundamental II, seguido de {Math.round(eduLevel.fundI/(totalAlunos||1)*100)}% no Ensino Fundamental I.</p>
             <p style={{ marginTop: 8 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
@@ -544,17 +541,19 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> — Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Rede de Ensino em {city}/{uf}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
-            <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Pública<br/>{pctPublica}%</div>
-              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Particular<br/>{pctParticular}%</div>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
+              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Pública<br/>{pctPublica}%</div>
+                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Particular<br/>{pctParticular}%</div>
+              </div>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
+              <span><span style={{ color: '#4472C4' }}>■</span> Escola Pública</span>
+              <span><span style={{ color: '#ED7D31' }}>■</span> Escola Particular</span>
+            </div>
+            <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
-            <span><span style={{ color: '#4472C4' }}>■</span> Escola Pública</span>
-            <span><span style={{ color: '#ED7D31' }}>■</span> Escola Particular</span>
-          </div>
-          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             <p>Em conformidade com a Meta Quantitativa 02 do projeto, que estabelece o mínimo de 65% das vagas para estudantes da rede pública, o núcleo atingiu {pctPublica}%, cumprindo o indicador previsto.</p>
             <ul style={{ marginTop: 8, paddingLeft: 20 }}>
@@ -570,17 +569,19 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> — Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {city}/{uf}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
-            <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${(genderStats.masculino/(totalAlunos||1))*100}%, #ED7D31 ${(genderStats.masculino/(totalAlunos||1))*100}% 100%)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round((genderStats.masculino/(totalAlunos||1))*100)}%</div>
-              <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round((genderStats.feminino/(totalAlunos||1))*100)}%</div>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
+              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${(genderStats.masculino/(totalAlunos||1))*100}%, #ED7D31 ${(genderStats.masculino/(totalAlunos||1))*100}% 100%)`, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round((genderStats.masculino/(totalAlunos||1))*100)}%</div>
+                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round((genderStats.feminino/(totalAlunos||1))*100)}%</div>
+              </div>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
+              <span><span style={{ color: '#4472C4' }}>■</span> Masculino</span>
+              <span><span style={{ color: '#ED7D31' }}>■</span> Feminino</span>
+            </div>
+            <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
-            <span><span style={{ color: '#4472C4' }}>■</span> Masculino</span>
-            <span><span style={{ color: '#ED7D31' }}>■</span> Feminino</span>
-          </div>
-          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             A análise da distribuição por gênero revela um equilíbrio na participação, com {Math.round((genderStats.masculino/(totalAlunos||1))*100)}% de meninos e {Math.round((genderStats.feminino/(totalAlunos||1))*100)}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.
           </div>
@@ -591,9 +592,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {city}/{uf}</p>
-          <div style={{ marginTop: 8 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
             {Object.entries(ages).map(([range, count], idx) => {
-              const colors = ['#4472C4', '#ED7D31', '#A5A5A5', '#FFC000', '#5B9BD5'];
+              const colors = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5'];
               return (
                 <div key={range} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ width: 80, fontSize: 10, textAlign: 'right' }}>{range} anos</span>
@@ -606,7 +607,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               );
             })}
           </div>
-          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
+            <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
+          </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
             A faixa etária predominante atende perfeitamente ao regulamento técnico e pedagógico estipulado pelo projeto, garantindo a formação de turmas coesas em relação ao desenvolvimento motor e cognitivo.
           </div>
