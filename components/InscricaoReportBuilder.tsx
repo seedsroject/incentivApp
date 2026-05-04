@@ -259,7 +259,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             </tbody>
           </table>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 40, fontSize: 10 }}>
-            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {city}/{uf}, {new Date().toLocaleDateString('pt-BR')}</span>
+            <span contentEditable={isEditing} suppressContentEditableWarning>LOCAL E DATA: {`${city}/${uf}`}, {new Date().toLocaleDateString('pt-BR')}</span>
             <span contentEditable={isEditing} suppressContentEditableWarning>NOME E ASSINATURA DO RESPONSÁVEL: _________________________</span>
           </div>
         </div>
@@ -398,19 +398,47 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           })()}
           <p style={{ fontSize: 7, marginTop: 4 }}>Fonte: {projectName} ({year}).</p>
 
-          {/* Dynamic explanatory text */}
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
-            <p>O projeto {projectName}, executado em {city} ({uf}), teve início em {new Date(periodStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} e seguiu até {new Date(periodEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
-            <p style={{ marginTop: 6 }}>A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II{(() => { const g = gradeDistribution; const maxGrade = Object.entries({
-              '5° ano': g['5ano'], '6° ano': g['6ano'], '7° ano': g['7ano'], '8° ano': g['8ano'], '9° ano': g['9ano']
-            }).sort((a,b) => b[1]-a[1])[0]; return maxGrade && maxGrade[1] > 0 ? `, especialmente no ${maxGrade[0]}, que concentrou ${totalAlunos ? Math.round(maxGrade[1]/totalAlunos*100) : 0}% dos inscritos` : ''; })()}. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.</p>
-            <p style={{ marginTop: 6 }}>Nos anos iniciais do Ensino Fundamental I, a adesão foi {eduLevel.fundI > eduLevel.fundII ? 'expressiva' : 'mais moderada'}, somando {totalAlunos ? Math.round(eduLevel.fundI/totalAlunos*100) : 0}% dos participantes{(() => { const g = gradeDistribution; const maxFI = Object.entries({
-              '1° ano': g['1ano'], '2° ano': g['2ano'], '3° ano': g['3ano'], '4° ano': g['4ano']
-            }).sort((a,b) => b[1]-a[1])[0]; return maxFI && maxFI[1] > 0 ? `. O ${maxFI[0]}, com ${totalAlunos ? Math.round(maxFI[1]/totalAlunos*100) : 0}%, foi o mais representativo desse grupo` : ''; })()}.</p>
-            <p style={{ marginTop: 6 }}>No Ensino Fundamental II, {totalAlunos ? Math.round(eduLevel.fundII/totalAlunos*100) : 0}% dos alunos estão matriculados, revelando uma participação consistente entre pré-adolescentes e adolescentes, faixa etária que costuma buscar desafios esportivos e atividades coletivas.</p>
-            <p style={{ marginTop: 6 }}>Já no Ensino Médio, a presença foi {eduLevel.medio > 0 ? `de ${totalAlunos ? Math.round(eduLevel.medio/totalAlunos*100) : 0}% dos inscritos` : 'inexistente'}. {eduLevel.medio <= Math.ceil(totalAlunos*0.1) ? 'Essa baixa adesão pode estar relacionada à rotina mais intensa de estudos e à menor disponibilidade de tempo para atividades extracurriculares.' : 'Esse percentual demonstra engajamento do público mais velho no projeto.'}</p>
-            <p style={{ marginTop: 6 }}>O projeto demonstrou {eduLevel.fundII >= eduLevel.fundI ? 'forte aceitação entre estudantes do Ensino Fundamental II' : 'forte aceitação entre estudantes do Ensino Fundamental I'} e {eduLevel.medio <= Math.ceil(totalAlunos*0.1) ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio'}. Esses dados podem orientar futuras edições, permitindo ajustar estratégias de divulgação, horários e formatos das atividades para ampliar o alcance entre faixas etárias menos representadas.</p>
-          </div>
+          {(() => {
+            const g = gradeDistribution;
+            const t = totalAlunos || 1;
+            const pctFundI = Math.round((eduLevel.fundI * 100) / t);
+            const pctFundII = Math.round((eduLevel.fundII * 100) / t);
+            const pctMedio = Math.round((eduLevel.medio * 100) / t);
+
+            const fundIIGrades = { '5° ano': g['5ano'], '6° ano': g['6ano'], '7° ano': g['7ano'], '8° ano': g['8ano'], '9° ano': g['9ano'] };
+            const maxGradeEntry = Object.entries(fundIIGrades).sort((a, b) => b[1] - a[1])[0];
+            const maxGradeText = maxGradeEntry && maxGradeEntry[1] > 0
+              ? `, especialmente no ${maxGradeEntry[0]}, que concentrou ${Math.round((maxGradeEntry[1] * 100) / t)}% dos inscritos`
+              : '';
+
+            const fundIGrades = { '1° ano': g['1ano'], '2° ano': g['2ano'], '3° ano': g['3ano'], '4° ano': g['4ano'] };
+            const maxFIEntry = Object.entries(fundIGrades).sort((a, b) => b[1] - a[1])[0];
+            const maxFIText = maxFIEntry && maxFIEntry[1] > 0
+              ? `. O ${maxFIEntry[0]}, com ${Math.round((maxFIEntry[1] * 100) / t)}%, foi o mais representativo desse grupo`
+              : '';
+
+            const adesaoFundI = eduLevel.fundI > eduLevel.fundII ? 'expressiva' : 'mais moderada';
+            const medioPresenca = eduLevel.medio > 0 ? `de ${pctMedio}% dos inscritos` : 'inexistente';
+            const medioBaixa = eduLevel.medio <= Math.ceil(totalAlunos * 0.1);
+            const medioAnalise = medioBaixa
+              ? 'Essa baixa adesão pode estar relacionada à rotina mais intensa de estudos e à menor disponibilidade de tempo para atividades extracurriculares.'
+              : 'Esse percentual demonstra engajamento do público mais velho no projeto.';
+            const destaqueFinal = eduLevel.fundII >= eduLevel.fundI
+              ? 'forte aceitação entre estudantes do Ensino Fundamental II'
+              : 'forte aceitação entre estudantes do Ensino Fundamental I';
+            const medioFinal = medioBaixa ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio';
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
+                <p>O projeto {projectName}, executado em {city} ({uf}), teve início em {new Date(periodStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} e seguiu até {new Date(periodEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
+                <p style={{ marginTop: 6 }}>A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II{maxGradeText}. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.</p>
+                <p style={{ marginTop: 6 }}>Nos anos iniciais do Ensino Fundamental I, a adesão foi {adesaoFundI}, somando {pctFundI}% dos participantes{maxFIText}.</p>
+                <p style={{ marginTop: 6 }}>No Ensino Fundamental II, {pctFundII}% dos alunos estão matriculados, revelando uma participação consistente entre pré-adolescentes e adolescentes, faixa etária que costuma buscar desafios esportivos e atividades coletivas.</p>
+                <p style={{ marginTop: 6 }}>Já no Ensino Médio, a presença foi {medioPresenca}. {medioAnalise}</p>
+                <p style={{ marginTop: 6 }}>O projeto demonstrou {destaqueFinal} e {medioFinal}. Esses dados podem orientar futuras edições, permitindo ajustar estratégias de divulgação, horários e formatos das atividades para ampliar o alcance entre faixas etárias menos representadas.</p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
@@ -445,11 +473,11 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               const slices = allSlices.filter(s => s.value > 0).map((s, i) => ({ ...s, color: palette[allSlices.indexOf(s) % palette.length] }));
 
               let cumPct = 0;
-              const gradientParts: string[] = [];
-              const labelPositions: { label: string; angle: number; pct: number; color: string }[] = [];
+              const gradientParts = [] as string[];
+              const labelPositions = [] as { label: string; angle: number; pct: number; color: string }[];
 
               slices.forEach(s => {
-                const pct = (s.value / t) * 100;
+                const pct = (s.value * 100) / t;
                 gradientParts.push(`${s.color} ${cumPct}% ${cumPct + pct}%`);
                 labelPositions.push({ label: s.label, angle: cumPct + pct / 2, pct: Math.round(pct), color: s.color });
                 cumPct += pct;
@@ -507,7 +535,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 9: Bar Chart + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {city}/{uf}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 180, padding: '16px 40px 0', position: 'relative' }}>
@@ -518,7 +546,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             ].map((item, idx) => (
               <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 80 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, marginBottom: 4 }}>{item.value}</span>
-                <div style={{ width: 50, background: item.color, height: `${Math.max((item.value/(totalAlunos||1))*160, 8)}px`, borderRadius: '2px 2px 0 0' }}></div>
+                <div style={{ width: 50, background: item.color, height: `${Math.max(((item.value * 160) / (totalAlunos||1)), 8)}px`, borderRadius: '2px 2px 0 0' }}></div>
                 <span style={{ fontSize: 8, marginTop: 6, textAlign: 'center' }}>{item.label}</span>
               </div>
             ))}
@@ -531,7 +559,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 20, borderTop: '1px solid #eee', paddingTop: 16 }}>
-            <p>Observa-se que a maioria dos alunos matriculados ({Math.round(eduLevel.fundII/(totalAlunos||1)*100)}%) cursam o Ensino Fundamental II, seguido de {Math.round(eduLevel.fundI/(totalAlunos||1)*100)}% no Ensino Fundamental I.</p>
+            <p>Observa-se que a maioria dos alunos matriculados ({Math.round((eduLevel.fundII * 100) / (totalAlunos||1))}%) cursam o Ensino Fundamental II, seguido de {Math.round((eduLevel.fundI * 100) / (totalAlunos||1))}% no Ensino Fundamental I.</p>
             <p style={{ marginTop: 8 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
           </div>
         </div>
@@ -539,8 +567,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> — Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Rede de Ensino em {city}/{uf}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 3</b> — Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Rede de Ensino em {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
               <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${pctPublica}%, #ED7D31 ${pctPublica}% 100%)`, position: 'relative' }}>
@@ -567,13 +595,13 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 11: 2.3 Gênero + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> — Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {city}/{uf}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> — Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição por Gênero dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180 }}>
-              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${(genderStats.masculino/(totalAlunos||1))*100}%, #ED7D31 ${(genderStats.masculino/(totalAlunos||1))*100}% 100%)`, position: 'relative' }}>
-                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round((genderStats.masculino/(totalAlunos||1))*100)}%</div>
-                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round((genderStats.feminino/(totalAlunos||1))*100)}%</div>
+              <div style={{ width: 160, height: 160, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${((genderStats.masculino * 100) / (totalAlunos||1))}%, #ED7D31 ${((genderStats.masculino * 100) / (totalAlunos||1))}% 100%)`, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '35%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Masculino<br/>{Math.round(((genderStats.masculino * 100) / (totalAlunos||1)))}%</div>
+                <div style={{ position: 'absolute', top: '35%', right: '10%', color: '#fff', fontWeight: 700, fontSize: 10 }}>Feminino<br/>{Math.round(((genderStats.feminino * 100) / (totalAlunos||1)))}%</div>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 10 }}>
@@ -583,15 +611,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
-            A análise da distribuição por gênero revela um equilíbrio na participação, com {Math.round((genderStats.masculino/(totalAlunos||1))*100)}% de meninos e {Math.round((genderStats.feminino/(totalAlunos||1))*100)}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.
+            A análise da distribuição por gênero revela um equilíbrio na participação, com {Math.round(((genderStats.masculino * 100) / (totalAlunos||1)))}% de meninos e {Math.round(((genderStats.feminino * 100) / (totalAlunos||1)))}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.
           </div>
         </div>
 
         {/* PAGE 12: 2.4 Idade + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {city}/{uf}</p>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> — Distribuição Etária dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginTop: 12, marginBottom: 8 }}>Distribuição Etária dos alunos em {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
             {Object.entries(ages).map(([range, count], idx) => {
               const colors = ['#4472C4', '#ED7D31', '#A5A5A5', '#70AD47', '#5B9BD5'];
@@ -599,14 +627,13 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 <div key={range} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                   <span style={{ width: 80, fontSize: 10, textAlign: 'right' }}>{range} anos</span>
                   <div style={{ flex: 1, background: '#f0f0f0', borderRadius: 4, height: 20 }}>
-                    <div style={{ width: `${totalAlunos ? (count/totalAlunos)*100 : 0}%`, background: colors[idx % colors.length], borderRadius: 4, height: '100%', minWidth: count ? 30 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{count} ({totalAlunos ? Math.round((count/totalAlunos)*100) : 0}%)</span>
+                    <div style={{ width: `${totalAlunos ? ((count * 100) / totalAlunos) : 0}%`, background: colors[idx % colors.length], borderRadius: 4, height: '100%', minWidth: count ? 30 : 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{count} ({totalAlunos ? Math.round(((count * 100) / totalAlunos)) : 0}%)</span>
                     </div>
                   </div>
                 </div>
               );
             })}
-          </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
@@ -633,7 +660,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               {sorted.map((s, i) => {
                 const isFem = (s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a');
                 let age = '';
-                if (s.data_nascimento) { age = Math.floor((new Date().getTime() - new Date(s.data_nascimento).getTime()) / 31557600000).toString(); }
+                if (s.data_nascimento) { const ms = new Date().getTime() - new Date(s.data_nascimento).getTime(); age = Math.floor(ms / 31557600000).toString(); }
                 return (
                   <tr key={s.id || i} style={{ background: i % 2 === 0 ? '#D6E4F0' : '#fff' }}>
                     <td style={{ padding: 5, border: '1px solid #ccc' }}>{city}</td>
@@ -699,7 +726,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8 }}>
             <p>BRASIL. Lei nº 11.438, de 29 de dezembro de 2006. Dispõe sobre incentivos e benefícios para fomentar as atividades de caráter desportivo.</p>
             <p style={{ marginTop: 8 }}>MINISTÉRIO DO ESPORTE. Manual de orientação para execução de projetos de incentivo ao esporte. Brasília, 2023.</p>
-            <p style={{ marginTop: 8 }}>Fichas de inscrição e declarações de matrícula escolar dos alunos do projeto {projectName}, {city}/{uf}, {year}.</p>
+            <p style={{ marginTop: 8 }}>Fichas de inscrição e declarações de matrícula escolar dos alunos do projeto {projectName}, {`${city}/${uf}`}, {year}.</p>
           </div>
         </div>
       </div>
