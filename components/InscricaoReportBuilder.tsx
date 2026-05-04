@@ -310,7 +310,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             const fundIITotal = eduLevel.fundII;
             const medioTotal = eduLevel.medio;
             const thStyle: React.CSSProperties = { padding: '4px 2px', border: '1px solid #999', textAlign: 'center', fontWeight: 700, fontSize: 7, background: '#4472C4', color: '#fff' };
-            const thSub: React.CSSProperties = { ...thStyle, background: '#D6E4F0', color: '#000', writingMode: 'vertical-rl' as const, transform: 'rotate(180deg)', height: 60, fontSize: 7, whiteSpace: 'nowrap' as const };
+            const thSub: React.CSSProperties = { ...thStyle, background: '#D6E4F0', color: '#000', writingMode: 'vertical-rl' as const, transform: 'rotate(180deg)', height: 70, fontSize: 7, whiteSpace: 'nowrap' as const, padding: '4px 1px' };
+            const thSubLong: React.CSSProperties = { ...thSub, whiteSpace: 'normal' as const, height: 70, width: 28, lineHeight: 1.1, wordBreak: 'break-word' as const };
             const tdS: React.CSSProperties = { padding: '3px 2px', border: '1px solid #ccc', textAlign: 'center', fontSize: 7 };
             const tdB: React.CSSProperties = { ...tdS, fontWeight: 700 };
             return (
@@ -332,7 +333,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                     <th colSpan={2} style={{...thStyle, background: '#B4C6E7'}}></th>
                   </tr>
                   <tr>
-                    <th style={thSub}>Educação Infantil/Classe Especial</th>
+                    <th style={thSubLong}>Ed. Infantil/ Classe Especial</th>
                     <th style={thSub}>1° ano</th>
                     <th style={thSub}>2° ano</th>
                     <th style={thSub}>3° ano</th>
