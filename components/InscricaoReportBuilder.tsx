@@ -912,6 +912,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
                 <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '8px 0' }} />
 
+                {/* Termo de Aceite */}
+                <p style={{ fontSize: 9, fontWeight: 700, color: '#4472C4', marginBottom: 6 }}>TERMO DE AUTORIZAÇÃO E RESPONSABILIDADE</p>
+                <div style={{ fontSize: 7.5, lineHeight: 1.5, textAlign: 'justify' as const, color: '#444', background: '#fafafa', border: '1px solid #eee', borderRadius: 3, padding: '8px 10px', marginBottom: 10 }}>
+                  <p style={{ marginBottom: 4 }}>Declaro que o aluno acima identificado está frequentando a escola regularmente e está ciente que como critério de permanência no projeto será exigido do aluno, o bom rendimento escolar em regular instituição de ensino da região, através da apresentação frequente do boletim escolar, declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.</p>
+                  <p style={{ marginBottom: 4 }}>Os uniformes que serão entregues aos alunos, são de responsabilidade do aluno, e em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso, por isso a boa conservação e cuidado são fundamentais.</p>
+                  <p style={{ marginBottom: 4 }}>O(a) Responsável legal, infra assinados(s), com fundamento no art. 5º, X e XXVIII da Constituição Federal de 1988, e no art. 18, da Lei 10.406, de 10 de janeiro de 2002, AUTORIZA o uso da imagem e/ou nome do aluno inscrito do projeto, para fins de divulgação das atividades e propaganda, podendo, para tanto, reproduzi-la e/ou divulgá-la pela internet, mídia eletrônica, por jornais, revistas, folders; bem como por todo e qualquer material e veículo de comunicação, público e/ou privado, por parceiros e patrocinadores do projeto, com finalidade informativa, de utilidade pública e de marketing, por tempo indeterminado. O(a) Cedente declara ainda que não há nada a ser reclamado, a título de direitos conexos; referentes ao uso de sua imagem e/ou nome. A presente autorização é concedida a título gratuito.</p>
+                  <p>1. Anexar cópia do último boletim escolar do aluno e declaração de matrícula em escola regular.</p>
+                </div>
+
                 {/* Assinatura */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 }}>
                   <div>
