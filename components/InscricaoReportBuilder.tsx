@@ -413,27 +413,101 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* PAGE 8: Analysis + Pie Chart - BLUE/ORANGE SCHEME */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginBottom: 12 }}>
-            Análise dos dados apresentados mostra que a maior concentração de matrículas encontra-se no Ensino Fundamental.
-          </div>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> — Distribuição das matrículas por Nível de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {city}/{uf}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas por Nível de Ensino dos alunos do projeto "{projectName}" em {city}/{uf}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', height: 220 }}>
-            <div style={{ width: 180, height: 180, borderRadius: '50%', background: `conic-gradient(#4472C4 0% ${eduLevel.fundI/(totalAlunos||1)*100}%, #ED7D31 ${eduLevel.fundI/(totalAlunos||1)*100}% ${(eduLevel.fundI+eduLevel.fundII)/(totalAlunos||1)*100}%, #A5A5A5 ${(eduLevel.fundI+eduLevel.fundII)/(totalAlunos||1)*100}% 100%)`, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '30%', left: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Fund I<br/>{Math.round(eduLevel.fundI/(totalAlunos||1)*100)}%</div>
-              {eduLevel.fundII > 0 && <div style={{ position: 'absolute', top: '20%', right: '5%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Fund II<br/>{Math.round(eduLevel.fundII/(totalAlunos||1)*100)}%</div>}
-              {eduLevel.medio > 0 && <div style={{ position: 'absolute', bottom: '15%', right: '15%', color: '#fff', fontWeight: 700, fontSize: 11 }}>Médio<br/>{Math.round(eduLevel.medio/(totalAlunos||1)*100)}%</div>}
+        {/* PAGE 8: Analysis + Pie Chart by Grade */}
+        <div className="freq-page" style={{ padding: '50px 50px' }}>
+          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> — Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
+
+          {/* Dark background chart container */}
+          <div style={{ background: 'linear-gradient(145deg, #404040, #2a2a2a)', borderRadius: 8, padding: '16px 20px', marginTop: 12 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#fff', marginBottom: 12, lineHeight: 1.4 }}>
+              Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "{projectName}" em {city} ({uf})
+            </p>
+
+            {(() => {
+              const g = gradeDistribution;
+              const t = totalAlunos || 1;
+              const slices = [
+                { key: '1ano', label: '1° ano E.F.I', value: g['1ano'], color: '#4472C4' },
+                { key: '2ano', label: '2° ano E.F.I', value: g['2ano'], color: '#5B9BD5' },
+                { key: '3ano', label: '3° ano E.F.I', value: g['3ano'], color: '#ED7D31' },
+                { key: '4ano', label: '4° ano E.F.I', value: g['4ano'], color: '#FFC000' },
+                { key: '5ano', label: '5° ano E.F.I', value: g['5ano'], color: '#A5A5A5' },
+                { key: '6ano', label: '6° ano E.F.II', value: g['6ano'], color: '#70AD47' },
+                { key: '7ano', label: '7° ano E.F.II', value: g['7ano'], color: '#264478' },
+                { key: '8ano', label: '8° ano E.F.II', value: g['8ano'], color: '#9B57A0' },
+                { key: '9ano', label: '9° ano E.F.II', value: g['9ano'], color: '#636363' },
+                { key: 'em1', label: '1° ano E.M.', value: g['em1'], color: '#BDD7EE' },
+                { key: 'em2', label: '2° ano E.M.', value: g['em2'], color: '#F4B183' },
+                { key: 'em3', label: '3° ano E.M.', value: g['em3'], color: '#C9C9C9' },
+              ].filter(s => s.value > 0);
+
+              // Build conic-gradient segments
+              let cumPct = 0;
+              const gradientParts: string[] = [];
+              const labelPositions: { label: string; angle: number; pct: number; color: string }[] = [];
+
+              slices.forEach(s => {
+                const pct = (s.value / t) * 100;
+                gradientParts.push(`${s.color} ${cumPct}% ${cumPct + pct}%`);
+                labelPositions.push({ label: s.label, angle: cumPct + pct / 2, pct: Math.round(pct), color: s.color });
+                cumPct += pct;
+              });
+
+              const R = 90; // radius
+              const CX = 150;
+              const CY = 120;
+              const LR = 115; // label radius
+
+              return (
+                <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                  <svg width={300} height={260} viewBox="0 0 300 260">
+                    {/* Pie */}
+                    <foreignObject x={CX - R} y={CY - R} width={R * 2} height={R * 2}>
+                      <div style={{ width: R * 2, height: R * 2, borderRadius: '50%', background: `conic-gradient(${gradientParts.join(', ')})`, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}></div>
+                    </foreignObject>
+                    {/* Labels around */}
+                    {labelPositions.map((lp, i) => {
+                      const rad = (lp.angle - 90) * Math.PI / 180;
+                      const lx = CX + LR * Math.cos(rad);
+                      const ly = CY + LR * Math.sin(rad);
+                      const anchor = lx > CX ? 'start' : 'end';
+                      return (
+                        <text key={i} x={lx} y={ly} textAnchor={anchor} fontSize={7} fill="#e0e0e0" fontWeight={600}>
+                          {lp.label}
+                        </text>
+                      );
+                    })}
+                  </svg>
+                </div>
+              );
+            })()}
+
+            {/* Legend grid */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 14px', fontSize: 8, marginTop: 8, color: '#e0e0e0' }}>
+              {[
+                { label: '1° ano E.F.I', color: '#4472C4' },
+                { label: '2° ano E.F.I', color: '#5B9BD5' },
+                { label: '3° ano E.F.I', color: '#ED7D31' },
+                { label: '4° ano E.F.I', color: '#FFC000' },
+                { label: '5° ano E.F.I', color: '#A5A5A5' },
+                { label: '6° ano E.F.II', color: '#70AD47' },
+                { label: '7° ano E.F.II', color: '#264478' },
+                { label: '8° ano E.F.II', color: '#9B57A0' },
+                { label: '9° ano E.F.II', color: '#636363' },
+                { label: '1° ano E.M.', color: '#BDD7EE' },
+                { label: '2° ano E.M.', color: '#F4B183' },
+                { label: '3° ano E.M.', color: '#C9C9C9' },
+              ].filter((_, i) => {
+                const g = gradeDistribution;
+                const keys = ['1ano','2ano','3ano','4ano','5ano','6ano','7ano','8ano','9ano','em1','em2','em3'];
+                return g[keys[i]] > 0;
+              }).map((item, i) => (
+                <span key={i}><span style={{ color: item.color }}>■</span> {item.label}</span>
+              ))}
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 12 }}>
-            <span><span style={{ color: '#4472C4' }}>■</span> Ensino Fundamental I</span>
-            <span><span style={{ color: '#ED7D31' }}>■</span> Ensino Fundamental II</span>
-            <span><span style={{ color: '#A5A5A5' }}>■</span> Ensino Médio</span>
-          </div>
-          <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
-          <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>8</div>
+
+          <p style={{ fontSize: 8, marginTop: 10 }}>Fonte: {projectName} ({year}).</p>
         </div>
 
         {/* PAGE 9: Bar Chart + Analysis - BLUE/ORANGE */}
