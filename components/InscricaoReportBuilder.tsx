@@ -25,6 +25,22 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
+  // --- Rich text editing system ---
+  type TextBlockLevel = 'h1' | 'h2' | 'h3' | 'body';
+  interface TextBlock { id: string; level: TextBlockLevel; content: string; fontFamily: string; fontSize: number; bold: boolean; italic: boolean; underline: boolean; }
+  const [customBlocks, setCustomBlocks] = useState<TextBlock[]>([]);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+  const [blockForm, setBlockForm] = useState<TextBlock>({ id: '', level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false });
+  const fontOptions = ['serif', 'sans-serif', 'Arial', 'Times New Roman', 'Georgia', 'Verdana', 'Courier New', 'Inter', 'Roboto'];
+  const levelLabels: Record<TextBlockLevel, string> = { h1: 'Título (H1)', h2: 'Subtítulo (H2)', h3: 'Seção (H3)', body: 'Corpo de texto' };
+  const levelDefaults: Record<TextBlockLevel, { fontSize: number; bold: boolean }> = { h1: { fontSize: 18, bold: true }, h2: { fontSize: 14, bold: true }, h3: { fontSize: 12, bold: true }, body: { fontSize: 11, bold: false } };
+  const openNewBlock = () => { setEditingBlockId(null); setBlockForm({ id: `blk_${Date.now()}`, level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false }); setShowBlockModal(true); };
+  const openEditBlock = (b: TextBlock) => { setEditingBlockId(b.id); setBlockForm({ ...b }); setShowBlockModal(true); };
+  const saveBlock = () => { if (!blockForm.content.trim()) return; if (editingBlockId) { setCustomBlocks(prev => prev.map(b => b.id === editingBlockId ? { ...blockForm } : b)); } else { setCustomBlocks(prev => [...prev, { ...blockForm }]); } setShowBlockModal(false); setEditingBlockId(null); };
+  const removeBlock = (id: string) => { setCustomBlocks(prev => prev.filter(b => b.id !== id)); };
+  const moveBlock = (id: string, dir: -1 | 1) => { setCustomBlocks(prev => { const idx = prev.findIndex(b => b.id === id); if (idx < 0) return prev; const ni = idx + dir; if (ni < 0 || ni >= prev.length) return prev; const a = [...prev]; [a[idx], a[ni]] = [a[ni], a[idx]]; return a; }); };
+
   const sel = nucleos.find(n => n.id === selectedNucleoId);
   const city = sel?.nome.split('|')[0]?.trim() || 'Núcleo';
   const rawSt = sel?.nome.split('|')[1]?.trim() || 'UF';
@@ -157,6 +173,84 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
       </div>
 
+      {/* FLOATING EDIT TOOLBAR */}
+      {isEditing && (
+        <div className="no-print" style={{ position: 'sticky', top: 60, zIndex: 90, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
+          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>✏️ MODO EDIÇÃO</span>
+          <div style={{ height: 20, width: 1, background: '#444' }}></div>
+          <button onClick={openNewBlock} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>＋ Inserir Bloco de Texto</button>
+          <div style={{ height: 20, width: 1, background: '#444' }}></div>
+          <span style={{ color: '#aaa', fontSize: 10 }}>Blocos adicionados: {customBlocks.length}</span>
+          {customBlocks.length > 0 && (
+            <span style={{ color: '#4472C4', fontSize: 10, fontWeight: 700 }}>• Títulos H1/H2 são adicionados ao Sumário automaticamente</span>
+          )}
+        </div>
+      )}
+
+      {/* MODAL: Inserir / Editar Bloco de Texto */}
+      {showBlockModal && (
+        <div className="no-print" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowBlockModal(false)}>
+          <div style={{ background: '#fff', borderRadius: 12, width: '90%', maxWidth: 600, maxHeight: '90vh', overflow: 'auto', padding: 0, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }} onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div style={{ background: '#4472C4', color: '#fff', padding: '16px 24px', borderRadius: '12px 12px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>{editingBlockId ? '✏️ Editar Bloco' : '＋ Novo Bloco de Texto'}</h3>
+              <button onClick={() => setShowBlockModal(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>✕</button>
+            </div>
+            {/* Modal Body */}
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Nível do título */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 4, textTransform: 'uppercase' }}>Nível / Tipo</label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {(Object.keys(levelLabels) as TextBlockLevel[]).map(lv => (
+                    <button key={lv} onClick={() => { const d = levelDefaults[lv]; setBlockForm(p => ({ ...p, level: lv, fontSize: d.fontSize, bold: d.bold })); }} style={{ flex: 1, padding: '8px 4px', borderRadius: 6, border: blockForm.level === lv ? '2px solid #4472C4' : '1px solid #ddd', background: blockForm.level === lv ? '#EBF0FA' : '#fff', color: blockForm.level === lv ? '#4472C4' : '#666', fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>{levelLabels[lv]}</button>
+                  ))}
+                </div>
+              </div>
+              {/* Fonte e Tamanho */}
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 2 }}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 4, textTransform: 'uppercase' }}>Fonte</label>
+                  <select value={blockForm.fontFamily} onChange={e => setBlockForm(p => ({ ...p, fontFamily: e.target.value }))} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 12, fontFamily: blockForm.fontFamily }}>
+                    {fontOptions.map(f => <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 4, textTransform: 'uppercase' }}>Tamanho (px)</label>
+                  <input type="number" min={8} max={36} value={blockForm.fontSize} onChange={e => setBlockForm(p => ({ ...p, fontSize: Number(e.target.value) }))} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd', fontSize: 12 }} />
+                </div>
+              </div>
+              {/* Formatação */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 4, textTransform: 'uppercase' }}>Formatação</label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => setBlockForm(p => ({ ...p, bold: !p.bold }))} style={{ padding: '6px 16px', borderRadius: 6, border: blockForm.bold ? '2px solid #4472C4' : '1px solid #ddd', background: blockForm.bold ? '#EBF0FA' : '#fff', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}>B</button>
+                  <button onClick={() => setBlockForm(p => ({ ...p, italic: !p.italic }))} style={{ padding: '6px 16px', borderRadius: 6, border: blockForm.italic ? '2px solid #4472C4' : '1px solid #ddd', background: blockForm.italic ? '#EBF0FA' : '#fff', fontStyle: 'italic', fontSize: 14, cursor: 'pointer' }}><i>I</i></button>
+                  <button onClick={() => setBlockForm(p => ({ ...p, underline: !p.underline }))} style={{ padding: '6px 16px', borderRadius: 6, border: blockForm.underline ? '2px solid #4472C4' : '1px solid #ddd', background: blockForm.underline ? '#EBF0FA' : '#fff', textDecoration: 'underline', fontSize: 14, cursor: 'pointer' }}>U</button>
+                </div>
+              </div>
+              {/* Conteúdo */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#555', marginBottom: 4, textTransform: 'uppercase' }}>Conteúdo</label>
+                <textarea value={blockForm.content} onChange={e => setBlockForm(p => ({ ...p, content: e.target.value }))} placeholder="Digite o texto aqui..." rows={6} style={{ width: '100%', padding: 12, borderRadius: 6, border: '1px solid #ddd', fontSize: blockForm.fontSize, fontFamily: blockForm.fontFamily, fontWeight: blockForm.bold ? 700 : 400, fontStyle: blockForm.italic ? 'italic' : 'normal', textDecoration: blockForm.underline ? 'underline' : 'none', resize: 'vertical', lineHeight: 1.6 }} />
+              </div>
+              {/* Preview */}
+              <div style={{ background: '#f9f9f9', border: '1px solid #eee', borderRadius: 6, padding: 16 }}>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#999', marginBottom: 6, textTransform: 'uppercase' }}>Preview</label>
+                <div style={{ fontSize: blockForm.fontSize, fontFamily: blockForm.fontFamily, fontWeight: blockForm.bold ? 700 : 400, fontStyle: blockForm.italic ? 'italic' : 'normal', textDecoration: blockForm.underline ? 'underline' : 'none', color: blockForm.level === 'h1' ? '#4472C4' : blockForm.level === 'h2' ? '#4472C4' : '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {blockForm.content || '(vazio)'}
+                </div>
+              </div>
+            </div>
+            {/* Modal Footer */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: 10, background: '#fafafa', borderRadius: '0 0 12px 12px' }}>
+              <button onClick={() => setShowBlockModal(false)} style={{ padding: '10px 20px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', color: '#666', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={saveBlock} disabled={!blockForm.content.trim()} style={{ padding: '10px 24px', borderRadius: 6, border: 'none', background: blockForm.content.trim() ? '#4472C4' : '#ccc', color: '#fff', fontWeight: 700, fontSize: 12, cursor: blockForm.content.trim() ? 'pointer' : 'not-allowed' }}>{editingBlockId ? 'Salvar Alterações' : 'Adicionar Bloco'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* REPORT */}
       <div ref={reportRef} className="freq-report-content">
 
@@ -276,24 +370,34 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 {/* PAGE 4: SUMÁRIO */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#4472C4' }}>SUMÁRIO</h2>
-          {[
-            { n: '1', t: 'INTRODUÇÃO', p: 6 },
-            { n: '2', t: 'DISTRIBUIÇÃO DOS ALUNOS MATRICULADOS NA ESCOLINHA DE TRIATHLON', p: 7 },
-            { n: '2.1', t: 'Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio', p: 7 },
-            { n: '2.2', t: 'Distribuição das matrículas por Escola Pública e Escola Particular', p: 11 },
-            { n: '2.3', t: 'Distribuição por gênero dos (as) alunos (as)', p: 13 },
-            { n: '2.4', t: 'Distribuição etária dos alunos regularmente matriculados', p: 15 },
-            { n: '3', t: 'RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS', p: 17 },
-            { n: '4', t: 'FICHA DE INSCRIÇÃO E DECLARAÇÃO ESCOLAR', p: 19 },
-            { n: '', t: 'REFERÊNCIAS', p: 20 },
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8, fontSize: item.n.includes('.') ? 11 : 12, fontWeight: item.n.includes('.') ? 400 : 700, paddingLeft: item.n.includes('.') ? 40 : 0 }}>
-              <span style={{ width: 40 }}>{item.n}</span>
-              <span style={{ flex: 1 }}>{item.t}</span>
-              <span style={{ borderBottom: '1px dotted #999', flex: 2 }}></span>
-              <span style={{ width: 30, textAlign: 'right' }}>{item.p}</span>
-            </div>
-          ))}
+          {(() => {
+            const baseItems = [
+              { n: '1', t: 'INTRODUÇÃO', p: 6 },
+              { n: '2', t: 'DISTRIBUIÇÃO DOS ALUNOS MATRICULADOS NA ESCOLINHA DE TRIATHLON', p: 7 },
+              { n: '2.1', t: 'Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio', p: 7 },
+              { n: '2.2', t: 'Distribuição das matrículas por Escola Pública e Escola Particular', p: 11 },
+              { n: '2.3', t: 'Distribuição por gênero dos (as) alunos (as)', p: 13 },
+              { n: '2.4', t: 'Distribuição etária dos alunos regularmente matriculados', p: 15 },
+              { n: '3', t: 'RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS', p: 17 },
+              { n: '4', t: 'FICHA DE INSCRIÇÃO E DECLARAÇÃO ESCOLAR', p: 19 },
+            ];
+            // Add custom heading blocks to sumário
+            const customHeadings = customBlocks.filter(b => b.level === 'h1' || b.level === 'h2').map((b, idx) => ({
+              n: b.level === 'h1' ? `${5 + idx}` : `  •`,
+              t: b.content.split('\n')[0].substring(0, 80),
+              p: 20 + idx,
+              isSub: b.level === 'h2'
+            }));
+            const allItems = [...baseItems.map(i => ({ ...i, isSub: i.n.includes('.') })), ...customHeadings, { n: '', t: 'REFERÊNCIAS', p: 20 + customHeadings.length, isSub: false }];
+            return allItems.map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'baseline', marginBottom: 8, fontSize: item.isSub ? 11 : 12, fontWeight: item.isSub ? 400 : 700, paddingLeft: item.isSub ? 40 : 0 }}>
+                <span style={{ width: 40 }}>{item.n}</span>
+                <span style={{ flex: 1 }}>{item.t}</span>
+                <span style={{ borderBottom: '1px dotted #999', flex: 2 }}></span>
+                <span style={{ width: 30, textAlign: 'right' }}>{item.p}</span>
+              </div>
+            ));
+          })()}
         </div>
 
         {/* PAGE 6: INTRODUÇÃO */}
@@ -1054,6 +1158,30 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </React.Fragment>
           );
         })}
+
+        {/* CUSTOM TEXT BLOCKS */}
+        {customBlocks.length > 0 && (
+          <div className="freq-page" style={{ padding: '60px 60px', position: 'relative' }}>
+            {customBlocks.map((blk) => {
+              const Tag = blk.level === 'h1' ? 'h2' : blk.level === 'h2' ? 'h3' : blk.level === 'h3' ? 'h4' : 'p';
+              return (
+                <div key={blk.id} style={{ marginBottom: 20, position: 'relative' }}>
+                  {isEditing && (
+                    <div className="no-print" style={{ position: 'absolute', top: -8, right: 0, display: 'flex', gap: 4 }}>
+                      <button onClick={() => moveBlock(blk.id, -1)} style={{ background: '#eee', border: 'none', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }} title="Mover para cima">▲</button>
+                      <button onClick={() => moveBlock(blk.id, 1)} style={{ background: '#eee', border: 'none', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }} title="Mover para baixo">▼</button>
+                      <button onClick={() => openEditBlock(blk)} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10, cursor: 'pointer' }}>✏️</button>
+                      <button onClick={() => removeBlock(blk.id)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10, cursor: 'pointer' }}>✕</button>
+                    </div>
+                  )}
+                  <Tag style={{ fontSize: blk.fontSize, fontFamily: blk.fontFamily, fontWeight: blk.bold ? 700 : 400, fontStyle: blk.italic ? 'italic' : 'normal', textDecoration: blk.underline ? 'underline' : 'none', color: blk.level === 'h1' || blk.level === 'h2' ? '#4472C4' : '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap' as const, textAlign: 'justify' as const, margin: blk.level === 'body' ? '0 0 8px' : '16px 0 8px' }} contentEditable={isEditing} suppressContentEditableWarning>
+                    {blk.content}
+                  </Tag>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* REFERÊNCIAS */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
