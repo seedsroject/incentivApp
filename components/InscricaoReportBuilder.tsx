@@ -828,7 +828,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <table style={{ width: '100%', fontSize: 7.5, borderCollapse: 'collapse' }}>
             <thead>
               {/* ROW 1: Group headers */}
-              <tr style={{ background: '#4472C4', color: '#fff' }}>
+              <tr style={{ background: '#4472C4', color: '#000', fontWeight: 800 }}>
                 <th rowSpan={3} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', width: 65 }}>Núcleo</th>
                 <th colSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', textAlign: 'center' }}>Gênero</th>
                 <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Número de alunos</th>
@@ -838,7 +838,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 <th colSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', textAlign: 'center' }}>Escola</th>
               </tr>
               {/* ROW 2: Sub-headers */}
-              <tr style={{ background: '#4472C4', color: '#fff' }}>
+              <tr style={{ background: '#4472C4', color: '#000', fontWeight: 800 }}>
                 <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Masculino</th>
                 <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Feminino</th>
                 <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', textAlign: 'center' }}>Ensino</th>
@@ -846,7 +846,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Particular</th>
               </tr>
               {/* ROW 3: empty row to complete rowSpans */}
-              <tr style={{ background: '#4472C4', color: '#fff' }}>
+              <tr style={{ background: '#4472C4', color: '#000', fontWeight: 800 }}>
                 {/* Número de alunos */}
                 <th style={{ padding: '2px', border: '1px solid #fff', textAlign: 'center' }}></th>
               </tr>
