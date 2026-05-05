@@ -531,7 +531,7 @@ html, body {
   table {
     max-width: 100% !important;
     width: 100% !important;
-    table-layout: fixed !important;
+    table-layout: auto !important;
     word-wrap: break-word !important;
   }
 
