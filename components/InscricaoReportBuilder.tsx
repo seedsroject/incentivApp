@@ -25,21 +25,26 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  // --- Rich text editing system ---
+  // --- Draggable text box editing system ---
   type TextBlockLevel = 'h1' | 'h2' | 'h3' | 'body';
-  interface TextBlock { id: string; level: TextBlockLevel; content: string; fontFamily: string; fontSize: number; bold: boolean; italic: boolean; underline: boolean; }
-  const [customBlocks, setCustomBlocks] = useState<TextBlock[]>([]);
+  interface TextBox { id: string; level: TextBlockLevel; content: string; fontFamily: string; fontSize: number; bold: boolean; italic: boolean; underline: boolean; x: number; y: number; w: number; pageIdx: number; }
+  const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
-  const [blockForm, setBlockForm] = useState<TextBlock>({ id: '', level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false });
+  const [blockForm, setBlockForm] = useState<Omit<TextBox,'x'|'y'|'w'|'pageIdx'>>({ id: '', level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false });
+  const [dragState, setDragState] = useState<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
   const fontOptions = ['serif', 'sans-serif', 'Arial', 'Times New Roman', 'Georgia', 'Verdana', 'Courier New', 'Inter', 'Roboto'];
   const levelLabels: Record<TextBlockLevel, string> = { h1: 'Título (H1)', h2: 'Subtítulo (H2)', h3: 'Seção (H3)', body: 'Corpo de texto' };
   const levelDefaults: Record<TextBlockLevel, { fontSize: number; bold: boolean }> = { h1: { fontSize: 18, bold: true }, h2: { fontSize: 14, bold: true }, h3: { fontSize: 12, bold: true }, body: { fontSize: 11, bold: false } };
-  const openNewBlock = () => { setEditingBlockId(null); setBlockForm({ id: `blk_${Date.now()}`, level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false }); setShowBlockModal(true); };
-  const openEditBlock = (b: TextBlock) => { setEditingBlockId(b.id); setBlockForm({ ...b }); setShowBlockModal(true); };
-  const saveBlock = () => { if (!blockForm.content.trim()) return; if (editingBlockId) { setCustomBlocks(prev => prev.map(b => b.id === editingBlockId ? { ...blockForm } : b)); } else { setCustomBlocks(prev => [...prev, { ...blockForm }]); } setShowBlockModal(false); setEditingBlockId(null); };
-  const removeBlock = (id: string) => { setCustomBlocks(prev => prev.filter(b => b.id !== id)); };
-  const moveBlock = (id: string, dir: -1 | 1) => { setCustomBlocks(prev => { const idx = prev.findIndex(b => b.id === id); if (idx < 0) return prev; const ni = idx + dir; if (ni < 0 || ni >= prev.length) return prev; const a = [...prev]; [a[idx], a[ni]] = [a[ni], a[idx]]; return a; }); };
+  const customBlocks = textBoxes; // alias for sumário compat
+  const insertTextBox = (pageIdx: number) => { const nb: TextBox = { id: `tb_${Date.now()}`, level: 'body', content: 'Clique para editar...', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false, x: 60, y: 100, w: 400, pageIdx }; setTextBoxes(prev => [...prev, nb]); };
+  const openEditBox = (b: TextBox) => { setEditingBlockId(b.id); setBlockForm({ id: b.id, level: b.level, content: b.content, fontFamily: b.fontFamily, fontSize: b.fontSize, bold: b.bold, italic: b.italic, underline: b.underline }); setShowBlockModal(true); };
+  const saveBlock = () => { if (!blockForm.content.trim()) return; setTextBoxes(prev => prev.map(b => b.id === editingBlockId ? { ...b, ...blockForm } : b)); setShowBlockModal(false); setEditingBlockId(null); };
+  const removeBox = (id: string) => { setTextBoxes(prev => prev.filter(b => b.id !== id)); };
+  const handleDragStart = (e: React.MouseEvent, id: string) => { const box = textBoxes.find(b => b.id === id); if (!box) return; e.preventDefault(); setDragState({ id, startX: e.clientX, startY: e.clientY, origX: box.x, origY: box.y }); };
+  const handleDragMove = useCallback((e: MouseEvent) => { if (!dragState) return; const dx = e.clientX - dragState.startX; const dy = e.clientY - dragState.startY; setTextBoxes(prev => prev.map(b => b.id === dragState.id ? { ...b, x: Math.max(0, dragState.origX + dx), y: Math.max(0, dragState.origY + dy) } : b)); }, [dragState]);
+  const handleDragEnd = useCallback(() => { setDragState(null); }, []);
+  React.useEffect(() => { if (dragState) { window.addEventListener('mousemove', handleDragMove); window.addEventListener('mouseup', handleDragEnd); return () => { window.removeEventListener('mousemove', handleDragMove); window.removeEventListener('mouseup', handleDragEnd); }; } }, [dragState, handleDragMove, handleDragEnd]);
 
   const sel = nucleos.find(n => n.id === selectedNucleoId);
   const city = sel?.nome.split('|')[0]?.trim() || 'Núcleo';
@@ -146,6 +151,28 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
     </div>
   );
 
+  // Render draggable text boxes for a given page index
+  const PageTextBoxes = ({ pageIdx }: { pageIdx: number }) => {
+    const boxes = textBoxes.filter(b => b.pageIdx === pageIdx);
+    if (!boxes.length && !isEditing) return null;
+    return <>
+      {boxes.map(box => (
+        <div key={box.id} className="no-print-border" style={{ position: 'absolute', left: box.x, top: box.y, width: box.w, zIndex: 50, border: isEditing ? '2px dashed #4472C4' : 'none', borderRadius: 4, background: isEditing ? 'rgba(68,114,196,0.05)' : 'transparent', cursor: dragState?.id === box.id ? 'grabbing' : 'default', userSelect: dragState ? 'none' : 'auto' }}>
+          {isEditing && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#4472C4', color: '#fff', padding: '2px 6px', borderRadius: '4px 4px 0 0', fontSize: 9, cursor: 'grab' }} onMouseDown={e => handleDragStart(e, box.id)}>
+              <span style={{ flex: 1 }}>☰ Arraste</span>
+              <button onClick={() => openEditBox(box)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✏️</button>
+              <button onClick={() => removeBox(box.id)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✕</button>
+            </div>
+          )}
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ padding: isEditing ? 8 : 0, fontSize: box.fontSize, fontFamily: box.fontFamily, fontWeight: box.bold ? 700 : 400, fontStyle: box.italic ? 'italic' : 'normal', textDecoration: box.underline ? 'underline' : 'none', color: box.level === 'h1' || box.level === 'h2' ? '#4472C4' : '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap', outline: 'none', minHeight: 20 }}>
+            {box.content}
+          </div>
+        </div>
+      ))}
+    </>;
+  };
+
   return (
     <div className="freq-report-root">
       {/* TOOLBAR */}
@@ -173,17 +200,22 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* FLOATING EDIT TOOLBAR */}
+      {/* FIXED EDIT TOOLBAR - stays at top when scrolling */}
       {isEditing && (
-        <div className="no-print" style={{ position: 'sticky', top: 60, zIndex: 90, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
+        <div className="no-print" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
           <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>✏️ MODO EDIÇÃO</span>
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <button onClick={openNewBlock} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>＋ Inserir Bloco de Texto</button>
+          <select onChange={e => { if (e.target.value) { insertTextBox(Number(e.target.value)); e.target.value = ''; } }} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+            <option value="">＋ Inserir Caixa de Texto na Página...</option>
+            {Array.from({ length: 20 }, (_, i) => <option key={i} value={i}>Página {i + 1}</option>)}
+          </select>
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <span style={{ color: '#aaa', fontSize: 10 }}>Blocos adicionados: {customBlocks.length}</span>
-          {customBlocks.length > 0 && (
-            <span style={{ color: '#4472C4', fontSize: 10, fontWeight: 700 }}>• Títulos H1/H2 são adicionados ao Sumário automaticamente</span>
-          )}
+          <span style={{ color: '#aaa', fontSize: 10 }}>Caixas: {textBoxes.length}</span>
+          <span style={{ color: '#4472C4', fontSize: 10, fontWeight: 700 }}>• Arraste as caixas com o mouse • H1/H2 entram no Sumário</span>
+          <div style={{ height: 20, width: 1, background: '#444' }}></div>
+          <select onChange={e => { if (e.target.value) { setBlockForm(p => ({ ...p, fontFamily: e.target.value })); } }} style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '4px 8px', fontSize: 10 }}>
+            {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
         </div>
       )}
 
@@ -251,11 +283,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
       )}
 
+      {/* Inject style for page positioning */}
+      <style>{`.freq-page { position: relative !important; }`}</style>
+
       {/* REPORT */}
       <div ref={reportRef} className="freq-report-content">
 
-        {/* PAGE 1: COVER */}
+        {/* PAGE 0: COVER */}
         <div className="freq-page freq-cover-page">
+          <PageTextBoxes pageIdx={0} />
           <div className="freq-cover-logos">
             <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
@@ -306,6 +342,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 3: META DEFINITION */}
         <div className="freq-page" style={{ padding: '80px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <PageTextBoxes pageIdx={1} />
           <hr style={{ border: '1px solid #333', marginBottom: 16 }}/>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const }}>ANEXO META QUANTITATIVA 02 FICHA DE INSCRIÇÃO DECLARAÇÃO DE MATRÍCULA ESCOLAR</p>
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, margin: '8px 0 4px' }}>Meta Quantitativa 02:</h2>
@@ -320,6 +357,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* STUDENT LIST TABLE (Moved before Sumário) */}
         <div className="freq-page" style={{ padding: '40px 40px' }}>
+          <PageTextBoxes pageIdx={2} />
 
           {/* Header: Logo + Título */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, borderBottom: '2px solid #000', paddingBottom: 8 }}>
@@ -369,6 +407,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
                 {/* PAGE 4: SUMÁRIO */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
+          <PageTextBoxes pageIdx={3} />
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#4472C4' }}>SUMÁRIO</h2>
           {(() => {
             const baseItems = [
@@ -402,6 +441,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 6: INTRODUÇÃO */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
+          <PageTextBoxes pageIdx={5} />
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: '#4472C4' }}>1. INTRODUÇÃO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
             {aiResumo || `O presente relatório apresenta a análise das fichas de inscrição e declarações de matrícula escolar dos alunos participantes do projeto ${projectName}, no núcleo de ${city}/${uf}. O documento tem como objetivo verificar o cumprimento da Meta Quantitativa 02, que estabelece que pelo menos 65% dos beneficiados sejam alunos matriculados no sistema público de ensino.\n\nA análise contempla a distribuição dos alunos por nível de ensino, tipo de escola, gênero e faixa etária, além de apresentar a relação nominal completa dos participantes com a respectiva indicação da escola onde estão matriculados.`}
@@ -411,6 +451,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 7: 2.1 Distribution Table - Detailed by Grade */}
         <div className="freq-page" style={{ padding: '50px 40px' }}>
+          <PageTextBoxes pageIdx={6} />
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>2 DISTRIBUIÇÃO DAS ALUNAS MATRICULADAS NA {pName}</h2>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, marginBottom: 10 }}>2.1 Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio das alunas das escolas públicas e particulares participantes do projeto "{projectName}"</h3>
           <p style={{ fontSize: 9, textAlign: 'center', marginBottom: 8 }}>Tabela 1 — Nº de crianças/Adolescente por matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio</p>
@@ -556,6 +597,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
                 {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
         <div className="freq-page" style={{ padding: '50px 50px' }}>
+          <PageTextBoxes pageIdx={7} />
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
           <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12 }}>
@@ -653,6 +695,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 9: Bar Chart + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
+          <PageTextBoxes pageIdx={8} />
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
           <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
@@ -928,6 +971,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
         <div className="freq-page" style={{ padding: '40px 30px' }}>
+          <PageTextBoxes pageIdx={11} />
           <h3 style={{ fontSize: 11, fontWeight: 800, textAlign: 'center', marginBottom: 16, textTransform: 'uppercase' as const }}>3 RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS PELA {pName} EM ORDEM ALFABÉTICA</h3>
           <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
             <thead>
@@ -1158,30 +1202,6 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </React.Fragment>
           );
         })}
-
-        {/* CUSTOM TEXT BLOCKS */}
-        {customBlocks.length > 0 && (
-          <div className="freq-page" style={{ padding: '60px 60px', position: 'relative' }}>
-            {customBlocks.map((blk) => {
-              const Tag = blk.level === 'h1' ? 'h2' : blk.level === 'h2' ? 'h3' : blk.level === 'h3' ? 'h4' : 'p';
-              return (
-                <div key={blk.id} style={{ marginBottom: 20, position: 'relative' }}>
-                  {isEditing && (
-                    <div className="no-print" style={{ position: 'absolute', top: -8, right: 0, display: 'flex', gap: 4 }}>
-                      <button onClick={() => moveBlock(blk.id, -1)} style={{ background: '#eee', border: 'none', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }} title="Mover para cima">▲</button>
-                      <button onClick={() => moveBlock(blk.id, 1)} style={{ background: '#eee', border: 'none', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }} title="Mover para baixo">▼</button>
-                      <button onClick={() => openEditBlock(blk)} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10, cursor: 'pointer' }}>✏️</button>
-                      <button onClick={() => removeBlock(blk.id)} style={{ background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10, cursor: 'pointer' }}>✕</button>
-                    </div>
-                  )}
-                  <Tag style={{ fontSize: blk.fontSize, fontFamily: blk.fontFamily, fontWeight: blk.bold ? 700 : 400, fontStyle: blk.italic ? 'italic' : 'normal', textDecoration: blk.underline ? 'underline' : 'none', color: blk.level === 'h1' || blk.level === 'h2' ? '#4472C4' : '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap' as const, textAlign: 'justify' as const, margin: blk.level === 'body' ? '0 0 8px' : '16px 0 8px' }} contentEditable={isEditing} suppressContentEditableWarning>
-                    {blk.content}
-                  </Tag>
-                </div>
-              );
-            })}
-          </div>
-        )}
 
         {/* REFERÊNCIAS */}
         <div className="freq-page" style={{ padding: '80px 60px' }}>
