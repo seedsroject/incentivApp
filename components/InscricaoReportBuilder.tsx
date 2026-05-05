@@ -823,37 +823,66 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
-        <div className="freq-page" style={{ padding: '60px 40px' }}>
-          <h3 style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', marginBottom: 16 }}>3. RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS PELA {pName} EM ORDEM ALFABÉTICA</h3>
-          <table style={{ width: '100%', fontSize: 8, borderCollapse: 'collapse' }}>
+        <div className="freq-page" style={{ padding: '40px 30px' }}>
+          <h3 style={{ fontSize: 11, fontWeight: 800, textAlign: 'center', marginBottom: 16, textTransform: 'uppercase' as const }}>3 RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS PELA {pName} EM ORDEM ALFABÉTICA</h3>
+          <table style={{ width: '100%', fontSize: 7.5, borderCollapse: 'collapse' }}>
             <thead>
+              {/* ROW 1: Group headers */}
               <tr style={{ background: '#4472C4', color: '#fff' }}>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Núcleo</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Gênero</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Nº</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Nome</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Idade</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Ensino</th>
-                <th style={{ padding: 5, border: '1px solid #fff' }}>Escola</th>
+                <th rowSpan={3} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', width: 65 }}>Núcleo</th>
+                <th colSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', textAlign: 'center' }}>Gênero</th>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Número de alunos</th>
+                <th rowSpan={3} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom' }}>Nome (ordem alfabética)</th>
+                <th rowSpan={3} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', textAlign: 'center', width: 35 }}>Idade</th>
+                <th colSpan={1} style={{ padding: '4px 2px', border: '1px solid #fff', textAlign: 'center' }}>Ensino Fundamental I, Ensino<br/>Fundamental II e Ensino Médio</th>
+                <th colSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', textAlign: 'center' }}>Escola</th>
+              </tr>
+              {/* ROW 2: Sub-headers */}
+              <tr style={{ background: '#4472C4', color: '#fff' }}>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Masculino</th>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Feminino</th>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', textAlign: 'center' }}>Ensino</th>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Pública</th>
+                <th rowSpan={2} style={{ padding: '4px 2px', border: '1px solid #fff', verticalAlign: 'bottom', writingMode: 'vertical-rl' as const, textOrientation: 'mixed' as const, width: 22, textAlign: 'center' }}>Particular</th>
+              </tr>
+              {/* ROW 3: empty row to complete rowSpans */}
+              <tr style={{ background: '#4472C4', color: '#fff' }}>
+                {/* Número de alunos */}
+                <th style={{ padding: '2px', border: '1px solid #fff', textAlign: 'center' }}></th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((s, i) => {
-                const isFem = (s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a');
+                // Calculate age
                 let age = '';
-                if (s.data_nascimento) { const ms = new Date().getTime() - new Date(s.data_nascimento).getTime(); age = Math.floor(ms / 31557600000).toString(); }
+                if (s.data_nascimento) {
+                  const ms = new Date().getTime() - new Date(s.data_nascimento).getTime();
+                  age = Math.floor(ms / 31557600000).toString();
+                }
+                // Get socioeconomic data for gender and school grade
+                const socioDoc = history.filter(d => d.type === 'INDICADORES_SAUDE').find(d => normName(d.metaData?.nome || '') === normName(s.nome));
+                const genero = socioDoc?.metaData?.genero || '';
+                const escolaridade = socioDoc?.metaData?.escolaridade || '';
+                const isMasc = genero.toUpperCase().startsWith('M') || (!genero && !(s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a'));
+                const isFem = genero.toUpperCase().startsWith('F') || (!genero && (s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a'));
+                const isPub = s.escola_tipo === 'PUBLICA';
+                const isPart = s.escola_tipo === 'PARTICULAR';
+
                 return (
                   <tr key={s.id || i} style={{ background: i % 2 === 0 ? '#D6E4F0' : '#fff' }}>
-                    <td style={{ padding: 5, border: '1px solid #ccc' }}>{city}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc', textAlign: 'center' }}>{isFem ? 'F' : 'M'}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc', textAlign: 'center' }}>{i + 1}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc' }} contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc', textAlign: 'center' }}>{age}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc' }}>{s.escola_tipo === 'PUBLICA' ? 'Pública' : 'Particular'}</td>
-                    <td style={{ padding: 5, border: '1px solid #ccc' }} contentEditable={isEditing} suppressContentEditableWarning>{s.escola_nome}</td>
+                    <td style={{ padding: '4px 3px', border: '1px solid #ccc', fontSize: 7 }}>{`${city}/${uf}`}</td>
+                    <td style={{ padding: '4px 1px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{isMasc ? 'X' : ''}</td>
+                    <td style={{ padding: '4px 1px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{isFem ? 'X' : ''}</td>
+                    <td style={{ padding: '4px 1px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{i + 1}</td>
+                    <td style={{ padding: '4px 3px', border: '1px solid #ccc' }} contentEditable={isEditing} suppressContentEditableWarning>{s.nome}</td>
+                    <td style={{ padding: '4px 2px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{age}</td>
+                    <td style={{ padding: '4px 3px', border: '1px solid #ccc', textAlign: 'center', fontSize: 7 }} contentEditable={isEditing} suppressContentEditableWarning>{escolaridade || '—'}</td>
+                    <td style={{ padding: '4px 1px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{isPub ? 'X' : ''}</td>
+                    <td style={{ padding: '4px 1px', border: '1px solid #ccc', textAlign: 'center', fontWeight: 700 }}>{isPart ? 'X' : ''}</td>
                   </tr>
                 );
               })}
+              {sorted.length === 0 && <tr><td colSpan={9} style={{ textAlign: 'center', padding: 20, color: '#999' }}>Nenhum aluno encontrado</td></tr>}
             </tbody>
           </table>
           <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>17</div>
