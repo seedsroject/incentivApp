@@ -186,7 +186,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   return (
     <div className="freq-report-root">
       {/* TOOLBAR - FIXED at top */}
-      <div className="freq-report-toolbar no-print" style={{ position: 'sticky', top: 0, zIndex: 110 }}>
+      <div className="freq-report-toolbar no-print" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 110 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onBack} className="freq-btn-back" title="Voltar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -203,20 +203,20 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
           <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />
-          <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="N\u00ba SLIE" />
-          <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>\u270f\ufe0f {isEditing ? 'Salvar' : 'Editar'}</button>
-          <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">{isGeneratingAI ? <span className="freq-spinner"></span> : '\ud83e\udd16'} Gerar Resumo IA</button>
-          <button onClick={handlePrint} className="freq-btn freq-btn-print">\ud83d\udda8\ufe0f Exportar PDF</button>
+          <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="Nº SLIE" />
+          <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>{'✏️'} {isEditing ? 'Salvar' : 'Editar'}</button>
+          <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">{isGeneratingAI ? <span className="freq-spinner"></span> : '🤖'} Gerar Resumo IA</button>
+          <button onClick={handlePrint} className="freq-btn freq-btn-print">{'🖨️'} Exportar PDF</button>
         </div>
       </div>
 
       {/* EDIT TOOLBAR - fixed below main toolbar */}
       {isEditing && (
-        <div className="no-print" style={{ position: 'sticky', top: 52, zIndex: 109, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
-          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>\u270f\ufe0f EDI\u00c7\u00c3O</span>
+        <div className="no-print" style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 109, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
+          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>{'✏️'} EDIÇÃO</span>
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <button onClick={() => setDrawMode(!drawMode)} style={{ background: drawMode ? '#e74c3c' : '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all .2s' }}>{drawMode ? '\u2715 Cancelar Desenho' : '\uff0b Desenhar Caixa de Texto'}</button>
-          {drawMode && <span style={{ color: '#ff6b6b', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' }}>\u2794 Clique e arraste na p\u00e1gina para criar a caixa</span>}
+          <button onClick={() => setDrawMode(!drawMode)} style={{ background: drawMode ? '#e74c3c' : '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all .2s' }}>{drawMode ? '✕ Cancelar Desenho' : '＋ Desenhar Caixa de Texto'}</button>
+          {drawMode && <span style={{ color: '#ff6b6b', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' }}>➔ Clique e arraste na página para criar a caixa</span>}
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
           <span style={{ color: '#aaa', fontSize: 10 }}>Caixas: {textBoxes.length}</span>
           <select onChange={e => { if (e.target.value) { setBlockForm(p => ({ ...p, fontFamily: e.target.value })); } }} style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '4px 8px', fontSize: 10 }}>
@@ -299,7 +299,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
       `}</style>
 
       {/* REPORT */}
-      <div ref={reportRef} className={`freq-report-content ${drawMode ? 'draw-active' : ''}`} onMouseDown={onDrawMouseDown}>
+      <div ref={reportRef} className={`freq-report-content ${drawMode ? 'draw-active' : ''}`} onMouseDown={onDrawMouseDown} style={{ paddingTop: isEditing ? 100 : 60 }}>
 
         {/* PAGE 0: COVER */}
         <div className="freq-page freq-cover-page">
