@@ -999,14 +999,56 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
-            <p>Em conformidade com a Meta Quantitativa 02 do projeto, que estabelece o mínimo de 65% das vagas para estudantes da rede pública, o núcleo atingiu {pctPublica}%, cumprindo o indicador previsto.</p>
-            <ul style={{ marginTop: 8, paddingLeft: 20 }}>
-              <li>Total atendimento do público alvo.</li>
-              <li>Superação da meta de inclusão de alunos de escolas públicas.</li>
-              <li>Integração harmoniosa das diferentes redes de ensino.</li>
-            </ul>
-          </div>
+          {/* Analysis text below Figura 4 */}
+          {(() => {
+            const metaMin = 65;
+            const diffMeta = pctPublica - metaMin;
+            const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+            const minAge = ageKeys[0] || 8;
+            const maxAge = ageKeys[ageKeys.length - 1] || 16;
+            const metaCumprida = pctPublica >= metaMin;
+            const redeMaior = pctPublica >= pctParticular ? 'pública' : 'particular';
+            const redeMenor = pctPublica >= pctParticular ? 'particular' : 'pública';
+            const pctRedeMaior = Math.max(pctPublica, pctParticular);
+            const pctRedeMenor = Math.min(pctPublica, pctParticular);
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
+                {pctRedeMaior > 0 && pctRedeMenor > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      A distribuição dos alunos participantes do projeto "{projectName}" em {city} ({uf}) evidenciou que a maior parte dos beneficiados esteve matriculada na rede {redeMaior} de ensino, que representou {pctRedeMaior}% do total de inscritos, enquanto a rede {redeMenor} correspondeu a {pctRedeMenor}%. Esses resultados demonstraram que o projeto alcançou de forma efetiva o público-alvo definido em sua Meta Quantitativa, que estabeleceu atender no mínimo {metaMin}% de alunos provenientes do sistema público de ensino. {metaCumprida
+                        ? `O indicador previsto — participação mínima de ${metaMin}% de crianças e adolescentes da rede pública — foi plenamente atendido, já que o percentual registrado superou a meta em ${diffMeta} pontos percentuais.`
+                        : `O indicador previsto — participação mínima de ${metaMin}% de crianças e adolescentes da rede pública — ficou ${Math.abs(diffMeta)} pontos percentuais abaixo da meta.`} A verificação dessa informação ocorreu por meio das fichas de inscrição, nas quais cada participante informou sua vinculação escolar.
+                    </p>
+                  : pctRedeMaior > 0
+                    ? <p style={{ marginBottom: 8 }}>
+                        A totalidade dos alunos participantes (100%) pertenceu à rede {redeMaior} de ensino, enquanto a rede {redeMenor} representou 0%.
+                      </p>
+                    : <p style={{ marginBottom: 8 }}>Não há dados disponíveis sobre a distribuição por rede de ensino.</p>}
+                <p style={{ marginBottom: 8 }}>
+                  Além disso, o projeto cumpriu integralmente o objeto proposto, que previu a realização de aulas de triathlon (natação, ciclismo e corrida) para crianças e adolescentes de {minAge} a {maxAge} anos regularmente matriculados na rede oficial de ensino. Todos os participantes se enquadraram na faixa etária estabelecida, o que confirmou a aderência total ao público definido. A execução garantiu que as atividades esportivas fossem ofertadas exclusivamente a estudantes da rede oficial, conforme previsto no planejamento.
+                </p>
+                <p style={{ marginBottom: 8 }}>
+                  Quanto ao estado de cumprimento das metas, o projeto alcançou plenamente os objetivos estabelecidos, tanto no que diz respeito ao perfil dos beneficiários quanto à proporção de alunos da rede pública. A execução demonstrou coerência com o propósito educacional da iniciativa, promovendo vivências esportivas estruturadas e integradas às práticas de formação cidadã.
+                </p>
+                <p style={{ marginBottom: 4, fontWeight: 700 }}>Entre os pontos positivos, destacaram-se:</p>
+                <ul style={{ paddingLeft: 24, marginBottom: 8 }}>
+                  <li>o atendimento integral ao público-alvo definido no objeto;</li>
+                  <li>o {metaCumprida ? 'cumprimento e superação' : 'acompanhamento'} da meta de participação de alunos da rede pública;</li>
+                  <li>a efetiva oferta de aulas nas três modalidades do triathlon, garantindo a natureza educacional e formativa do projeto;</li>
+                  <li>a ampla adesão de crianças e adolescentes dentro da faixa etária prevista.</li>
+                </ul>
+                {pctRedeMenor > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      Como ponto negativo, observou-se apenas a menor participação de estudantes da rede {redeMenor}, o que, embora não tenha comprometido o cumprimento das metas, indicou uma adesão menos equilibrada entre os dois segmentos de ensino. Ainda assim, esse aspecto não afetou o desempenho global do projeto, que se manteve alinhado às diretrizes e objetivos estabelecidos.
+                    </p>
+                  : null}
+                <p>
+                  De modo geral, os dados confirmaram que o projeto cumpriu plenamente o objeto e atingiu as metas previstas, consolidando-se como uma ação educacional bem-sucedida e socialmente direcionada ao público prioritário.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* PAGE 11: 2.3 Gênero + Analysis */}
