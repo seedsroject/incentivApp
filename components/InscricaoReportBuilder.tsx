@@ -704,7 +704,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             const medioFinal = medioBaixa ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio';
 
             return (
-              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
                 <p>O projeto {projectName}, executado em {city} ({uf}), teve início em {new Date(periodStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} e seguiu até {new Date(periodEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
                 <p style={{ marginTop: 6 }}>A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II{maxGradeText}. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.</p>
                 <p style={{ marginTop: 6 }}>Nos anos iniciais do Ensino Fundamental I, a adesão foi {adesaoFundI}, somando {pctFundI}% dos participantes{maxFIText}.</p>
@@ -719,10 +719,10 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
         <div className="freq-page" style={{ padding: '50px 50px' }}>
           <PageTextBoxes pageIdx={7} />
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
+          <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
           <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12, lineHeight: 1.4 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12, lineHeight: 1.4 }}>
               {`Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "${projectName}" em ${city} (${uf})`}
             </p>
 
@@ -817,8 +817,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 9: Bar Chart + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <PageTextBoxes pageIdx={8} />
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
-          <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
+          <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 180, padding: '16px 40px 0', position: 'relative' }}>
             {[
@@ -833,7 +833,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 10, marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 11, marginTop: 12 }}>
             <span><span style={{ color: '#4472C4' }}>■</span> Ensino Fundamental I</span>
             <span><span style={{ color: '#ED7D31' }}>■</span> Ensino Fundamental II</span>
             <span><span style={{ color: '#A5A5A5' }}>■</span> Ensino Médio</span>
@@ -845,7 +845,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             <p style={{ marginTop: 8 }}>Estes dados evidenciam o alinhamento do projeto com o público-alvo prioritário das categorias de base.</p>
           </div>
 
-          <p style={{ fontSize: 10, marginBottom: 4, marginTop: 24 }}><b>Figura 3</b> {"\u2014"} Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritas no projeto "{projectName}" em {city} ({uf})</p>
+          <p style={{ fontSize: 11, marginBottom: 4, marginTop: 24 }}><b>Figura 3</b> {"\u2014"} Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritas no projeto "{projectName}" em {city} ({uf})</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 60, height: 170, padding: '16px 20px 0', position: 'relative' }}>
               {[
@@ -868,9 +868,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Rede de Ensino em ${city}/${uf}`}
             </p>
             {(() => {
@@ -914,8 +914,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               );
             })()}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 10 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Escola Pública</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Escola Particular</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Escola Pública</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Escola Particular</span>
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
@@ -932,9 +932,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 11: 2.3 Gênero + Analysis */}
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
-          <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figura 5</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
+          <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 5</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Gênero dos alunos do projeto "${projectName}" em ${city}/${uf}`}
             </p>
             {(() => {
@@ -980,8 +980,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               );
             })()}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 10 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Masculino</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Feminino</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#4472C4', border: '1px solid #666' }}></span> Masculino</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}><span style={{ display: 'inline-block', width: 10, height: 10, background: '#ED7D31', border: '1px solid #666' }}></span> Feminino</span>
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
@@ -1260,7 +1260,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 </div>
 
                 {/* Termos legais */}
-                <div style={{ fontSize: 9, lineHeight: 1.6, textAlign: 'justify' as const, color: '#000', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, lineHeight: 1.6, textAlign: 'justify' as const, color: '#000', marginBottom: 16 }}>
                   <p style={{ marginBottom: 6 }}>Declaro que o aluno acima identificado está frequentando a escola regularmente e está ciente que como critério de permanência no projeto será exigido do aluno, o bom rendimento escolar em regular instituição de ensino da região, através da apresentação frequente do boletim escolar, declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.</p>
                   <p style={{ marginBottom: 6 }}>Os uniformes que serão entregues aos alunos, são de responsabilidade do aluno, e em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso, por isso a boa conservação e cuidado são fundamentais.</p>
                   <p style={{ marginBottom: 6 }}>O(a) Responsável legal, infra assinados(s), com fundamento no art. 5º, X e XXVIII da Constituição Federal/ 1988, e no art. 18, da Lei 10.406, de 10/01/2002, AUTORIZA o uso da imagem e/ou nome do aluno inscrito do projeto, para fins de divulgação das atividades e propaganda, podendo, para tanto, reproduzi-la e/ou divulgá-la pela internet, mídia eletrônica, por jornais, revistas, folders; bem como por todo e qualquer material e veículo de comunicação, público e/ou privado, por parceiros e patrocinadores do projeto, com finalidade informativa, de utilidade pública e de marketing, por tempo indeterminado. O(a) Cedente declara ainda que não há nada a ser reclamado, a título de direitos conexos; referentes ao uso de sua imagem e/ou nome. A presente autorização é concedida a título gratuito.</p>
