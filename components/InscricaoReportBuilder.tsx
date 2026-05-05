@@ -908,6 +908,41 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             </div>
             <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
           </div>
+
+          {/* Analysis text below Figura 3 */}
+          {(() => {
+            const t = totalAlunos || 1;
+            const pctFII = Math.round((eduLevel.fundII * 100) / t);
+            const pctFI = Math.round((eduLevel.fundI * 100) / t);
+            const pctEM = Math.round((eduLevel.medio * 100) / t);
+            const destaqueMaior = pctFII >= pctFI ? 'Ensino Fundamental II' : 'Ensino Fundamental I';
+            const destaqueMenor = pctFII >= pctFI ? 'Ensino Fundamental I' : 'Ensino Fundamental II';
+            const pctMaior = Math.max(pctFII, pctFI);
+            const pctMenor = Math.min(pctFII, pctFI);
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
+                {pctMaior > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      A distribuição das matrículas no projeto "{projectName}" em {city} ({uf}) revelou um predomínio claro de estudantes do {destaqueMaior}, que representaram {pctMaior}% dos participantes. Esse resultado indicou que {pctFII >= pctFI ? 'adolescentes dos anos finais do ensino fundamental demonstraram maior interesse e disponibilidade para participar de uma modalidade esportiva que exigiu autonomia, resistência física e regularidade nos treinos' : 'crianças dos anos iniciais demonstraram maior interesse e adesão ao projeto, indicando boa aceitação entre famílias e escolas'}.
+                    </p>
+                  : <p style={{ marginBottom: 8 }}>O {destaqueMaior} representou 0% das matrículas.</p>}
+                {pctMenor > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      O {destaqueMenor} apareceu como o segundo grupo mais representativo, com {pctMenor}% das matrículas. Esse percentual mostrou que o projeto também atraiu {pctFII >= pctFI ? 'crianças mais novas, o que sugeriu boa aceitação entre famílias e escolas, além de indicar que a proposta esportiva foi acessível e motivadora para essa faixa etária, mesmo diante das demandas motoras e de coordenação envolvidas no triathlon' : 'adolescentes dos anos finais, revelando interesse crescente à medida que a maturidade motora e a autonomia se consolidam'}.
+                    </p>
+                  : <p style={{ marginBottom: 8 }}>O {destaqueMenor} representou 0% das matrículas.</p>}
+                {pctEM > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      Já o Ensino Médio registrou participação {pctEM <= 10 ? 'bastante reduzida' : 'moderada'}, com {pctEM}% dos inscritos. Esse cenário pode ter estado relacionado à rotina mais intensa de estudos, à preparação para vestibulares e ao menor tempo disponível para atividades extracurriculares, fatores comuns entre adolescentes dessa etapa escolar.
+                    </p>
+                  : <p style={{ marginBottom: 8 }}>O Ensino Médio representou 0% das matrículas.</p>}
+                <p>
+                  De forma geral, a distribuição evidenciou que o projeto teve maior impacto entre estudantes do Ensino Fundamental, especialmente no {destaqueMaior}, consolidando-se como uma iniciativa bem recebida por crianças e pré-adolescentes. Esses dados permitiram orientar reflexões sobre futuras ações, caso se desejasse ampliar o alcance entre alunos do Ensino Médio ou fortalecer ainda mais a participação nos anos iniciais.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
