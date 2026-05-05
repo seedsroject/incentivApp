@@ -825,7 +825,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
         <div className="freq-page" style={{ padding: '40px 30px' }}>
           <h3 style={{ fontSize: 11, fontWeight: 800, textAlign: 'center', marginBottom: 16, textTransform: 'uppercase' as const }}>3 RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS PELA {pName} EM ORDEM ALFABÉTICA</h3>
-          <table style={{ width: '100%', fontSize: 7.5, borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
             <thead>
               {/* ROW 1: Group headers */}
               <tr style={{ background: '#4472C4', color: '#000', fontWeight: 800 }}>
