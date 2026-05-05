@@ -27,24 +27,31 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
   // --- Draggable text box editing system ---
   type TextBlockLevel = 'h1' | 'h2' | 'h3' | 'body';
-  interface TextBox { id: string; level: TextBlockLevel; content: string; fontFamily: string; fontSize: number; bold: boolean; italic: boolean; underline: boolean; x: number; y: number; w: number; pageIdx: number; }
+  interface TextBox { id: string; level: TextBlockLevel; content: string; fontFamily: string; fontSize: number; bold: boolean; italic: boolean; underline: boolean; x: number; y: number; w: number; h: number; pageIdx: number; }
   const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
-  const [blockForm, setBlockForm] = useState<Omit<TextBox,'x'|'y'|'w'|'pageIdx'>>({ id: '', level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false });
+  const [blockForm, setBlockForm] = useState<Omit<TextBox,'x'|'y'|'w'|'h'|'pageIdx'>>({ id: '', level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false });
   const [dragState, setDragState] = useState<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const [drawMode, setDrawMode] = useState(false);
+  const [drawState, setDrawState] = useState<{ pageEl: HTMLElement; pageIdx: number; startX: number; startY: number; curX: number; curY: number } | null>(null);
   const fontOptions = ['serif', 'sans-serif', 'Arial', 'Times New Roman', 'Georgia', 'Verdana', 'Courier New', 'Inter', 'Roboto'];
-  const levelLabels: Record<TextBlockLevel, string> = { h1: 'Título (H1)', h2: 'Subtítulo (H2)', h3: 'Seção (H3)', body: 'Corpo de texto' };
+  const levelLabels: Record<TextBlockLevel, string> = { h1: 'T\u00edtulo (H1)', h2: 'Subt\u00edtulo (H2)', h3: 'Se\u00e7\u00e3o (H3)', body: 'Corpo de texto' };
   const levelDefaults: Record<TextBlockLevel, { fontSize: number; bold: boolean }> = { h1: { fontSize: 18, bold: true }, h2: { fontSize: 14, bold: true }, h3: { fontSize: 12, bold: true }, body: { fontSize: 11, bold: false } };
-  const customBlocks = textBoxes; // alias for sumário compat
-  const insertTextBox = (pageIdx: number) => { const nb: TextBox = { id: `tb_${Date.now()}`, level: 'body', content: 'Clique para editar...', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false, x: 60, y: 100, w: 400, pageIdx }; setTextBoxes(prev => [...prev, nb]); };
+  const customBlocks = textBoxes;
   const openEditBox = (b: TextBox) => { setEditingBlockId(b.id); setBlockForm({ id: b.id, level: b.level, content: b.content, fontFamily: b.fontFamily, fontSize: b.fontSize, bold: b.bold, italic: b.italic, underline: b.underline }); setShowBlockModal(true); };
   const saveBlock = () => { if (!blockForm.content.trim()) return; setTextBoxes(prev => prev.map(b => b.id === editingBlockId ? { ...b, ...blockForm } : b)); setShowBlockModal(false); setEditingBlockId(null); };
   const removeBox = (id: string) => { setTextBoxes(prev => prev.filter(b => b.id !== id)); };
+  // Drag existing box
   const handleDragStart = (e: React.MouseEvent, id: string) => { const box = textBoxes.find(b => b.id === id); if (!box) return; e.preventDefault(); setDragState({ id, startX: e.clientX, startY: e.clientY, origX: box.x, origY: box.y }); };
   const handleDragMove = useCallback((e: MouseEvent) => { if (!dragState) return; const dx = e.clientX - dragState.startX; const dy = e.clientY - dragState.startY; setTextBoxes(prev => prev.map(b => b.id === dragState.id ? { ...b, x: Math.max(0, dragState.origX + dx), y: Math.max(0, dragState.origY + dy) } : b)); }, [dragState]);
   const handleDragEnd = useCallback(() => { setDragState(null); }, []);
   React.useEffect(() => { if (dragState) { window.addEventListener('mousemove', handleDragMove); window.addEventListener('mouseup', handleDragEnd); return () => { window.removeEventListener('mousemove', handleDragMove); window.removeEventListener('mouseup', handleDragEnd); }; } }, [dragState, handleDragMove, handleDragEnd]);
+  // Canvas draw: mousedown on page starts, mousemove updates preview, mouseup creates box
+  const onDrawMouseDown = (e: React.MouseEvent) => { if (!drawMode || !isEditing) return; const pageEl = (e.target as HTMLElement).closest('.freq-page') as HTMLElement; if (!pageEl) return; const pages = reportRef.current?.querySelectorAll('.freq-page'); if (!pages) return; let pgIdx = -1; pages.forEach((p, i) => { if (p === pageEl) pgIdx = i; }); if (pgIdx < 0) return; const rect = pageEl.getBoundingClientRect(); const sx = e.clientX - rect.left; const sy = e.clientY - rect.top; setDrawState({ pageEl, pageIdx: pgIdx, startX: sx, startY: sy, curX: sx, curY: sy }); e.preventDefault(); };
+  const onDrawMouseMove = useCallback((e: MouseEvent) => { if (!drawState) return; const rect = drawState.pageEl.getBoundingClientRect(); setDrawState(p => p ? { ...p, curX: e.clientX - rect.left, curY: e.clientY - rect.top } : null); }, [drawState]);
+  const onDrawMouseUp = useCallback(() => { if (!drawState) return; const x = Math.min(drawState.startX, drawState.curX); const y = Math.min(drawState.startY, drawState.curY); const w = Math.abs(drawState.curX - drawState.startX); const h = Math.abs(drawState.curY - drawState.startY); if (w > 20 && h > 10) { const nb: TextBox = { id: `tb_${Date.now()}`, level: 'body', content: '', fontFamily: 'serif', fontSize: 11, bold: false, italic: false, underline: false, x, y, w, h, pageIdx: drawState.pageIdx }; setTextBoxes(prev => [...prev, nb]); } setDrawState(null); setDrawMode(false); }, [drawState]);
+  React.useEffect(() => { if (drawState) { window.addEventListener('mousemove', onDrawMouseMove); window.addEventListener('mouseup', onDrawMouseUp); return () => { window.removeEventListener('mousemove', onDrawMouseMove); window.removeEventListener('mouseup', onDrawMouseUp); }; } }, [drawState, onDrawMouseMove, onDrawMouseUp]);
 
   const sel = nucleos.find(n => n.id === selectedNucleoId);
   const city = sel?.nome.split('|')[0]?.trim() || 'Núcleo';
@@ -154,19 +161,22 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   // Render draggable text boxes for a given page index
   const PageTextBoxes = ({ pageIdx }: { pageIdx: number }) => {
     const boxes = textBoxes.filter(b => b.pageIdx === pageIdx);
-    if (!boxes.length && !isEditing) return null;
     return <>
+      {/* Draw preview rectangle */}
+      {drawState && drawState.pageIdx === pageIdx && (
+        <div className="draw-preview" style={{ position: 'absolute', left: Math.min(drawState.startX, drawState.curX), top: Math.min(drawState.startY, drawState.curY), width: Math.abs(drawState.curX - drawState.startX), height: Math.abs(drawState.curY - drawState.startY), border: '2px dashed #4472C4', background: 'rgba(68,114,196,0.1)', borderRadius: 4, zIndex: 60, pointerEvents: 'none' }} />
+      )}
       {boxes.map(box => (
-        <div key={box.id} className="no-print-border" style={{ position: 'absolute', left: box.x, top: box.y, width: box.w, zIndex: 50, border: isEditing ? '2px dashed #4472C4' : 'none', borderRadius: 4, background: isEditing ? 'rgba(68,114,196,0.05)' : 'transparent', cursor: dragState?.id === box.id ? 'grabbing' : 'default', userSelect: dragState ? 'none' : 'auto' }}>
+        <div key={box.id} className="no-print-border" style={{ position: 'absolute', left: box.x, top: box.y, width: box.w, minHeight: box.h || 30, zIndex: 50, border: isEditing ? '2px dashed #4472C4' : 'none', borderRadius: 4, background: isEditing ? 'rgba(68,114,196,0.05)' : 'transparent', cursor: dragState?.id === box.id ? 'grabbing' : 'default', userSelect: dragState ? 'none' : 'auto', pointerEvents: 'auto' }}>
           {isEditing && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#4472C4', color: '#fff', padding: '2px 6px', borderRadius: '4px 4px 0 0', fontSize: 9, cursor: 'grab' }} onMouseDown={e => handleDragStart(e, box.id)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#4472C4', color: '#fff', padding: '2px 6px', borderRadius: '4px 4px 0 0', fontSize: 9, cursor: 'grab' }} onMouseDown={e => { e.stopPropagation(); handleDragStart(e, box.id); }}>
               <span style={{ flex: 1 }}>☰ Arraste</span>
-              <button onClick={() => openEditBox(box)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✏️</button>
-              <button onClick={() => removeBox(box.id)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✕</button>
+              <button onClick={e => { e.stopPropagation(); openEditBox(box); }} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✏️</button>
+              <button onClick={e => { e.stopPropagation(); removeBox(box.id); }} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 3, padding: '1px 6px', fontSize: 9, cursor: 'pointer' }}>✕</button>
             </div>
           )}
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ padding: isEditing ? 8 : 0, fontSize: box.fontSize, fontFamily: box.fontFamily, fontWeight: box.bold ? 700 : 400, fontStyle: box.italic ? 'italic' : 'normal', textDecoration: box.underline ? 'underline' : 'none', color: box.level === 'h1' || box.level === 'h2' ? '#4472C4' : '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap', outline: 'none', minHeight: 20 }}>
-            {box.content}
+            {box.content || (isEditing ? 'Clique para digitar...' : '')}
           </div>
         </div>
       ))}
@@ -175,8 +185,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
 
   return (
     <div className="freq-report-root">
-      {/* TOOLBAR */}
-      <div className="freq-report-toolbar no-print">
+      {/* TOOLBAR - FIXED at top */}
+      <div className="freq-report-toolbar no-print" style={{ position: 'sticky', top: 0, zIndex: 110 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onBack} className="freq-btn-back" title="Voltar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -193,26 +203,22 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
           <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />
-          <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="Nº SLIE" />
-          <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>✏️ {isEditing ? 'Salvar' : 'Editar'}</button>
-          <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">{isGeneratingAI ? <span className="freq-spinner"></span> : '🤖'} Gerar Resumo IA</button>
-          <button onClick={handlePrint} className="freq-btn freq-btn-print">🖨️ Exportar PDF</button>
+          <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="N\u00ba SLIE" />
+          <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>\u270f\ufe0f {isEditing ? 'Salvar' : 'Editar'}</button>
+          <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">{isGeneratingAI ? <span className="freq-spinner"></span> : '\ud83e\udd16'} Gerar Resumo IA</button>
+          <button onClick={handlePrint} className="freq-btn freq-btn-print">\ud83d\udda8\ufe0f Exportar PDF</button>
         </div>
       </div>
 
-      {/* FIXED EDIT TOOLBAR - stays at top when scrolling */}
+      {/* EDIT TOOLBAR - fixed below main toolbar */}
       {isEditing && (
-        <div className="no-print" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
-          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>✏️ MODO EDIÇÃO</span>
+        <div className="no-print" style={{ position: 'sticky', top: 52, zIndex: 109, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
+          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>\u270f\ufe0f EDI\u00c7\u00c3O</span>
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <select onChange={e => { if (e.target.value) { insertTextBox(Number(e.target.value)); e.target.value = ''; } }} style={{ background: '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-            <option value="">＋ Inserir Caixa de Texto na Página...</option>
-            {Array.from({ length: 20 }, (_, i) => <option key={i} value={i}>Página {i + 1}</option>)}
-          </select>
+          <button onClick={() => setDrawMode(!drawMode)} style={{ background: drawMode ? '#e74c3c' : '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all .2s' }}>{drawMode ? '\u2715 Cancelar Desenho' : '\uff0b Desenhar Caixa de Texto'}</button>
+          {drawMode && <span style={{ color: '#ff6b6b', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' }}>\u2794 Clique e arraste na p\u00e1gina para criar a caixa</span>}
           <div style={{ height: 20, width: 1, background: '#444' }}></div>
           <span style={{ color: '#aaa', fontSize: 10 }}>Caixas: {textBoxes.length}</span>
-          <span style={{ color: '#4472C4', fontSize: 10, fontWeight: 700 }}>• Arraste as caixas com o mouse • H1/H2 entram no Sumário</span>
-          <div style={{ height: 20, width: 1, background: '#444' }}></div>
           <select onChange={e => { if (e.target.value) { setBlockForm(p => ({ ...p, fontFamily: e.target.value })); } }} style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '4px 8px', fontSize: 10 }}>
             {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
@@ -284,10 +290,16 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
       )}
 
       {/* Inject style for page positioning */}
-      <style>{`.freq-page { position: relative !important; }`}</style>
+      <style>{`
+        .freq-page { position: relative !important; }
+        .freq-report-content.draw-active .freq-page { cursor: crosshair !important; }
+        .freq-report-content.draw-active .freq-page * { pointer-events: none; }
+        .freq-report-content.draw-active .freq-page .draw-preview { pointer-events: none; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+      `}</style>
 
       {/* REPORT */}
-      <div ref={reportRef} className="freq-report-content">
+      <div ref={reportRef} className={`freq-report-content ${drawMode ? 'draw-active' : ''}`} onMouseDown={onDrawMouseDown}>
 
         {/* PAGE 0: COVER */}
         <div className="freq-page freq-cover-page">
