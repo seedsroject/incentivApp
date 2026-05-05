@@ -1034,10 +1034,14 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               const matchedDoc = !directUrl ? history.filter(d => d.type === 'DECLARACAO_MATRICULA').find(d => normName(d.metaData?.studentName || '') === normName(s.nome)) : null;
               const docUrl = directUrl || matchedDoc?.metaData?.imageUrl;
               if (docUrl) {
-                return docUrl.startsWith('data:application/pdf') ? (
-                  <iframe src={docUrl} style={{ width: '100%', height: 700, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
-                ) : (
-                  <img src={docUrl} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 700, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
+                return (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+                    {docUrl.startsWith('data:application/pdf') ? (
+                      <iframe src={docUrl} style={{ width: '100%', height: 700, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
+                    ) : (
+                      <img src={docUrl} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 700, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4, display: 'block', margin: '0 auto' }} />
+                    )}
+                  </div>
                 );
               }
               return (
