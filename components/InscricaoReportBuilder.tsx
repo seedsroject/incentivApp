@@ -460,7 +460,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 3: META DEFINITION */}
-        <div className="freq-page" style={{ padding: '80px 60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div className="freq-page" style={{ padding: '40px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <PageTextBoxes pageIdx={1} />
           <hr style={{ border: '1px solid #333', marginBottom: 16 }}/>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase' as const }}>ANEXO META QUANTITATIVA 02 FICHA DE INSCRIÇÃO DECLARAÇÃO DE MATRÍCULA ESCOLAR</p>
@@ -475,7 +475,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* STUDENT LIST TABLE (Moved before Sumário) */}
-        <div className="freq-page" style={{ padding: '40px 40px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={2} />
 
           {/* Header: Logo + Título */}
@@ -525,7 +525,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
                 {/* PAGE 4: SUMÁRIO */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={3} />
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#4472C4' }}>SUMÁRIO</h2>
           {(() => {
@@ -559,7 +559,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 6: INTRODUÇÃO */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={5} />
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: '#4472C4' }}>1. INTRODUÇÃO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
@@ -678,7 +678,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 7: 2.1 Distribution Table - Detailed by Grade */}
-        <div className="freq-page" style={{ padding: '50px 40px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={6} />
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>2 DISTRIBUIÇÃO DAS ALUNAS MATRICULADAS NA {pName}</h2>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, fontWeight: 700, marginBottom: 10 }}>2.1 Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio das alunas das escolas públicas e particulares participantes do projeto "{projectName}"</h3>
@@ -869,7 +869,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
                 {/* PAGE 8: Figura 1 - Pie Chart by Grade */}
-        <div className="freq-page" style={{ padding: '50px 50px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={7} />
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
@@ -981,7 +981,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 9: Bar Chart + Analysis */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={8} />
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
           <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
@@ -1084,7 +1084,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 10: 2.2 Pública vs Particular + Analysis */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8, position: 'relative' }}>
@@ -1194,7 +1194,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 11: 2.3 Gênero + Analysis */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 5</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
           <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8, position: 'relative' }}>
@@ -1290,7 +1290,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 12: 2.4 Idade + Analysis */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figuras 6 e 7</b> {"\u2014"} Distribuição etária dos alunos regularmente matriculados no projeto "{projectName}" em {city} ({uf})</p>
 
@@ -1450,7 +1450,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
-        <div className="freq-page" style={{ padding: '40px 30px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <PageTextBoxes pageIdx={11} />
           <h3 style={{ fontSize: 11, fontWeight: 800, textAlign: 'center', marginBottom: 16, textTransform: 'uppercase' as const }}>3 RELAÇÃO DO NÚMERO DE CRIANÇAS E ADOLESCENTES ATENDIDAS PELA {pName} EM ORDEM ALFABÉTICA</h3>
           <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
@@ -1517,7 +1517,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
 
         {/* PAGE 19: FICHAS DE INSCRIÇÃO E DECLARAÇÃO - Dynamically per student */}
-        <div className="freq-page" style={{ padding: '60px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: '#4472C4', marginBottom: 20, textAlign: 'center' }}>4. FICHA DE INSCRIÇÃO E DECLARAÇÃO ESCOLAR</h2>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.6, textAlign: 'justify' as const, color: '#444' }}>
             A seguir são apresentadas as fichas de inscrição e declarações de matrícula escolar de cada aluno(a) participante do projeto, em ordem alfabética.
@@ -1539,7 +1539,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           return (
           <React.Fragment key={`student-${s.id || i}`}>
           {/* PAGE: Ficha de Inscrição */}
-          <div className="freq-page" style={{ padding: '50px 50px' }}>
+          <div className="freq-page" style={{ padding: '40px 20px' }}>
             <h3 style={{ fontSize: 13, fontWeight: 800, color: '#4472C4', marginBottom: 16, borderBottom: '2px solid #4472C4', paddingBottom: 8 }}>{s.nome}</h3>
             
             <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Ficha de Inscrição</h4>
@@ -1653,7 +1653,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </div>
 
           {/* PAGE: Declaração de Matrícula Escolar */}
-          <div className="freq-page" style={{ padding: '50px 50px' }}>
+          <div className="freq-page" style={{ padding: '40px 20px' }}>
             <h3 style={{ fontSize: 13, fontWeight: 800, color: '#4472C4', marginBottom: 16, borderBottom: '2px solid #4472C4', paddingBottom: 8 }}>{s.nome}</h3>
             
             <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Declaração de Matrícula Escolar</h4>
@@ -1684,7 +1684,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         })}
 
         {/* REFERÊNCIAS */}
-        <div className="freq-page" style={{ padding: '80px 60px' }}>
+        <div className="freq-page" style={{ padding: '40px 20px' }}>
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 800, marginBottom: 16 }}>REFERÊNCIAS</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8 }}>
             <p>BRASIL. Lei nº 11.438, de 29 de dezembro de 2006. Dispõe sobre incentivos e benefícios para fomentar as atividades de caráter desportivo.</p>

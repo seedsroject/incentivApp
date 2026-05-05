@@ -477,12 +477,14 @@ html, body {
 
   .freq-report-root {
     background: #fff !important;
+    overflow: visible !important;
   }
 
   .freq-report-content {
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
   }
 
   .freq-page {
@@ -490,9 +492,20 @@ html, body {
     border: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
-    padding: 30px 40px !important;
-    page-break-after: always;
+    padding: 20px 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
     page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  /* Prevent blank page after the very last page */
+  .freq-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
   }
 
   .freq-cover-page {
@@ -501,7 +514,7 @@ html, body {
   }
 
   .freq-monthly-page {
-    padding: 15px 20px !important;
+    padding: 10px 0 !important;
   }
 
   .freq-table-header th {
@@ -538,10 +551,16 @@ html, body {
 
   .freq-report-chart {
     page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Prevent elements from generating empty space */
+  * {
+    float: none !important;
   }
 
   @page {
-    margin: 0.5cm;
+    margin: 1.5cm;
     size: A4 portrait;
   }
 }
