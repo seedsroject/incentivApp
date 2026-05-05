@@ -1107,9 +1107,40 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             </div>
             <p style={{ fontSize: 8, marginTop: 8 }}>Fonte: {projectName} ({year}).</p>
           </div>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
-            {`A análise da distribuição por gênero revela um equilíbrio na participação, com ${Math.round((genderStats.masculino * 100) / (totalAlunos || 1))}% de meninos e ${Math.round((genderStats.feminino * 100) / (totalAlunos || 1))}% de meninas. O projeto continua trabalhando ações de incentivo à participação feminina no esporte para manter este equilíbrio.`}
-          </div>
+          {/* Analysis text below Figura 5 */}
+          {(() => {
+            const t = totalAlunos || 1;
+            const pctMasc = Math.round((genderStats.masculino * 100) / t);
+            const pctFem = Math.round((genderStats.feminino * 100) / t);
+            const genMaior = pctMasc >= pctFem ? 'masculino' : 'feminino';
+            const genMenor = pctMasc >= pctFem ? 'feminino' : 'masculino';
+            const genMaiorLabel = pctMasc >= pctFem ? 'meninos' : 'meninas';
+            const genMenorLabel = pctMasc >= pctFem ? 'meninas' : 'meninos';
+            const pctGenMaior = Math.max(pctMasc, pctFem);
+            const pctGenMenor = Math.min(pctMasc, pctFem);
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
+                {pctGenMaior > 0 && pctGenMenor > 0
+                  ? <>
+                      <p style={{ marginBottom: 8 }}>
+                        A distribuição por gênero dos alunos participantes do projeto "{projectName}" em {city} ({uf}) evidenciou uma predominância do público {genMaior}, que correspondeu a {pctGenMaior}% dos inscritos. Esse resultado indicou que {genMaiorLabel === 'meninos' ? 'os meninos aderiram em maior número às atividades propostas, possivelmente por maior identificação inicial com modalidades esportivas de endurance ou por maior estímulo à participação em práticas esportivas competitivas' : 'as meninas aderiram em maior número às atividades propostas, demonstrando crescente interesse por modalidades esportivas de endurance e práticas esportivas diversificadas'}.
+                      </p>
+                      <p style={{ marginBottom: 8 }}>
+                        O público {genMenor}, por sua vez, representou {pctGenMenor}% das matrículas, demonstrando que o projeto também atraiu de forma significativa {genMenorLabel} interessad{genMenor === 'feminino' ? 'a' : 'o'}s em vivências esportivas diversificadas. Esse percentual mostrou que, embora a participação {genMenor === 'feminino' ? 'feminina' : 'masculina'} tenha sido menor, ela foi expressiva e refletiu um movimento importante de inserção {genMenor === 'feminino' ? 'das meninas' : 'dos meninos'} em modalidades {genMenor === 'feminino' ? 'tradicionalmente mais frequentadas por meninos' : 'com crescente participação feminina'}.
+                      </p>
+                    </>
+                  : pctGenMaior > 0
+                    ? <p style={{ marginBottom: 8 }}>
+                        A totalidade dos alunos participantes (100%) correspondeu ao público {genMaior}, enquanto o público {genMenor} representou 0%.
+                      </p>
+                    : null}
+                <p>
+                  De modo geral, os dados revelaram que o projeto conseguiu alcançar ambos os gêneros{pctGenMaior > 0 && pctGenMenor > 0 ? `, ainda que com maior participação ${genMaior === 'masculino' ? 'masculina' : 'feminina'}` : ''}. Essa distribuição permitiu observar tendências de engajamento e contribuiu para orientar estratégias futuras voltadas ao incentivo da participação {genMenor === 'feminino' ? 'feminina' : 'masculina'}, caso se desejasse promover maior equilíbrio entre os públicos.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* PAGE 12: 2.4 Idade + Analysis */}
