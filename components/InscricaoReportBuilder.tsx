@@ -880,7 +880,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             return a.toString();
           })();
           return (
-          <div key={`ficha-${s.id || i}`} className="freq-page" style={{ padding: '50px 50px' }}>
+          <React.Fragment key={`student-${s.id || i}`}>
+          {/* PAGE: Ficha de Inscrição */}
+          <div className="freq-page" style={{ padding: '50px 50px' }}>
             <h3 style={{ fontSize: 13, fontWeight: 800, color: '#4472C4', marginBottom: 16, borderBottom: '2px solid #4472C4', paddingBottom: 8 }}>{s.nome}</h3>
             
             <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Ficha de Inscrição</h4>
@@ -991,29 +993,32 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 {`Ficha de inscrição não disponível no sistema`}
               </div>
             )}
+          </div>
 
-            <h4 style={{ fontSize: 11, fontWeight: 700, marginTop: 20, marginBottom: 10, color: '#333' }}>Declaração de Matrícula Escolar</h4>
+          {/* PAGE: Declaração de Matrícula Escolar */}
+          <div className="freq-page" style={{ padding: '50px 50px' }}>
+            <h3 style={{ fontSize: 13, fontWeight: 800, color: '#4472C4', marginBottom: 16, borderBottom: '2px solid #4472C4', paddingBottom: 8 }}>{s.nome}</h3>
+            
+            <h4 style={{ fontSize: 11, fontWeight: 700, marginBottom: 10, color: '#333' }}>Declaração de Matrícula Escolar</h4>
             {(() => {
-              // 1. Check StudentDraft field first
               const directUrl = s.declaracao_matricula?.url;
-              // 2. Fallback: match from history by normalized name
               const matchedDoc = !directUrl ? history.filter(d => d.type === 'DECLARACAO_MATRICULA').find(d => normName(d.metaData?.studentName || '') === normName(s.nome)) : null;
               const docUrl = directUrl || matchedDoc?.metaData?.imageUrl;
               if (docUrl) {
                 return docUrl.startsWith('data:application/pdf') ? (
-                  <iframe src={docUrl} style={{ width: '100%', height: 400, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
+                  <iframe src={docUrl} style={{ width: '100%', height: 700, border: '1px solid #ddd', borderRadius: 4 }} title={`Declaração - ${s.nome}`}></iframe>
                 ) : (
-                  <img src={docUrl} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
+                  <img src={docUrl} alt={`Declaração de ${s.nome}`} style={{ maxWidth: '100%', maxHeight: 700, objectFit: 'contain', border: '1px solid #ddd', borderRadius: 4 }} />
                 );
               }
               return (
-                <div style={{ padding: 20, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
+                <div style={{ padding: 40, background: '#f9f9f9', border: '1px dashed #ccc', borderRadius: 4, textAlign: 'center', color: '#999', fontSize: 10 }}>
                   {`Declaração de matrícula escolar não disponível no sistema`}
                 </div>
               );
             })()}
-            <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>{19 + i + 1}</div>
           </div>
+          </React.Fragment>
           );
         })}
 
