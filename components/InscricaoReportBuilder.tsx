@@ -680,37 +680,82 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             const pctFundII = Math.round((eduLevel.fundII * 100) / t);
             const pctMedio = Math.round((eduLevel.medio * 100) / t);
 
-            const fundIIGrades = { '5° ano': g['5ano'], '6° ano': g['6ano'], '7° ano': g['7ano'], '8° ano': g['8ano'], '9° ano': g['9ano'] };
-            const maxGradeEntry = Object.entries(fundIIGrades).sort((a, b) => b[1] - a[1])[0];
-            const maxGradeText = maxGradeEntry && maxGradeEntry[1] > 0
-              ? `, especialmente no ${maxGradeEntry[0]}, que concentrou ${Math.round((maxGradeEntry[1] * 100) / t)}% dos inscritos`
+            // Dates
+            const startD = periodStart ? new Date(periodStart) : new Date();
+            const endD = periodEnd ? new Date(periodEnd) : new Date();
+            const fmtLong = (d: Date) => d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const totalMonths = Math.round((endD.getTime() - startD.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+
+            // Top grade Fund II
+            const fundIIGrades = [
+              { name: '6º ano', val: g['6ano'] },
+              { name: '7º ano', val: g['7ano'] },
+              { name: '8º ano', val: g['8ano'] },
+              { name: '9º ano', val: g['9ano'] },
+            ].sort((a, b) => b.val - a.val);
+            const topFII = fundIIGrades[0];
+            const pctTopFII = Math.round((topFII.val / t) * 100);
+
+            // Other Fund II grades (not the top one)
+            const otherFII = fundIIGrades.slice(1).filter(gr => gr.val > 0);
+            const otherFIIRange = otherFII.length > 0
+              ? `${Math.min(...otherFII.map(gr => Math.round((gr.val / t) * 100)))}% e ${Math.max(...otherFII.map(gr => Math.round((gr.val / t) * 100)))}%`
               : '';
 
-            const fundIGrades = { '1° ano': g['1ano'], '2° ano': g['2ano'], '3° ano': g['3ano'], '4° ano': g['4ano'] };
-            const maxFIEntry = Object.entries(fundIGrades).sort((a, b) => b[1] - a[1])[0];
-            const maxFIText = maxFIEntry && maxFIEntry[1] > 0
-              ? `. O ${maxFIEntry[0]}, com ${Math.round((maxFIEntry[1] * 100) / t)}%, foi o mais representativo desse grupo`
-              : '';
+            // Top grade Fund I
+            const fundIGrades = [
+              { name: '1º ano', val: g['1ano'] },
+              { name: '2º ano', val: g['2ano'] },
+              { name: '3º ano', val: g['3ano'] },
+              { name: '4º ano', val: g['4ano'] },
+              { name: '5º ano', val: g['5ano'] },
+            ].sort((a, b) => b.val - a.val);
+            const topFI = fundIGrades[0];
+            const pctTopFI = Math.round((topFI.val / t) * 100);
 
-            const adesaoFundI = eduLevel.fundI > eduLevel.fundII ? 'expressiva' : 'mais moderada';
-            const medioPresenca = eduLevel.medio > 0 ? `de ${pctMedio}% dos inscritos` : 'inexistente';
-            const medioBaixa = eduLevel.medio <= Math.ceil(totalAlunos * 0.1);
-            const medioAnalise = medioBaixa
-              ? 'Essa baixa adesão pode estar relacionada à rotina mais intensa de estudos e à menor disponibilidade de tempo para atividades extracurriculares.'
-              : 'Esse percentual demonstra engajamento do público mais velho no projeto.';
+            const adesaoFundI = eduLevel.fundI > eduLevel.fundII ? 'expressiva' : 'mais moderada, embora equilibrada entre as séries';
+
+            // Médio detail
+            const medioGrades = [
+              { name: '1º ano', val: g['em1'] },
+              { name: '2º ano', val: g['em2'] },
+              { name: '3º ano', val: g['em3'] },
+            ].sort((a, b) => b.val - a.val);
+            const topMedio = medioGrades[0];
+
             const destaqueFinal = eduLevel.fundII >= eduLevel.fundI
               ? 'forte aceitação entre estudantes do Ensino Fundamental II'
               : 'forte aceitação entre estudantes do Ensino Fundamental I';
-            const medioFinal = medioBaixa ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio';
+            const medioFinal = pctMedio <= 10 ? 'menor participação no Ensino Médio' : 'participação equilibrada no Ensino Médio';
 
             return (
               <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.7, textAlign: 'justify' as const, marginTop: 16 }}>
-                <p>O projeto {projectName}, executado em {city} ({uf}), teve início em {new Date(periodStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} e seguiu até {new Date(periodEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}.</p>
-                <p style={{ marginTop: 6 }}>A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II{maxGradeText}. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.</p>
-                <p style={{ marginTop: 6 }}>Nos anos iniciais do Ensino Fundamental I, a adesão foi {adesaoFundI}, somando {pctFundI}% dos participantes{maxFIText}.</p>
-                <p style={{ marginTop: 6 }}>No Ensino Fundamental II, {pctFundII}% dos alunos estão matriculados, revelando uma participação consistente entre pré-adolescentes e adolescentes, faixa etária que costuma buscar desafios esportivos e atividades coletivas.</p>
-                <p style={{ marginTop: 6 }}>Já no Ensino Médio, a presença foi {medioPresenca}. {medioAnalise}</p>
-                <p style={{ marginTop: 6 }}>O projeto demonstrou {destaqueFinal} e {medioFinal}. Esses dados podem orientar futuras edições, permitindo ajustar estratégias de divulgação, horários e formatos das atividades para ampliar o alcance entre faixas etárias menos representadas.</p>
+                <p>
+                  O projeto {projectName}, executado em {city} ({uf}), teve início em {fmtLong(startD)} e seguiu até {fmtLong(endD)}, completando {totalMonths} meses de execução.
+                </p>
+                {pctFundII > 0
+                  ? <p style={{ marginTop: 6 }}>
+                      A análise da distribuição das matrículas ao longo desse período mostra que a maior participação ocorreu entre os estudantes do Ensino Fundamental II, especialmente no {topFII.name}, que concentrou {pctTopFII}% dos inscritos. Esse destaque indica que essa faixa etária demonstrou maior interesse e preparo físico para uma modalidade que exige resistência, coordenação e disciplina.
+                    </p>
+                  : <p style={{ marginTop: 6 }}>O Ensino Fundamental II representou 0% das matrículas.</p>}
+                {pctFundI > 0
+                  ? <p style={{ marginTop: 6 }}>
+                      Nos anos iniciais do Ensino Fundamental I, a adesão foi {adesaoFundI}, somando {pctFundI}% dos participantes. O {topFI.name}, com {pctTopFI}%, foi o mais representativo desse grupo. Esse cenário sugere que, embora o projeto tenha alcançado crianças mais novas, a complexidade do triathlon tende a atrair mais alunos a partir de uma maturidade motora mais consolidada.
+                    </p>
+                  : <p style={{ marginTop: 6 }}>O Ensino Fundamental I representou 0% das matrículas.</p>}
+                {pctFundII > 0 && otherFII.length > 0
+                  ? <p style={{ marginTop: 6 }}>
+                      No Ensino Fundamental II, além do pico no {topFII.name}, os demais anos — {otherFII.map(gr => gr.name).join(', ')} — mantiveram percentuais entre {otherFIIRange}, revelando uma participação consistente entre pré-adolescentes e adolescentes, faixa etária que costuma buscar desafios esportivos e atividades coletivas.
+                    </p>
+                  : null}
+                {pctMedio > 0
+                  ? <p style={{ marginTop: 6 }}>
+                      Já no Ensino Médio, a presença foi reduzida, com apenas {pctMedio}% dos inscritos{topMedio.val > 0 ? ` no ${topMedio.name}` : ''}. Essa baixa adesão pode estar relacionada à rotina mais intensa de estudos e à menor disponibilidade de tempo para atividades extracurriculares.
+                    </p>
+                  : <p style={{ marginTop: 6 }}>O Ensino Médio representou 0% das matrículas.</p>}
+                <p style={{ marginTop: 6 }}>
+                  Ao longo dos {totalMonths} meses de execução, o projeto demonstrou {destaqueFinal} e {medioFinal}. Esses dados podem orientar futuras edições, caso desejado, permitindo ajustar estratégias de divulgação, horários e formatos das atividades para ampliar o alcance entre faixas etárias menos representadas.
+                </p>
               </div>
             );
           })()}
