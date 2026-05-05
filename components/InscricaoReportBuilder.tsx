@@ -456,7 +456,91 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <PageTextBoxes pageIdx={5} />
           <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: '#4472C4' }}>1. INTRODUÇÃO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const }}>
-            {aiResumo || `O presente relatório apresenta a análise das fichas de inscrição e declarações de matrícula escolar dos alunos participantes do projeto ${projectName}, no núcleo de ${city}/${uf}. O documento tem como objetivo verificar o cumprimento da Meta Quantitativa 02, que estabelece que pelo menos 65% dos beneficiados sejam alunos matriculados no sistema público de ensino.\n\nA análise contempla a distribuição dos alunos por nível de ensino, tipo de escola, gênero e faixa etária, além de apresentar a relação nominal completa dos participantes com a respectiva indicação da escola onde estão matriculados.`}
+            {(() => {
+              // --- Compute all dynamic data from system ---
+              const proponente = sorted[0]?.proponente || sel?.nome || 'Proponente';
+              const startDate = periodStart ? new Date(periodStart) : new Date();
+              const endDate = periodEnd ? new Date(periodEnd) : new Date();
+              const fmtDate = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+              const monthsDiff = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+
+              // Grade percentages
+              const g = gradeDistribution;
+              const t = totalAlunos || 1;
+              const fundITotal = eduLevel.fundI;
+              const fundIITotal = eduLevel.fundII;
+              const medioTotal = eduLevel.medio;
+              const pctFundI = Math.round((fundITotal / t) * 100);
+              const pctFundII = Math.round((fundIITotal / t) * 100);
+              const pctMedio = Math.round((medioTotal / t) * 100);
+
+              // Find top grade in Fund II
+              const fundIIGrades = [
+                { name: '6º ano', val: g['6ano'] },
+                { name: '7º ano', val: g['7ano'] },
+                { name: '8º ano', val: g['8ano'] },
+                { name: '9º ano', val: g['9ano'] },
+              ].sort((a, b) => b.val - a.val);
+              const topFundII = fundIIGrades[0];
+              const pctTopFundII = Math.round((topFundII.val / t) * 100);
+
+              // Find top grade in Fund I
+              const fundIGrades = [
+                { name: '1º ano', val: g['1ano'] },
+                { name: '2º ano', val: g['2ano'] },
+                { name: '3º ano', val: g['3ano'] },
+                { name: '4º ano', val: g['4ano'] },
+                { name: '5º ano', val: g['5ano'] },
+              ].sort((a, b) => b.val - a.val);
+              const topFundI = fundIGrades[0];
+              const pctTopFundI = Math.round((topFundI.val / t) * 100);
+
+              // Find top medio year
+              const medioGrades = [
+                { name: '1º ano', val: g['em1'] },
+                { name: '2º ano', val: g['em2'] },
+                { name: '3º ano', val: g['em3'] },
+              ].sort((a, b) => b.val - a.val);
+              const topMedio = medioGrades[0];
+
+              // Gender
+              const pctMasc = totalAlunos ? Math.round((genderStats.masculino / t) * 100) : 0;
+              const pctFem = totalAlunos ? Math.round((genderStats.feminino / t) * 100) : 0;
+              const genPredominante = pctMasc >= pctFem ? 'masculina' : 'feminina';
+              const genOutro = pctMasc >= pctFem ? 'feminino' : 'masculino';
+              const pctPredominante = Math.max(pctMasc, pctFem);
+              const pctOutro = Math.min(pctMasc, pctFem);
+
+              // Age range
+              const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+              const minAge = ageKeys[0] || 6;
+              const maxAge = ageKeys[ageKeys.length - 1] || 17;
+
+              // Age concentration (8-12)
+              const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+              const pctAges8to12 = Math.round((ages8to12 / t) * 100);
+
+              // Top 2 ages
+              const ageEntries = Object.entries(ages).map(([a, c]) => ({ age: Number(a), count: c })).sort((a, b) => b.count - a.count);
+              const topAge1 = ageEntries[0];
+              const topAge2 = ageEntries[1];
+              const pctTopAge1 = topAge1 ? Math.round((topAge1.count / t) * 100) : 0;
+              const pctTopAge2 = topAge2 ? Math.round((topAge2.count / t) * 100) : 0;
+
+              return (
+                <>
+                  <p style={{ marginBottom: 12 }}>
+                    O presente relatório tem como objetivo apresentar o Anexo Meta Quantitativa 02 – Ficha de Inscrição / Declaração de Matrícula Escolar da {projectName}, executada pela {proponente} e viabilizada pela Lei de Incentivo ao Esporte, programa do Ministério do Esporte e Governo Federal, cujo projeto foi executado entre {fmtDate(startDate)} a {fmtDate(endDate)}.
+                  </p>
+                  <p style={{ marginBottom: 12 }}>
+                    O perfil dos alunos do projeto "{projectName}", executado em {city} ({uf}), evidenciou que a iniciativa atendeu de forma consistente e alinhada ao objeto proposto crianças e adolescentes matriculados na rede oficial de ensino, ao longo de {monthsDiff} meses de execução. A distribuição das matrículas demonstrou predomínio de estudantes do Ensino Fundamental II, que representaram {pctFundII}% dos participantes, com destaque para o {topFundII.name}, que concentrou {pctTopFundII}% dos inscritos, indicando maior interesse e preparo físico de adolescentes para uma modalidade que exigiu resistência, coordenação, autonomia e disciplina. O Ensino Fundamental I correspondeu a {pctFundI}% das matrículas, revelando adesão equilibrada entre as séries iniciais, com maior representatividade no {topFundI.name}, que reuniu {pctTopFundI}% dos alunos, o que demonstrou que o projeto também alcançou crianças mais novas, mesmo diante da complexidade técnica do triathlon. O Ensino Médio apresentou participação {pctMedio <= 10 ? 'reduzida' : 'moderada'}, com {pctMedio > 0 ? `${pctMedio}% dos inscritos` : 'participação mínima'}{topMedio.val > 0 ? `, concentrados no ${topMedio.name}` : ''}, cenário que esteve possivelmente relacionado à maior carga de estudos e à menor disponibilidade para atividades extracurriculares.
+                  </p>
+                  <p style={{ marginBottom: 12 }}>
+                    Quanto à origem escolar, a maioria dos alunos pertenceu à rede {pctPublica >= pctParticular ? 'pública' : 'particular'} de ensino, que representou {Math.max(pctPublica, pctParticular)}% do total de inscritos, enquanto a rede {pctPublica >= pctParticular ? 'particular' : 'pública'} correspondeu a {Math.min(pctPublica, pctParticular)}%, {pctPublica >= 65 ? 'superando a meta quantitativa mínima de 65% de atendimento ao público da rede pública e confirmando o cumprimento integral do indicador previsto' : 'aproximando-se da meta quantitativa mínima de 65% de atendimento ao público da rede pública'}. A distribuição por gênero revelou predominância {genPredominante}, com {pctPredominante}% dos participantes, enquanto o público {genOutro} representou {pctOutro}%, percentual expressivo que indicou inserção relevante em uma modalidade esportiva de endurance. Em relação à faixa etária, todos os alunos estiveram compreendidos entre {minAge} e {maxAge} anos, conforme estabelecido no objeto do projeto, com maior concentração entre 8 e 12 anos, que somaram {pctAges8to12}% dos inscritos{topAge1 && topAge2 ? `, destacando-se as idades de ${topAge1.age} e ${topAge2.age} anos, com ${pctTopAge1}% e ${pctTopAge2}% respectivamente` : ''}. De forma geral, o perfil dos alunos confirmou que o projeto cumpriu plenamente suas metas e objetivos, consolidando-se como uma ação educacional bem-sucedida, com forte impacto entre estudantes do Ensino Fundamental, especialmente do Fundamental II, e ampla aderência ao público prioritário definido no planejamento.
+                  </p>
+                </>
+              );
+            })()}
           </div>
           <div style={{ position: 'absolute', top: 20, right: 30, fontSize: 10, color: '#666' }}>6</div>
         </div>
