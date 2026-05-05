@@ -99,7 +99,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   }, [sorted]);
 
   // Detailed grade distribution (mapped from age to Brazilian school year)
-  const gradeDistribution = useMemo(() => {
+  const autoGradeDistribution = useMemo(() => {
     const grades: Record<string, number> = {
       'ei': 0, '1ano': 0, '2ano': 0, '3ano': 0, '4ano': 0, '5ano': 0,
       '6ano': 0, '7ano': 0, '8ano': 0, '9ano': 0,
@@ -126,6 +126,25 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
     return grades;
   }, [sorted]);
 
+  // --- Chart data override system ---
+  const [gradeOverrides, setGradeOverrides] = useState<Record<string, number> | null>(null);
+  const [redeOverrides, setRedeOverrides] = useState<{ publica: number; particular: number } | null>(null);
+  const [genderOverrides, setGenderOverrides] = useState<{ masculino: number; feminino: number } | null>(null);
+  const [ageOverrides, setAgeOverrides] = useState<Record<string, number> | null>(null);
+  const [chartEditorOpen, setChartEditorOpen] = useState<string | null>(null);
+
+  // Effective values: overrides > auto-computed
+  const gradeDistribution = gradeOverrides || autoGradeDistribution;
+
+  const effectivePublica = redeOverrides ? redeOverrides.publica : publica;
+  const effectiveParticular = redeOverrides ? redeOverrides.particular : particular;
+  const effectiveTotal = redeOverrides ? redeOverrides.publica + redeOverrides.particular : totalAlunos;
+  const effectivePctPublica = effectiveTotal ? Math.round((effectivePublica / effectiveTotal) * 100) : 0;
+  const effectivePctParticular = effectiveTotal ? Math.round((effectiveParticular / effectiveTotal) * 100) : 0;
+
+  const effectiveGender = genderOverrides || genderStats;
+  const effectiveAges = ageOverrides || ages;
+
   // Aggregated education levels from grade distribution
   const eduLevel = useMemo(() => {
     const g = gradeDistribution;
@@ -136,6 +155,94 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
       ei: g['ei'],
     };
   }, [gradeDistribution]);
+
+  // --- ChartDataEditor component ---
+  const ChartDataEditor = ({ chartId, rows, onSave, title }: { chartId: string; rows: { key: string; label: string; value: number }[]; onSave: (data: Record<string, number>) => void; title: string }) => {
+    const [localRows, setLocalRows] = useState(rows.map(r => ({ ...r })));
+    const isOpen = chartEditorOpen === chartId;
+    if (!isEditing) return null;
+    return (
+      <>
+        <button
+          className="no-print"
+          onClick={(e) => { e.stopPropagation(); setChartEditorOpen(isOpen ? null : chartId); }}
+          title="Editar dados do gráfico"
+          style={{
+            position: 'absolute', top: 4, right: 4, zIndex: 20,
+            width: 28, height: 28, borderRadius: '50%',
+            background: isOpen ? '#4472C4' : 'rgba(68,114,196,0.15)',
+            color: isOpen ? '#fff' : '#4472C4',
+            border: `1.5px solid ${isOpen ? '#3461a8' : '#4472C4'}`,
+            cursor: 'pointer', fontSize: 13, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all .2s',
+            boxShadow: isOpen ? '0 2px 8px rgba(0,0,0,.25)' : 'none',
+          }}
+          onMouseEnter={e => { if (!isOpen) { (e.target as HTMLElement).style.background = '#4472C4'; (e.target as HTMLElement).style.color = '#fff'; }}}
+          onMouseLeave={e => { if (!isOpen) { (e.target as HTMLElement).style.background = 'rgba(68,114,196,0.15)'; (e.target as HTMLElement).style.color = '#4472C4'; }}}
+        >✏️</button>
+        {isOpen && (
+          <div className="no-print" style={{
+            position: 'absolute', top: 36, right: 4, zIndex: 30,
+            background: '#fff', border: '2px solid #4472C4', borderRadius: 8,
+            boxShadow: '0 8px 32px rgba(0,0,0,.2)', padding: '12px 14px', minWidth: 280,
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#333' }}>{title}</span>
+              <button onClick={() => setChartEditorOpen(null)} style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', color: '#999' }}>✕</button>
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+              <thead>
+                <tr style={{ background: '#4472C4', color: '#fff' }}>
+                  <th style={{ padding: '4px 6px', textAlign: 'left', borderRadius: '4px 0 0 0' }}>Item</th>
+                  <th style={{ padding: '4px 6px', textAlign: 'center', width: 70, borderRadius: '0 4px 0 0' }}>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {localRows.map((row, i) => (
+                  <tr key={row.key} style={{ background: i % 2 === 0 ? '#f0f5fb' : '#fff' }}>
+                    <td style={{ padding: '3px 6px', border: '1px solid #dde5f0', fontSize: 11, color: '#333' }}>{row.label}</td>
+                    <td style={{ padding: '2px 4px', border: '1px solid #dde5f0', textAlign: 'center' }}>
+                      <input
+                        type="number"
+                        min={0}
+                        value={row.value}
+                        onChange={e => {
+                          const v = parseInt(e.target.value) || 0;
+                          setLocalRows(prev => prev.map((r, j) => j === i ? { ...r, value: v } : r));
+                        }}
+                        style={{
+                          width: '100%', textAlign: 'center', border: '1px solid #ccd', borderRadius: 3,
+                          padding: '2px 4px', fontSize: 11, background: '#fff', outline: 'none',
+                        }}
+                        onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#4472C4'}
+                        onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#ccd'}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: '#e8eef6', fontWeight: 700 }}>
+                  <td style={{ padding: '3px 6px', border: '1px solid #dde5f0', fontSize: 11 }}>Total</td>
+                  <td style={{ padding: '3px 6px', border: '1px solid #dde5f0', textAlign: 'center', fontSize: 11 }}>{localRows.reduce((s, r) => s + r.value, 0)}</td>
+                </tr>
+              </tfoot>
+            </table>
+            <div style={{ display: 'flex', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => { setChartEditorOpen(null); }} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #ddd', background: '#fff', color: '#666', fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>Cancelar</button>
+              <button onClick={() => {
+                const data: Record<string, number> = {};
+                localRows.forEach(r => { data[r.key] = r.value; });
+                onSave(data);
+                setChartEditorOpen(null);
+              }} style={{ padding: '4px 12px', borderRadius: 4, border: 'none', background: '#4472C4', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>Aplicar</button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
 
   const handlePrint = useCallback(() => window.print(), []);
 
@@ -504,24 +611,24 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               const topMedio = medioGrades[0];
 
               // Gender
-              const pctMasc = totalAlunos ? Math.round((genderStats.masculino / t) * 100) : 0;
-              const pctFem = totalAlunos ? Math.round((genderStats.feminino / t) * 100) : 0;
+              const pctMasc = totalAlunos ? Math.round((effectiveGender.masculino / t) * 100) : 0;
+              const pctFem = totalAlunos ? Math.round((effectiveGender.feminino / t) * 100) : 0;
               const genPredominante = pctMasc >= pctFem ? 'masculina' : 'feminina';
               const genOutro = pctMasc >= pctFem ? 'feminino' : 'masculino';
               const pctPredominante = Math.max(pctMasc, pctFem);
               const pctOutro = Math.min(pctMasc, pctFem);
 
               // Age range
-              const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+              const ageKeys = Object.keys(effectiveAges).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
               const minAge = ageKeys[0] || 6;
               const maxAge = ageKeys[ageKeys.length - 1] || 17;
 
               // Age concentration (8-12)
-              const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+              const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (effectiveAges[a.toString()] || 0), 0);
               const pctAges8to12 = Math.round((ages8to12 / t) * 100);
 
               // Top 2 ages
-              const ageEntries = Object.entries(ages).map(([a, c]) => ({ age: Number(a), count: c })).sort((a, b) => b.count - a.count);
+              const ageEntries = Object.entries(effectiveAges).map(([a, c]) => ({ age: Number(a), count: c })).sort((a, b) => b.count - a.count);
               const topAge1 = ageEntries[0];
               const topAge2 = ageEntries[1];
               const pctTopAge1 = topAge1 ? Math.round((topAge1.count / t) * 100) : 0;
@@ -546,11 +653,11 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                   </p>
                   <p style={{ marginBottom: 12 }}>
                     Quanto à origem escolar,
-                    {pctPublica > 0 && pctParticular > 0
-                      ? ` a maioria dos alunos pertenceu à rede ${pctPublica >= pctParticular ? 'pública' : 'particular'} de ensino, que representou ${Math.max(pctPublica, pctParticular)}% do total de inscritos, enquanto a rede ${pctPublica >= pctParticular ? 'particular' : 'pública'} correspondeu a ${Math.min(pctPublica, pctParticular)}%, ${pctPublica >= 65 ? 'superando a meta quantitativa mínima de 65% de atendimento ao público da rede pública e confirmando o cumprimento integral do indicador previsto' : 'aproximando-se da meta quantitativa mínima de 65% de atendimento ao público da rede pública'}.`
-                      : pctPublica > 0
+                    {effectivePctPublica > 0 && effectivePctParticular > 0
+                      ? ` a maioria dos alunos pertenceu à rede ${effectivePctPublica >= effectivePctParticular ? 'pública' : 'particular'} de ensino, que representou ${Math.max(effectivePctPublica, effectivePctParticular)}% do total de inscritos, enquanto a rede ${effectivePctPublica >= effectivePctParticular ? 'particular' : 'pública'} correspondeu a ${Math.min(effectivePctPublica, effectivePctParticular)}%, ${effectivePctPublica >= 65 ? 'superando a meta quantitativa mínima de 65% de atendimento ao público da rede pública e confirmando o cumprimento integral do indicador previsto' : 'aproximando-se da meta quantitativa mínima de 65% de atendimento ao público da rede pública'}.`
+                      : effectivePctPublica > 0
                         ? ` 100% dos alunos pertenceram à rede pública de ensino, enquanto a rede particular representou 0%.`
-                        : pctParticular > 0
+                        : effectivePctParticular > 0
                           ? ` 100% dos alunos pertenceram à rede particular de ensino, enquanto a rede pública representou 0%.`
                           : ' não há dados disponíveis sobre a origem escolar.'}
                     {pctPredominante > 0 && pctOutro > 0
@@ -657,8 +764,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                     <td style={tdS}>{pct(g['em1'])}</td>
                     <td style={tdS}>{pct(g['em2'])}</td>
                     <td style={tdS}>{pct(g['em3'])}</td>
-                    <td style={tdS}>{pctPublica}%</td>
-                    <td style={tdS}>{pctParticular}%</td>
+                    <td style={tdS}>{effectivePctPublica}%</td>
+                    <td style={tdS}>{effectivePctParticular}%</td>
                   </tr>
                   <tr style={{ background: '#E9EDF4' }}>
                     <td style={tdB}>{pct(g['ei'])}</td>
@@ -766,7 +873,21 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <PageTextBoxes pageIdx={7} />
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 1</b> {"\u2014"} Distribuição, por série, das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritos no projeto "{projectName}" em {city} ({uf})</p>
 
-          <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12 }}>
+          <div style={{ background: '#fff', border: '1px solid #000', padding: '16px 20px', marginTop: 12, position: 'relative' }}>
+            <ChartDataEditor chartId="fig1_grades" title="Distribuição por Série" rows={[
+              { key: '1ano', label: '1º Ano', value: gradeDistribution['1ano'] },
+              { key: '2ano', label: '2º Ano', value: gradeDistribution['2ano'] },
+              { key: '3ano', label: '3º Ano', value: gradeDistribution['3ano'] },
+              { key: '4ano', label: '4º Ano', value: gradeDistribution['4ano'] },
+              { key: '5ano', label: '5º Ano', value: gradeDistribution['5ano'] },
+              { key: '6ano', label: '6º Ano', value: gradeDistribution['6ano'] },
+              { key: '7ano', label: '7º Ano', value: gradeDistribution['7ano'] },
+              { key: '8ano', label: '8º Ano', value: gradeDistribution['8ano'] },
+              { key: '9ano', label: '9º Ano', value: gradeDistribution['9ano'] },
+              { key: 'em1', label: 'EM 1º', value: gradeDistribution['em1'] },
+              { key: 'em2', label: 'EM 2º', value: gradeDistribution['em2'] },
+              { key: 'em3', label: 'EM 3º', value: gradeDistribution['em3'] },
+            ]} onSave={data => setGradeOverrides({ ...autoGradeDistribution, ...data })} />
             <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12, lineHeight: 1.4 }}>
               {`Distribuição por série das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das escolas públicas e particulares inscritos no projeto "${projectName}" em ${city} (${uf})`}
             </p>
@@ -864,7 +985,16 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <PageTextBoxes pageIdx={8} />
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 2</b> — Distribuição das matrículas por Nível de Ensino (Números Absolutos) dos alunos do projeto "{projectName}" em {`${city}/${uf}`}</p>
           <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', marginBottom: 8, marginTop: 16 }}>Distribuição das matrículas (Números Absolutos)</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '12px 16px', marginTop: 8, position: 'relative' }}>
+          <ChartDataEditor chartId="fig2_levels" title="Níveis de Ensino" rows={[
+            { key: 'fundI', label: 'Fund. I', value: eduLevel.fundI },
+            { key: 'fundII', label: 'Fund. II', value: eduLevel.fundII },
+            { key: 'medio', label: 'Ens. Médio', value: eduLevel.medio },
+          ]} onSave={data => {
+            const prev = { ...gradeDistribution };
+            // Distribute proportionally if needed - simple override
+            setGradeOverrides({ ...prev });
+          }} />
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 40, height: 180, padding: '16px 40px 0', position: 'relative' }}>
             {[
               { label: 'Ensino Fundamental I', value: eduLevel.fundI, color: '#4472C4' },
@@ -891,7 +1021,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </div>
 
           <p style={{ fontSize: 11, marginBottom: 4, marginTop: 24 }}><b>Figura 3</b> {"\u2014"} Distribuição das matrículas no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio dos alunos das redes pública e particular inscritas no projeto "{projectName}" em {city} ({uf})</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8, position: 'relative' }}>
+            <ChartDataEditor chartId="fig3_levels" title="Distribuição por Nível" rows={[
+              { key: 'fundI', label: 'Fund. I', value: eduLevel.fundI },
+              { key: 'fundII', label: 'Fund. II', value: eduLevel.fundII },
+              { key: 'medio', label: 'Ens. Médio', value: eduLevel.medio },
+            ]} onSave={data => {
+              const prev = { ...gradeDistribution };
+              setGradeOverrides({ ...prev });
+            }} />
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 60, height: 170, padding: '16px 20px 0', position: 'relative' }}>
               {[
                 { label: 'Fundamental I', value: eduLevel.fundI, color: '#4472C4', pct: ((eduLevel.fundI * 100) / (totalAlunos||1)).toFixed(2).replace('.', ',') },
@@ -949,15 +1087,19 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.2 Distribuição das matrículas por Escola Pública e Escola Particular</h3>
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 4</b> {"\u2014"} Distribuição por Rede de Ensino dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8, position: 'relative' }}>
+            <ChartDataEditor chartId="fig4_rede" title="Rede de Ensino" rows={[
+              { key: 'publica', label: 'Escola Pública', value: effectivePublica },
+              { key: 'particular', label: 'Escola Particular', value: effectiveParticular },
+            ]} onSave={data => setRedeOverrides({ publica: data.publica || 0, particular: data.particular || 0 })} />
             <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Rede de Ensino em ${city}/${uf}`}
             </p>
             {(() => {
               const t = totalAlunos || 1;
               const slices = [
-                { label: 'Escola Pública', value: publica, color: '#4472C4', pct: Number(pctPublica) },
-                { label: 'Escola Particular', value: particular, color: '#ED7D31', pct: Number(pctParticular) },
+                { label: 'Escola Pública', value: effectivePublica, color: '#4472C4', pct: effectivePctPublica },
+                { label: 'Escola Particular', value: effectiveParticular, color: '#ED7D31', pct: effectivePctParticular },
               ].filter(s => s.value > 0);
               const CX = 160; const CY = 110; const R = 85;
               let cumAngle = -90;
@@ -1002,15 +1144,15 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           {/* Analysis text below Figura 4 */}
           {(() => {
             const metaMin = 65;
-            const diffMeta = pctPublica - metaMin;
-            const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+            const diffMeta = effectivePctPublica - metaMin;
+            const ageKeys = Object.keys(effectiveAges).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
             const minAge = ageKeys[0] || 8;
             const maxAge = ageKeys[ageKeys.length - 1] || 16;
-            const metaCumprida = pctPublica >= metaMin;
-            const redeMaior = pctPublica >= pctParticular ? 'pública' : 'particular';
-            const redeMenor = pctPublica >= pctParticular ? 'particular' : 'pública';
-            const pctRedeMaior = Math.max(pctPublica, pctParticular);
-            const pctRedeMenor = Math.min(pctPublica, pctParticular);
+            const metaCumprida = effectivePctPublica >= metaMin;
+            const redeMaior = effectivePctPublica >= effectivePctParticular ? 'pública' : 'particular';
+            const redeMenor = effectivePctPublica >= effectivePctParticular ? 'particular' : 'pública';
+            const pctRedeMaior = Math.max(effectivePctPublica, effectivePctParticular);
+            const pctRedeMenor = Math.min(effectivePctPublica, effectivePctParticular);
 
             return (
               <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
@@ -1055,17 +1197,21 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         <div className="freq-page" style={{ padding: '60px 60px' }}>
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.3 Distribuição por gênero dos (as) alunos (as)</h3>
           <p style={{ fontSize: 11, marginBottom: 4 }}><b>Figura 5</b> {"\u2014"} Distribuição por Gênero dos alunos do projeto "{projectName}", referente ao período de {new Date(periodStart).toLocaleDateString('pt-BR')} a {new Date(periodEnd).toLocaleDateString('pt-BR')}, no município de {`${city}/${uf}`}</p>
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 8, position: 'relative' }}>
+            <ChartDataEditor chartId="fig5_gender" title="Distribuição por Gênero" rows={[
+              { key: 'masculino', label: 'Masculino', value: effectiveGender.masculino },
+              { key: 'feminino', label: 'Feminino', value: effectiveGender.feminino },
+            ]} onSave={data => setGenderOverrides({ masculino: data.masculino || 0, feminino: data.feminino || 0 })} />
             <p style={{ fontSize: 11, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 12 }}>
               {`Distribuição por Gênero dos alunos do projeto "${projectName}" em ${city}/${uf}`}
             </p>
             {(() => {
               const t = totalAlunos || 1;
-              const pctMasc = Math.round((genderStats.masculino * 100) / t);
-              const pctFem = Math.round((genderStats.feminino * 100) / t);
+              const pctMasc = Math.round((effectiveGender.masculino * 100) / t);
+              const pctFem = Math.round((effectiveGender.feminino * 100) / t);
               const slices = [
-                { label: 'Masculino', value: genderStats.masculino, color: '#4472C4', pct: pctMasc },
-                { label: 'Feminino', value: genderStats.feminino, color: '#ED7D31', pct: pctFem },
+                { label: 'Masculino', value: effectiveGender.masculino, color: '#4472C4', pct: pctMasc },
+                { label: 'Feminino', value: effectiveGender.feminino, color: '#ED7D31', pct: pctFem },
               ].filter(s => s.value > 0);
               const CX = 160; const CY = 110; const R = 85;
               let cumAngle = -90;
@@ -1110,8 +1256,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           {/* Analysis text below Figura 5 */}
           {(() => {
             const t = totalAlunos || 1;
-            const pctMasc = Math.round((genderStats.masculino * 100) / t);
-            const pctFem = Math.round((genderStats.feminino * 100) / t);
+            const pctMasc = Math.round((effectiveGender.masculino * 100) / t);
+            const pctFem = Math.round((effectiveGender.feminino * 100) / t);
             const genMaior = pctMasc >= pctFem ? 'masculino' : 'feminino';
             const genMenor = pctMasc >= pctFem ? 'feminino' : 'masculino';
             const genMaiorLabel = pctMasc >= pctFem ? 'meninos' : 'meninas';
@@ -1148,13 +1294,16 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <h3 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 700, marginBottom: 12 }}>2.4 Distribuição etária dos alunos regularmente matriculados</h3>
           <p style={{ fontSize: 10, marginBottom: 4 }}><b>Figuras 6 e 7</b> {"\u2014"} Distribuição etária dos alunos regularmente matriculados no projeto "{projectName}" em {city} ({uf})</p>
 
-          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 12 }}>
+          <div style={{ border: '1px solid #000', background: '#fff', padding: '16px 20px', marginTop: 12, position: 'relative' }}>
+            <ChartDataEditor chartId="fig67_age" title="Distribuição Etária" rows={
+              Object.entries(effectiveAges).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([age, count]) => ({ key: age, label: `${age} anos`, value: count }))
+            } onSave={data => setAgeOverrides(data)} />
             <p style={{ fontSize: 10, fontWeight: 700, textAlign: 'center', color: '#000', marginBottom: 16 }}>
               {`Distribuição etária dos alunos regularmente inscritos no projeto "${projectName}" em ${city} (${uf})`}
             </p>
 
             {(() => {
-              const entries = Object.entries(ages).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+              const entries = Object.entries(effectiveAges).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
               const t = totalAlunos || 1;
               const COLORS = ['#4472C4', '#ED7D31', '#C9C9C9', '#70AD47', '#5B9BD5', '#FFC000', '#264478', '#43682B', '#B4C6E7', '#F4B183', '#D9D9D9'];
               
@@ -1241,16 +1390,16 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           {/* Analysis text below Figuras 6 e 7 */}
           {(() => {
             const t = totalAlunos || 1;
-            const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+            const ageKeys = Object.keys(effectiveAges).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
             const minAge = ageKeys[0] || 8;
             const maxAge = ageKeys[ageKeys.length - 1] || 16;
 
             // Concentration 8-12
-            const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+            const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (effectiveAges[a.toString()] || 0), 0);
             const pctAges8to12 = Math.round((ages8to12 / t) * 100);
 
             // Top ages sorted by count
-            const ageEntries = Object.entries(ages)
+            const ageEntries = Object.entries(effectiveAges)
               .map(([a, c]) => ({ age: Number(a), count: c, pct: Math.round((c / t) * 100) }))
               .sort((a, b) => b.count - a.count);
 
@@ -1261,7 +1410,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
               : '';
 
             // Older teens (14-16)
-            const olderTeens = ageKeys.filter(a => a >= 14 && a <= 16).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+            const olderTeens = ageKeys.filter(a => a >= 14 && a <= 16).reduce((sum, a) => sum + (effectiveAges[a.toString()] || 0), 0);
             const pctOlderTeens = Math.round((olderTeens / t) * 100);
 
             return (
