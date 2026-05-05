@@ -88,12 +88,12 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
     return groups;
   }, [sorted]);
 
-  // Gender (infer from name ending)
+  // Gender (infer from first name ending — much more reliable than surname)
   const genderStats = useMemo(() => {
     let m = 0, f = 0;
     sorted.forEach(s => {
-      const last = s.nome.trim().split(' ').pop()?.toLowerCase() || '';
-      if (last.endsWith('a') || last.endsWith('e')) f++; else m++;
+      const first = s.nome.trim().split(' ')[0]?.toLowerCase() || '';
+      if (first.endsWith('a') || first.endsWith('e')) f++; else m++;
     });
     return { masculino: m, feminino: f };
   }, [sorted]);
@@ -1285,8 +1285,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 const socioDoc = history.filter(d => d.type === 'INDICADORES_SAUDE').find(d => normName(d.metaData?.nome || '') === normName(s.nome));
                 const genero = socioDoc?.metaData?.genero || '';
                 const escolaridade = socioDoc?.metaData?.escolaridade || '';
-                const isMasc = genero.toUpperCase().startsWith('M') || (!genero && !(s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a'));
-                const isFem = genero.toUpperCase().startsWith('F') || (!genero && (s.nome.trim().split(' ').pop()?.toLowerCase() || '').endsWith('a'));
+                const isMasc = genero.toUpperCase().startsWith('M') || (!genero && !(s.nome.trim().split(' ')[0]?.toLowerCase() || '').endsWith('a'));
+                const isFem = genero.toUpperCase().startsWith('F') || (!genero && (s.nome.trim().split(' ')[0]?.toLowerCase() || '').endsWith('a'));
                 const isPub = s.escola_tipo === 'PUBLICA';
                 const isPart = s.escola_tipo === 'PARTICULAR';
 
