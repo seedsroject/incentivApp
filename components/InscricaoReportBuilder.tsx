@@ -1238,9 +1238,66 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
             <p style={{ fontSize: 8, marginTop: 16 }}>Fonte: {projectName} ({year}).</p>
           </div>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
-            A faixa etária predominante atende perfeitamente ao regulamento técnico e pedagógico estipulado pelo projeto, garantindo a formação de turmas coesas em relação ao desenvolvimento motor e cognitivo.
-          </div>
+          {/* Analysis text below Figuras 6 e 7 */}
+          {(() => {
+            const t = totalAlunos || 1;
+            const ageKeys = Object.keys(ages).map(Number).filter(a => !isNaN(a)).sort((a, b) => a - b);
+            const minAge = ageKeys[0] || 8;
+            const maxAge = ageKeys[ageKeys.length - 1] || 16;
+
+            // Concentration 8-12
+            const ages8to12 = ageKeys.filter(a => a >= 8 && a <= 12).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+            const pctAges8to12 = Math.round((ages8to12 / t) * 100);
+
+            // Top ages sorted by count
+            const ageEntries = Object.entries(ages)
+              .map(([a, c]) => ({ age: Number(a), count: c, pct: Math.round((c / t) * 100) }))
+              .sort((a, b) => b.count - a.count);
+
+            // Build top ages description (top 4)
+            const topAges = ageEntries.slice(0, 4);
+            const topAgesText = topAges.length > 0
+              ? topAges.map((a, i) => `${i === 0 ? 'As idades de' : ''} ${a.age} anos${i < topAges.length - 1 ? '' : ''} (${a.pct}%)`).join(', ').replace('As idades de ', '')
+              : '';
+
+            // Older teens (14-16)
+            const olderTeens = ageKeys.filter(a => a >= 14 && a <= 16).reduce((sum, a) => sum + (ages[a.toString()] || 0), 0);
+            const pctOlderTeens = Math.round((olderTeens / t) * 100);
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, lineHeight: 1.8, textAlign: 'justify' as const, marginTop: 16, borderTop: '1px solid #eee', paddingTop: 12 }}>
+                <p style={{ marginBottom: 8 }}>
+                  A distribuição etária dos alunos inscritos no projeto "{projectName}" em {city} ({uf}) comprovou que o público atendido esteve totalmente alinhado ao objeto do projeto, que previu a realização de aulas de triathlon — natação, ciclismo e corrida — para crianças e adolescentes de {minAge} a {maxAge} anos matriculados na rede oficial de ensino. Todos os participantes se enquadraram na faixa etária estabelecida, o que confirmou o cumprimento integral desse requisito.
+                </p>
+                {pctAges8to12 > 0
+                  ? <p style={{ marginBottom: 8 }}>
+                      Os dados etários mostraram uma maior concentração de alunos entre 8 e 12 anos, que representaram {pctAges8to12}% dos inscritos.{topAges.length >= 2 ? ` As idades de ${topAges[0].age} e ${topAges[1].age} anos foram as mais expressivas, cada uma com ${topAges[0].pct}% e ${topAges[1].pct}% do total${topAges.length >= 3 ? `, seguidas por ${topAges[2].age} anos (${topAges[2].pct}%)` : ''}${topAges.length >= 4 ? ` e ${topAges[3].age} anos (${topAges[3].pct}%)` : ''}.` : ''}{pctOlderTeens > 0 ? ` Já as faixas de 14 a 16 anos somaram ${pctOlderTeens}%, indicando que o projeto também alcançou adolescentes mais velhos, ainda que em menor proporção.` : ''}
+                    </p>
+                  : <p style={{ marginBottom: 8 }}>A faixa de 8 a 12 anos representou 0% dos inscritos.</p>}
+                <p style={{ marginBottom: 8 }}>
+                  Quanto ao estado de cumprimento das metas, o projeto atendeu plenamente ao perfil previsto, tanto em relação à idade quanto à condição de matrícula na rede oficial de ensino. A execução garantiu que todas as vagas fossem ocupadas por crianças e adolescentes dentro dos critérios estabelecidos, o que reforçou a aderência ao planejamento inicial.
+                </p>
+                <p style={{ marginBottom: 4, fontWeight: 700 }}>Entre os pontos positivos, destacaram-se:</p>
+                <ul style={{ paddingLeft: 24, marginBottom: 8 }}>
+                  <li>o cumprimento integral do objeto, com atendimento exclusivo à faixa etária prevista;</li>
+                  <li>a forte participação de crianças mais novas, que demonstraram grande interesse pelas atividades;</li>
+                  <li>a diversidade etária, que permitiu integrar diferentes níveis de desenvolvimento físico e social.</li>
+                </ul>
+                {pctOlderTeens > 0 && pctOlderTeens < 30
+                  ? <p style={{ marginBottom: 8 }}>
+                      Como ponto negativo, observou-se a menor participação de adolescentes de 14 a {maxAge} anos, o que indicou a necessidade de estratégias específicas para atrair esse público, que costuma enfrentar maior carga escolar e menor disponibilidade de tempo.
+                    </p>
+                  : pctOlderTeens === 0
+                    ? <p style={{ marginBottom: 8 }}>
+                        Não houve participação de adolescentes na faixa de 14 a 16 anos, representando 0% dos inscritos.
+                      </p>
+                    : null}
+                <p>
+                  De modo geral, a execução cumpriu o objeto e alcançou as metas previstas, consolidando o projeto como uma ação educacional bem-sucedida, coerente com seus objetivos e capaz de promover a prática esportiva entre crianças e adolescentes da rede oficial de ensino.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* PAGE 17: RELAÇÃO DOS ALUNOS */}
