@@ -274,7 +274,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
         {/* ━━━ SECTION 1: INTRODUÇÃO (pg 6) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="1" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Texto será adicionado pelo usuário */}
           </div>
         </div>
@@ -296,7 +296,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </table>
           <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 16 }}>
             Faz-se necessário tecer algumas observações acerca dos princípios metodológicos para notas de 0 a 40, na regra, a escola irá somar as três notas. Ou seja, nota do 1° trimestre (30), 2° trimestre (30) e 3° trimestre (40). O valor total final será 100, como, por exemplo, baseado em análise das notas ponderadas do boletim escolar.
           </div>
 
@@ -314,7 +314,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             </tbody>
           </table>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 16 }}>
             Logo, os princípios metodológicos para notas de 0 a 10 foram baseados, seguindo também análise de boletim escolar bimestral e chegou à seguinte metodologia:
           </div>
 
@@ -330,7 +330,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </table>
           <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             As faixas estabelecidas para cada categoria - bom, regular, insatisfatório e péssimo - proporcionam uma estrutura clara e compreensível para a interpretação dos resultados, seguindo os seguintes critérios:
           </div>
         </div>
@@ -352,7 +352,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             </div>
           </div>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 16 }}>
             A seguir temos uma Tabela de Equivalência entre Conceitos e Notas Numéricas que recorremos para converter os conceitos em notas numéricas durante a análise de boletim ou sistema de pontuação similar da Escola regular do aluno ao iniciar na {projectFull}.
           </div>
 
@@ -411,7 +411,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </table>
           <p style={{ fontSize: 9, color: '#666', marginBottom: 24 }}>Disponível em: https://ist.ifsp.edu.br/images/Documentos2017/ANEXO-I---Tabela-de-Equivalncia-entre-Conceitos-e-Notas-Numricas.pdf. Acesso em: 10 set. 2024. (Adaptado pelos autores do relatório) (2024).</p>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             Essa abordagem busca garantir que todos os alunos, independentemente de sua situação socioeconômica, tenham acesso a uma avaliação justa e equitativa, que reconheça tanto suas conquistas quanto suas dificuldades. Ao estabelecer diretrizes claras e transparentes, o objetivo é promover um ambiente de aprendizado estimulante e inclusivo, onde cada aluno possa alcançar seu pleno potencial e contribuir para o seu próprio desenvolvimento pessoal e estudantil, bem como para o progresso da sociedade como um todo.
           </div>
         </div>
@@ -419,7 +419,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
         {/* ━━━ SECTION 2.2 (pg 11-12) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="2.2" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 12 }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 12 }}>
             O relatório apresenta os dados referentes ao levantamento da assiduidade escolar dos alunos no primeiro semestre. Para essa análise, foram adotados indicadores fixos, como o total de 200 dias letivos anuais, distribuídos em 40 semanas, com uma carga de 25 aulas semanais, totalizando 1.000 aulas ao longo do ano. Com base nesses parâmetros, torna-se possível realizar o levantamento da assiduidade dos alunos utilizando princípios metodológicos adequados à verificação da frequência escolar.
           </div>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, marginBottom: 12 }}>
@@ -430,7 +430,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             <li>Número de aulas semanais: 25 aulas</li>
             <li>Número de aulas anuais: 1000 aulas</li>
           </ul>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 12 }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 12 }}>
             Neste caso, será possível, por exemplo, o fornecimento do levantamento da assiduidade dos alunos utilizando princípios metodológicos da verificação da assiduidade escolar:
           </div>
           <p style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 4 — Princípios metodológicos da verificação da assiduidade escolar</p>
@@ -538,7 +538,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </div>
           <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
 
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {`Sendo assim, os indicadores de Assiduidade Escolar foram elaborados recorrendo à Lei de Diretrizes e Bases da Educação Nacional (LDB) que aponta no artigo 24, inciso I, a "carga horária mínima anual será de oitocentas horas para o ensino fundamental e para o ensino médio, distribuídas por um mínimo de duzentos dias de efetivo trabalho escolar, excluído o tempo reservado aos exames finais, quando houver". (EDUCAÇÃO, Da. Lei nº 9.394, de 20 de dezembro de 1996. `}<strong>Estabelece as diretrizes e bases da,</strong> 2014).
           </div>
         </div>
@@ -546,27 +546,35 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
         {/* ━━━ SECTION 2.3: Faixa Etária (pg 13-14) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="2.3" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            {`A análise da distribuição etária dos alunos regularmente inscritos no projeto "Escolinha de Triathlon Horizonte", executado no município de Horizonte (CE), demonstrou a adequação do público atendido ao objeto proposto no Plano de Trabalho, que previu a realização de aulas de triathlon para crianças e adolescentes de 8 a 17 anos regularmente matriculados na rede oficial de ensino. O projeto atendeu ao total de 50 beneficiados, contemplando uma faixa etária diversificada e compatível com sua proposta educacional.
-
-Observou-se maior concentração de participantes nas idades de 10 e 11 anos, que somaram, respectivamente, 11 alunos (22%) e 13 alunos (26%), representando juntas 48% do total atendido. Esse resultado indicou predominância de crianças em fase intermediária do Ensino Fundamental, período considerado estratégico para o desenvolvimento das capacidades motoras, sociais e educacionais por meio do esporte.
-
-As idades de 12 e 14 anos também apresentaram participação significativa, com 7 alunos em cada faixa etária (14%), evidenciando a continuidade do interesse e da permanência dos adolescentes nas atividades do projeto. As demais idades — 8, 9, 13, 15 e 16 anos — registraram participações variando entre 4% e 6%, assegurando a heterogeneidade etária do grupo atendido.
-
-De forma geral, a distribuição etária confirmou que o projeto foi executado em plena conformidade com seu objeto, atendendo crianças e adolescentes dentro da faixa etária prevista e garantindo equilíbrio entre as diferentes idades. Esse perfil reforçou a efetividade do projeto como iniciativa de esporte educacional, capaz de promover inclusão, desenvolvimento integral e acesso democrático às práticas esportivas.
-
-Além da distribuição etária, é relevante considerar a relação entre idade e nível de ensino. O sistema educacional brasileiro organiza-se em etapas que correspondem a faixas etárias específicas: o Ensino Fundamental I (1º ao 5º ano) atende alunos de 6 a 10 anos; o Ensino Fundamental II (6º ao 9º ano) abrange estudantes de 11 a 14 anos; e o Ensino Médio (1º ao 3º ano) contempla jovens de 15 a 18 anos. Essa estrutura permite um aprendizado progressivo, alinhado às necessidades cognitivas, emocionais e sociais de cada fase.
-
-A Base Nacional Comum Curricular (BNCC) reforça essa organização ao estabelecer que o Ensino Fundamental, com duração de nove anos, atende estudantes de 6 a 14 anos, período marcado por intensas mudanças físicas, cognitivas e socioemocionais. Já o Ensino Médio visa aprofundar conhecimentos e desenvolver competências para a vida acadêmica, profissional e cidadã.
-
-Com base nas informações apresentadas, conclui-se que os alunos da Escolinha de Triathlon Horizonte estão, em sua maioria, alinhados às expectativas da BNCC em termos de faixa etária e nível de ensino. A observância dessas etapas educacionais é fundamental para garantir que os beneficiários, além de aprimorarem suas competências escolares, estejam inseridos em um processo de aprendizagem estruturado e adequado ao seu desenvolvimento. Dessa forma, o projeto atua em conformidade com os princípios pedagógicos da BNCC, contribuindo para a formação integral dos alunos e para o cumprimento dos objetivos educacionais propostos.`}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`A análise da distribuição etária dos alunos regularmente inscritos no projeto "Escolinha de Triathlon Horizonte", executado no município de Horizonte (CE), demonstrou a adequação do público atendido ao objeto proposto no Plano de Trabalho, que previu a realização de aulas de triathlon para crianças e adolescentes de 8 a 17 anos regularmente matriculados na rede oficial de ensino. O projeto atendeu ao total de 50 beneficiados, contemplando uma faixa etária diversificada e compatível com sua proposta educacional.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              Observou-se maior concentração de participantes nas idades de 10 e 11 anos, que somaram, respectivamente, 11 alunos (22%) e 13 alunos (26%), representando juntas 48% do total atendido. Esse resultado indicou predominância de crianças em fase intermediária do Ensino Fundamental, período considerado estratégico para o desenvolvimento das capacidades motoras, sociais e educacionais por meio do esporte.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              As idades de 12 e 14 anos também apresentaram participação significativa, com 7 alunos em cada faixa etária (14%), evidenciando a continuidade do interesse e da permanência dos adolescentes nas atividades do projeto. As demais idades — 8, 9, 13, 15 e 16 anos — registraram participações variando entre 4% e 6%, assegurando a heterogeneidade etária do grupo atendido.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              De forma geral, a distribuição etária confirmou que o projeto foi executado em plena conformidade com seu objeto, atendendo crianças e adolescentes dentro da faixa etária prevista e garantindo equilíbrio entre as diferentes idades. Esse perfil reforçou a efetividade do projeto como iniciativa de esporte educacional, capaz de promover inclusão, desenvolvimento integral e acesso democrático às práticas esportivas.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              Além da distribuição etária, é relevante considerar a relação entre idade e nível de ensino. O sistema educacional brasileiro organiza-se em etapas que correspondem a faixas etárias específicas: o Ensino Fundamental I (1º ao 5º ano) atende alunos de 6 a 10 anos; o Ensino Fundamental II (6º ao 9º ano) abrange estudantes de 11 a 14 anos; e o Ensino Médio (1º ao 3º ano) contempla jovens de 15 a 18 anos. Essa estrutura permite um aprendizado progressivo, alinhado às necessidades cognitivas, emocionais e sociais de cada fase.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              A Base Nacional Comum Curricular (BNCC) reforça essa organização ao estabelecer que o Ensino Fundamental, com duração de nove anos, atende estudantes de 6 a 14 anos, período marcado por intensas mudanças físicas, cognitivas e socioemocionais. Já o Ensino Médio visa aprofundar conhecimentos e desenvolver competências para a vida acadêmica, profissional e cidadã.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 0 }}>
+              {`Com base nas informações apresentadas, conclui-se que os alunos da Escolinha de Triathlon Horizonte estão, em sua maioria, alinhados às expectativas da BNCC em termos de faixa etária e nível de ensino. A observância dessas etapas educacionais é fundamental para garantir que os beneficiários, além de aprimorarem suas competências escolares, estejam inseridos em um processo de aprendizagem estruturado e adequado ao seu desenvolvimento. Dessa forma, o projeto atua em conformidade com os princípios pedagógicos da BNCC, contribuindo para a formação integral dos alunos e para o cumprimento dos objetivos educacionais propostos.`}
+            </p>
           </div>
         </div>
 
         {/* ━━━ SECTION 3: MÉDIAS GERAIS (pg 15) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Texto será adicionado pelo usuário */}
           </div>
         </div>
@@ -574,7 +582,7 @@ Com base nas informações apresentadas, conclui-se que os alunos da Escolinha d
         {/* ━━━ SECTION 3.1: Médias notas (pg 22) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.1" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Tabela/conteúdo será adicionado pelo usuário */}
           </div>
         </div>
@@ -582,7 +590,7 @@ Com base nas informações apresentadas, conclui-se que os alunos da Escolinha d
         {/* ━━━ SECTION 3.2: Desempenho escolar (pg 23) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.2" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Gráfico/conteúdo será adicionado pelo usuário */}
           </div>
         </div>
@@ -590,7 +598,7 @@ Com base nas informações apresentadas, conclui-se que os alunos da Escolinha d
         {/* ━━━ SECTION 3.3: Melhora/piora/manutenção (pg 25) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.3" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Gráfico/conteúdo será adicionado pelo usuário */}
           </div>
         </div>
@@ -598,7 +606,7 @@ Com base nas informações apresentadas, conclui-se que os alunos da Escolinha d
         {/* ━━━ SECTION 4: LEVANTAMENTO DA ASSIDUIDADE (pg 27) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="4" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {/* Tabela/conteúdo será adicionado pelo usuário */}
           </div>
         </div>
@@ -606,7 +614,7 @@ Com base nas informações apresentadas, conclui-se que os alunos da Escolinha d
         {/* ━━━ SECTION 5: CONCLUSÃO (pg 32) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="5" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
             {`A conclusão deste relatório sobre assiduidade e aproveitamento escolar dos alunos do projeto "${projectTitle}" no núcleo de ${cityLabel}/${stateLabel} demonstra que o projeto cumpriu com êxito os objetivos estabelecidos na Meta Qualitativa 01, promovendo melhoria mensurável na vida acadêmica de seus beneficiados.`}
           </div>
         </div>
