@@ -16,6 +16,22 @@ interface AssiduidadeReportBuilderProps {
   projectName?: string;
 }
 
+// Default TOC structure matching the reference image
+const DEFAULT_TOC = (city: string, uf: string, project: string) => [
+  { num: '1', title: 'INTRODUÇÃO', page: 6, level: 0 },
+  { num: '2', title: 'PROCEDIMENTOS METODOLÓGICOS', page: 8, level: 0 },
+  { num: '2.1', title: 'Princípios Metodológicos para a Análise do Aproveitamento Escolar', page: 8, level: 1 },
+  { num: '2.2', title: 'Princípios Metodológicos para o Levantamento da Assiduidade Escolar dos Alunos', page: 11, level: 1 },
+  { num: '2.3', title: 'Faixa Etária e Etapas de Escolarização', page: 13, level: 1 },
+  { num: '3', title: `MÉDIAS GERAIS DAS NOTAS DO 1º E 4º BIMESTRE /DADOS DOS BOLETINS DOS ALUNOS E AVALIAÇÃO DO APROVEITAMENTO ESCOLAR DOS ATLETAS PARTICIPANTES DO PROJETO`, page: 15, level: 0 },
+  { num: '3.1', title: `Médias das notas do 1º e 4º bimestre dos alunos matriculados nas Escolas Públicas e Particulares inscritos no Projeto "${project}" em ${city} (${uf})`, page: 22, level: 1 },
+  { num: '3.2', title: `Desempenho escolar dos alunos matriculados nas Escolas Públicas e Particulares inscritos no Projeto "${project}" em ${city} (${uf})`, page: 23, level: 1 },
+  { num: '3.3', title: `Dados sobre a melhora, piora ou manutenção das médias escolares dos alunos da Educação Básica inscritos no Projeto "${project}" em ${city} – ${uf}`, page: 25, level: 1 },
+  { num: '4', title: 'DADOS DE LEVANTAMENTO DA ASSIDUIDADE ESCOLAR NO 1º e 2º SEMESTRE AVALIADO', page: 27, level: 0 },
+  { num: '5', title: 'CONCLUSÃO', page: 32, level: 0 },
+  { num: '', title: 'REFERÊNCIAS', page: 33, level: 0 },
+];
+
 export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> = ({
   nucleos,
   onBack,
@@ -39,6 +55,21 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   const currentYear = new Date().getFullYear();
   const projectTitle = projectName;
   const projectTitleUpper = projectName.toUpperCase();
+  const projectFull = `${projectTitle} ${cityLabel}`;
+
+  // --- Editable TOC titles (synced between sumário and section headers) ---
+  const [tocItems, setTocItems] = useState(() => DEFAULT_TOC(cityLabel, stateLabel, projectFull));
+
+  // Update TOC when nucleo changes
+  React.useEffect(() => {
+    setTocItems(DEFAULT_TOC(cityLabel, stateLabel, projectFull));
+  }, [cityLabel, stateLabel, projectFull]);
+
+  const updateTocTitle = (num: string, newTitle: string) => {
+    setTocItems(prev => prev.map(item => item.num === num ? { ...item, title: newTitle } : item));
+  };
+
+  const getTocTitle = (num: string) => tocItems.find(t => t.num === num)?.title || '';
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
@@ -51,9 +82,32 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
     }
   }, [projectTitle, cityLabel, stateLabel]);
 
+  // Editable section header helper
+  const SectionTitle = ({ num, tag = 'h2' }: { num: string; tag?: 'h2' | 'h3' }) => {
+    const title = getTocTitle(num);
+    const isMain = tag === 'h2';
+    const prefix = num ? `${num} ` : '';
+    return React.createElement(tag, {
+      contentEditable: isEditing,
+      suppressContentEditableWarning: true,
+      onBlur: (e: React.FocusEvent<HTMLElement>) => {
+        const raw = e.currentTarget.textContent || '';
+        const cleaned = raw.replace(new RegExp(`^${num.replace('.', '\\.')}\\s*`), '').trim();
+        if (cleaned && cleaned !== title) updateTocTitle(num, cleaned);
+      },
+      style: {
+        fontSize: isMain ? 16 : 14,
+        fontWeight: isMain ? 800 : 700,
+        marginBottom: isMain ? 20 : 12,
+        color: '#111',
+        textTransform: isMain ? 'uppercase' as const : 'none' as const,
+      },
+    }, `${prefix}${title}`);
+  };
+
   return (
     <div className="freq-report-root">
-      {/* ═══════════ TOOLBAR (hidden on print) ═══════════ */}
+      {/* ═══════════ TOOLBAR ═══════════ */}
       <div className="freq-report-toolbar no-print">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={onBack} className="freq-btn-back" title="Voltar">
@@ -64,28 +118,14 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             <p style={{ fontSize: 12, color: '#666', margin: 0 }}>Relatório editável • {nucleoShortName}</p>
           </div>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          {/* Núcleo */}
-          <select
-            value={selectedNucleoId}
-            onChange={e => setSelectedNucleoId(e.target.value)}
-            className="freq-select"
-          >
-            {nucleos.map(n => (
-              <option key={n.id} value={n.id}>{n.nome}</option>
-            ))}
+          <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
+            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome}</option>))}
           </select>
-
-          {/* Período */}
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
           <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />
-
-          {/* Nº SLIE */}
           <input type="text" value={nSli} onChange={e => setNSli(e.target.value)} className="freq-input-sli" placeholder="Nº SLIE" title="Nº SLIE" />
-
-          {/* Botões */}
           <button onClick={() => setIsEditing(!isEditing)} className={`freq-btn ${isEditing ? 'freq-btn-active' : ''}`}>
             ✏️ {isEditing ? 'Salvar' : 'Editar'}
           </button>
@@ -162,24 +202,16 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, fontWeight: 800, color: '#111', margin: '0 0 6px', textTransform: 'uppercase' }}>
               ANEXO META QUALITATIVA 01 - RELATÓRIO DE ASSIDUIDADE E APROVEITAMENTO ESCOLAR
             </p>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 4px' }}>
-              Meta Qualitativa 01:
-            </p>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>
-              Meta:
-            </p>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 4px' }}>Meta Qualitativa 01:</p>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>Meta:</p>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', margin: '0 0 8px' }}>
               Identificar a melhoria da assiduidade e do aproveitamento escolar dos alunos participantes do projeto.
             </p>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>
-              Indicador:
-            </p>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>Indicador:</p>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', margin: '0 0 8px' }}>
               Percentual de melhoria na assiduidade e aproveitamento escolar dos beneficiados.
             </p>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>
-              Instrumento de Verificação:
-            </p>
+            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>Instrumento de Verificação:</p>
             <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', margin: '0 0 0' }}>
               Boletim Escolar dos alunos participantes do projeto.
             </p>
@@ -203,94 +235,129 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
 
         {/* ━━━ PAGE 5: SUMÁRIO ━━━ */}
         <div className="freq-page">
-          <h2 style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, marginBottom: 40, color: '#111' }}>SUMÁRIO</h2>
-          <table className="freq-toc-table">
+          <h2 style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, marginBottom: 40, color: '#111', fontFamily: "'Times New Roman', Times, serif" }}>SUMÁRIO</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Times New Roman', Times, serif" }}>
             <tbody>
-              {[
-                { num: '1', title: 'Resumo Executivo', page: '04' },
-                { num: '2', title: 'Quadro Comparativo de Assiduidade e Aproveitamento', page: '06' },
-                { num: '3', title: 'Análise dos Resultados', page: '07' },
-                { num: '4', title: 'Boletins Escolares (Evidências)', page: '08' },
-              ].map((item, i) => (
+              {tocItems.map((item, i) => (
                 <tr key={i}>
-                  <td style={{ width: 50, fontWeight: 700, fontSize: 13, color: '#333', paddingRight: 12 }}>{item.num}</td>
-                  <td style={{ fontSize: 13, color: '#333', borderBottom: '1px dotted #ccc', paddingBottom: 8, paddingTop: 8 }}>
-                    <span contentEditable={isEditing} suppressContentEditableWarning>{item.title}</span>
+                  <td style={{ width: 45, fontWeight: 700, fontSize: 13, color: '#000', paddingRight: 8, verticalAlign: 'top', paddingTop: item.level === 0 ? 14 : 6, paddingBottom: 4 }}>
+                    {item.num}
                   </td>
-                  <td style={{ width: 50, textAlign: 'right', fontWeight: 700, fontSize: 13, color: '#333' }}>{item.page}</td>
+                  <td style={{
+                    fontSize: 13,
+                    color: '#000',
+                    paddingTop: item.level === 0 ? 14 : 6,
+                    paddingBottom: 4,
+                    fontWeight: item.level === 0 ? 700 : 400,
+                    textTransform: item.level === 0 ? 'uppercase' : 'none',
+                    borderBottom: '1px dotted #999',
+                    lineHeight: 1.5,
+                  }}>
+                    <span
+                      contentEditable={isEditing}
+                      suppressContentEditableWarning
+                      onBlur={(e) => {
+                        const val = e.currentTarget.textContent?.trim() || '';
+                        if (val && val !== item.title) updateTocTitle(item.num, val);
+                      }}
+                    >{item.title}</span>
+                  </td>
+                  <td style={{ width: 35, textAlign: 'right', fontWeight: 700, fontSize: 13, color: '#000', verticalAlign: 'top', paddingTop: item.level === 0 ? 14 : 6 }}>
+                    {item.page}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* ━━━ PAGE 6: QUADRO COMPARATIVO ━━━ */}
+        {/* ━━━ SECTION 1: INTRODUÇÃO (pg 6) ━━━ */}
         <div className="freq-page">
-          <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: '#111' }}>2 QUADRO COMPARATIVO DE ASSIDUIDADE E APROVEITAMENTO ESCOLAR</h2>
-          <div style={{ textAlign: 'right', fontSize: 13, fontWeight: 700, fontStyle: 'italic', borderTop: '2px solid #4472c4', borderBottom: '2px solid #4472c4', padding: '4px 0', marginBottom: 20, color: '#333' }}>
-            PROJETO {projectTitleUpper} — {nucleoShortName.toUpperCase()} / {stateLabel}
-          </div>
-          <div className="freq-section-header-bar">
-            RELATÓRIO DE ASSIDUIDADE E APROVEITAMENTO ESCOLAR — {nucleoShortName.toUpperCase()} / {stateLabel}
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="freq-table-resumo">
-              <thead>
-                <tr className="freq-table-header">
-                  <th style={{ width: 35 }}>Nº</th>
-                  <th>Nome do Aluno (ordem alfabética)</th>
-                  <th style={{ width: 75 }}>Aproveitamento<br/>Escolar 01</th>
-                  <th style={{ width: 75 }}>Assiduidade<br/>Escolar 01</th>
-                  <th style={{ width: 75 }}>Aproveitamento<br/>Escolar 02</th>
-                  <th style={{ width: 75 }}>Assiduidade<br/>Escolar 02</th>
-                  <th style={{ width: 80 }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Placeholder rows - dados serão integrados futuramente */}
-                {[1,2,3,4,5].map(i => (
-                  <tr key={i} className={i % 2 === 0 ? 'freq-row-even' : 'freq-row-odd'}>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>{i}</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ fontWeight: 500, color: '#000' }}>[Nome do Aluno {i}]</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>—</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>—</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>—</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>—</td>
-                    <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 700, color: '#16a34a' }}>MELHORA</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p style={{ fontSize: 10, color: '#888', marginTop: 8, textAlign: 'right' }}>Fonte: {projectTitle} ({currentYear})</p>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 20, fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            A tabela acima apresenta o quadro comparativo de assiduidade e aproveitamento escolar dos alunos do projeto "{projectTitle}" no núcleo de {cityLabel}/{stateLabel}. Os dados serão preenchidos com as informações extraídas dos boletins escolares, permitindo a análise da evolução acadêmica dos beneficiados ao longo do período de execução do projeto.
-          </div>
-        </div>
-
-        {/* ━━━ PAGE 7: ANÁLISE ━━━ */}
-        <div className="freq-page">
-          <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>3 ANÁLISE DOS RESULTADOS</h2>
+          <SectionTitle num="1" />
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            {`A análise dos boletins escolares dos alunos participantes do projeto "${projectTitle}" no núcleo de ${cityLabel}/${stateLabel} demonstra resultados positivos no que se refere à assiduidade e ao aproveitamento escolar dos beneficiados.
-
-Os indicadores apontam que a maioria dos alunos apresentou melhoria em seus índices de frequência escolar e em suas notas, evidenciando o impacto positivo que a participação no projeto exerce sobre a rotina acadêmica dos beneficiados.
-
-A prática esportiva regular, aliada ao acompanhamento pedagógico oferecido pelo projeto, contribui para o desenvolvimento de habilidades socioemocionais como disciplina, pontualidade, trabalho em equipe e autoestima, fatores que se refletem diretamente no desempenho escolar.
-
-Com base nos dados coletados, conclui-se que o projeto cumpriu com êxito os objetivos estabelecidos na Meta Qualitativa 01, promovendo melhoria mensurável na vida acadêmica de seus beneficiados.`}
+            {/* Texto será adicionado pelo usuário */}
           </div>
         </div>
 
-        {/* ━━━ PAGE 8: PLACEHOLDER BOLETINS ━━━ */}
+        {/* ━━━ SECTION 2: PROCEDIMENTOS METODOLÓGICOS (pg 8) ━━━ */}
         <div className="freq-page">
-          <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>4 BOLETINS ESCOLARES (EVIDÊNCIAS)</h2>
-          <div style={{ padding: 40, border: '2px dashed #ccc', borderRadius: 8, textAlign: 'center', color: '#999', minHeight: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-            </svg>
-            <p style={{ fontWeight: 700, fontSize: 14 }}>Área reservada para os Boletins Escolares</p>
-            <p style={{ fontSize: 12 }}>As cópias dos boletins dos alunos serão anexadas nesta seção como evidência documental da Meta Qualitativa 01.</p>
+          <SectionTitle num="2" />
+          <SectionTitle num="2.1" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Texto será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 2.2 (pg 11) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="2.2" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Texto será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 2.3: Faixa Etária (pg 13) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="2.3" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Texto será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 3: MÉDIAS GERAIS (pg 15) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Texto será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 3.1: Médias notas (pg 22) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="3.1" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Tabela/conteúdo será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 3.2: Desempenho escolar (pg 23) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="3.2" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Gráfico/conteúdo será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 3.3: Melhora/piora/manutenção (pg 25) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="3.3" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Gráfico/conteúdo será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 4: LEVANTAMENTO DA ASSIDUIDADE (pg 27) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="4" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {/* Tabela/conteúdo será adicionado pelo usuário */}
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 5: CONCLUSÃO (pg 32) ━━━ */}
+        <div className="freq-page">
+          <SectionTitle num="5" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            {`A conclusão deste relatório sobre assiduidade e aproveitamento escolar dos alunos do projeto "${projectTitle}" no núcleo de ${cityLabel}/${stateLabel} demonstra que o projeto cumpriu com êxito os objetivos estabelecidos na Meta Qualitativa 01, promovendo melhoria mensurável na vida acadêmica de seus beneficiados.`}
+          </div>
+        </div>
+
+        {/* ━━━ REFERÊNCIAS (pg 33) ━━━ */}
+        <div className="freq-page">
+          <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>REFERÊNCIAS</h2>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 2, textAlign: 'justify' }}>
+            <p>ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. MANUAL DA LEI DE INCENTIVO AO ESPORTE. Diretoria de Programas e Políticas de Incentivo ao Esporte (DPPIE). Brasília, 2023.</p>
+            <p style={{ marginTop: 16 }}>ESPORTE, Do. Lei nº 11.438, de 29 de dezembro de 2006. Dispõe sobre incentivos e benefícios para fomentar as atividades de caráter desportivo e dá outras providências, 2006.</p>
           </div>
         </div>
 
