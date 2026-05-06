@@ -285,12 +285,12 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           <SectionTitle num="2.1" tag="h3" />
 
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 1 — Princípios metodológicos para notas de 0 a 40</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
-            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700 }}>Princípios metodológicos para notas de 0 a 40</th></tr></thead>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6, border: '1px solid #999' }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Princípios metodológicos para notas de 0 a 40</th></tr></thead>
             <tbody>
-              <tr style={{ borderBottom: '1px solid #ccc' }}><td style={{ padding: '4px 10px', fontWeight: 700 }}>Avaliação</td><td style={{ padding: '4px 10px', fontWeight: 700 }}>Média de notas (M)</td></tr>
+              <tr style={{ background: '#d6e4f0', borderBottom: '2px solid #4472c4' }}><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Avaliação</td><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Média de notas (M)</td></tr>
               {[['Bom','19 ≤ M ≤ 40'],['Regular','16 ≤ M < 19'],['Insatisfatório','11 ≤ M < 15'],['Péssimo','M < 11']].map(([a,b],i)=>(
-                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff', borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 10px' }}>{a}</td><td style={{ padding: '4px 10px' }}>{b}</td></tr>
+                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff' }}><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{a}</td><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{b}</td></tr>
               ))}
             </tbody>
           </table>
@@ -300,17 +300,17 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             Faz-se necessário tecer algumas observações acerca dos princípios metodológicos para notas de 0 a 40, na regra, a escola irá somar as três notas. Ou seja, nota do 1° trimestre (30), 2° trimestre (30) e 3° trimestre (40). O valor total final será 100, como, por exemplo, baseado em análise das notas ponderadas do boletim escolar.
           </div>
 
-          <table style={{ width: '80%', margin: '0 auto 16px', borderCollapse: 'collapse', fontSize: 11 }}>
+          <table style={{ width: '80%', margin: '0 auto 16px', borderCollapse: 'collapse', fontSize: 11, border: '1px solid #999' }}>
             <thead><tr style={{ background: '#4472c4', color: '#fff' }}>
-              <td style={{ padding: '4px 8px', fontWeight: 700 }}>Componente Curricular</td>
-              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>1°<br/>Trimestre<br/>(30)</td>
-              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>2°<br/>Trimestre<br/>(30)</td>
-              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>3°<br/>Trimestre<br/>(40)</td>
-              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>Nota Final<br/>(100)</td>
+              <td style={{ padding: '4px 8px', fontWeight: 700, border: '1px solid #3a63a8' }}>Componente Curricular</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>1°<br/>Trimestre<br/>(30)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>2°<br/>Trimestre<br/>(30)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>3°<br/>Trimestre<br/>(40)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Nota Final<br/>(100)</td>
             </tr></thead>
             <tbody>
-              <tr style={{ borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 8px', fontWeight: 700 }}>LÍNGUA PORTUGUESA</td><td style={{ textAlign: 'center', padding: '4px' }}>28,90</td><td style={{ textAlign: 'center', padding: '4px' }}>24,10</td><td style={{ textAlign: 'center', padding: '4px' }}>33,20</td><td style={{ textAlign: 'center', padding: '4px' }}>86,20</td></tr>
-              <tr style={{ borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 8px', fontWeight: 700 }}>HISTÓRIA</td><td style={{ textAlign: 'center', padding: '4px' }}>30,00</td><td style={{ textAlign: 'center', padding: '4px' }}>26,25</td><td style={{ textAlign: 'center', padding: '4px' }}>37,20</td><td style={{ textAlign: 'center', padding: '4px' }}>93,45</td></tr>
+              <tr><td style={{ padding: '4px 8px', fontWeight: 700, border: '1px solid #ccc' }}>LÍNGUA PORTUGUESA</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>28,90</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>24,10</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>33,20</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>86,20</td></tr>
+              <tr><td style={{ padding: '4px 8px', fontWeight: 700, border: '1px solid #ccc' }}>HISTÓRIA</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>30,00</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>26,25</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>37,20</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>93,45</td></tr>
             </tbody>
           </table>
 
@@ -319,12 +319,12 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </div>
 
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 2 — Princípios metodológicos</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
-            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700 }}>Princípios metodológicos</th></tr></thead>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6, border: '1px solid #999' }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Princípios metodológicos</th></tr></thead>
             <tbody>
-              <tr style={{ borderBottom: '1px solid #ccc' }}><td style={{ padding: '4px 10px', fontWeight: 700 }}>Avaliação</td><td style={{ padding: '4px 10px', fontWeight: 700 }}>Média de notas (M)</td></tr>
+              <tr style={{ background: '#d6e4f0', borderBottom: '2px solid #4472c4' }}><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Avaliação</td><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Média de notas (M)</td></tr>
               {[['Bom','6 ≤ M ≤ 9'],['Regular','5 ≤ M < 6'],['Insatisfatório','3 ≤ M < 5'],['Péssimo','M < 3']].map(([a,b],i)=>(
-                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff', borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 10px' }}>{a}</td><td style={{ padding: '4px 10px' }}>{b}</td></tr>
+                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff' }}><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{a}</td><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{b}</td></tr>
               ))}
             </tbody>
           </table>
@@ -357,9 +357,9 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </div>
 
           <p style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 3 — Tabela de Equivalência entre Conceitos e Notas Numéricas</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
-            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px', textAlign: 'center', fontWeight: 700 }}>Tabela de Equivalência entre Conceitos e Notas Numéricas</th></tr>
-              <tr style={{ background: '#d6e4f0' }}><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, borderBottom: '1px solid #999' }}>Conceito</th><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, borderBottom: '1px solid #999' }}>Nota Numérica</th></tr>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6, border: '1px solid #999' }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Tabela de Equivalência entre Conceitos e Notas Numéricas</th></tr>
+              <tr style={{ background: '#d6e4f0' }}><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #999' }}>Conceito</th><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #999' }}>Nota Numérica</th></tr>
             </thead>
             <tbody>
               {[
@@ -379,9 +379,9 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
                 {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
                 {concepts:['C','Satisfatório','Regular','Suficiente'], note:'5,00'},
               ].map((row, ri) => row.concepts.map((c, ci) => (
-                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff'), borderBottom: '1px solid #ddd' }}>
-                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700 }}>{c}</td>
-                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle' }}>{row.note}</td>}
+                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff') }}>
+                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700, border: '1px solid #ccc' }}>{c}</td>
+                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle', border: '1px solid #ccc' }}>{row.note}</td>}
                 </tr>
               )))}
             </tbody>
@@ -390,7 +390,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
 
         {/* ━━━ PAGE 10: Continuação Tabela 3 + fechamento ━━━ */}
         <div className="freq-page">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6, border: '1px solid #999' }}>
             <tbody>
               {[
                 {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
@@ -402,9 +402,9 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
                 {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
                 {concepts:['E','Não satisfatório','Insatisfatório','Reprovado','Não promovido','Progressão não avaliada'], note:'0,00'},
               ].map((row, ri) => row.concepts.map((c, ci) => (
-                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff'), borderBottom: '1px solid #ddd' }}>
-                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700 }}>{c}</td>
-                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle' }}>{row.note}</td>}
+                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff') }}>
+                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700, border: '1px solid #ccc' }}>{c}</td>
+                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle', border: '1px solid #ccc' }}>{row.note}</td>}
                 </tr>
               )))}
             </tbody>
@@ -434,95 +434,95 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             Neste caso, será possível, por exemplo, o fornecimento do levantamento da assiduidade dos alunos utilizando princípios metodológicos da verificação da assiduidade escolar:
           </div>
           <p style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 4 — Princípios metodológicos da verificação da assiduidade escolar</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, marginBottom: 16 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 9, marginBottom: 16, border: '1px solid #999' }}>
             <thead>
               <tr style={{ background: '#4472c4', color: '#fff' }}>
-                <th style={{ padding: '4px 6px', fontWeight: 700 }}>Nome (ordem alfabética)</th>
-                <th style={{ padding: '4px 6px', fontWeight: 700 }}>200 dias letivos/ horas diárias</th>
-                <th style={{ padding: '4px 6px', fontWeight: 700 }}>Número de aulas semanais</th>
-                <th style={{ padding: '4px 6px', fontWeight: 700 }}>NAA - Número de aulas anuais</th>
-                <th colSpan={2} style={{ padding: '4px 6px', fontWeight: 700 }}>Faltas</th>
-                <th colSpan={2} style={{ padding: '4px 6px', fontWeight: 700 }}>Assiduidade Escolar</th>
-                <th style={{ padding: '4px 6px', fontWeight: 700 }}>NAA em %</th>
+                <th style={{ padding: '4px 4px', fontWeight: 700, border: '1px solid #3a63a8', minWidth: 70 }}>Nome (ordem alfabética)</th>
+                <th style={{ padding: '4px 2px', fontWeight: 700, border: '1px solid #3a63a8', writingMode: 'vertical-rl' as any, textOrientation: 'mixed' as any, whiteSpace: 'nowrap', height: 90 }}>200 dias letivos/ horas diárias</th>
+                <th style={{ padding: '4px 2px', fontWeight: 700, border: '1px solid #3a63a8', writingMode: 'vertical-rl' as any, textOrientation: 'mixed' as any, whiteSpace: 'nowrap', height: 90 }}>Número de aulas semanais</th>
+                <th style={{ padding: '4px 2px', fontWeight: 700, border: '1px solid #3a63a8', writingMode: 'vertical-rl' as any, textOrientation: 'mixed' as any, whiteSpace: 'nowrap', height: 90 }}>NAA - Número de aulas anuais</th>
+                <th colSpan={2} style={{ padding: '4px 4px', fontWeight: 700, border: '1px solid #3a63a8' }}>Faltas</th>
+                <th colSpan={2} style={{ padding: '4px 4px', fontWeight: 700, border: '1px solid #3a63a8' }}>Assiduidade Escolar</th>
+                <th style={{ padding: '4px 2px', fontWeight: 700, border: '1px solid #3a63a8', writingMode: 'vertical-rl' as any, textOrientation: 'mixed' as any, whiteSpace: 'nowrap', height: 90 }}>NAA em %</th>
               </tr>
             </thead>
             <tbody>
-              <tr style={{ background: '#e9f0f9', borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '4px 6px', fontWeight: 700 }}>PINHEIRO</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>5 horas diárias</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>25</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>1000</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>59</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>5,90%</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>941</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>94,10%</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>100,00%</td>
+              <tr style={{ background: '#e9f0f9' }}>
+                <td style={{ padding: '4px 4px', fontWeight: 700, border: '1px solid #ccc' }}>PINHEIRO</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>5 horas diárias</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>25</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>1000</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>59</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>5,90%</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>941</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>94,10%</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>100,00%</td>
               </tr>
-              <tr style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '4px 6px', fontWeight: 700 }}>SOUSA</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>5 horas diárias</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>25</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>1000</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>146</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>14,60%</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>854</td>
-                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>85,40%</td>
-                <td style={{ textAlign: 'center', padding: '4px' }}>100,00%</td>
+              <tr>
+                <td style={{ padding: '4px 4px', fontWeight: 700, border: '1px solid #ccc' }}>SOUSA</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>5 horas diárias</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>25</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>1000</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>146</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>14,60%</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>854</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700, border: '1px solid #ccc' }}>85,40%</td>
+                <td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>100,00%</td>
               </tr>
             </tbody>
           </table>
 
           {/* Monthly breakdown table */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 9, marginBottom: 6 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 9, marginBottom: 6, border: '1px solid #999' }}>
             <thead>
               <tr style={{ background: '#4472c4', color: '#fff' }}>
-                <th colSpan={6} style={{ padding: '4px', fontWeight: 700 }}>1º semestre</th>
-                <th colSpan={6} style={{ padding: '4px', fontWeight: 700 }}>2º semestre</th>
-                <th rowSpan={3}></th>
+                <th colSpan={6} style={{ padding: '4px', fontWeight: 700, border: '1px solid #3a63a8' }}>1º semestre</th>
+                <th colSpan={6} style={{ padding: '4px', fontWeight: 700, border: '1px solid #3a63a8' }}>2º semestre</th>
+                <th rowSpan={3} style={{ border: '1px solid #999' }}></th>
               </tr>
               <tr style={{ background: '#d6e4f0' }}>
                 {['Jan','Fev.','Mar.','Abr.','Mai.','Jun.','Jul.','Ago.','Set.','Out.','Nov.','Dez.'].map(m => (
-                  <th key={m} style={{ padding: '3px 2px', fontWeight: 700, fontSize: 8 }}>{m}</th>
+                  <th key={m} style={{ padding: '3px 2px', fontWeight: 700, fontSize: 8, border: '1px solid #bbb' }}>{m}</th>
                 ))}
               </tr>
               <tr style={{ background: '#e9f0f9' }}>
                 {Array(12).fill(null).map((_,i) => (
-                  <th key={i} style={{ padding: '2px', fontSize: 7, fontWeight: 400 }}>Nº de dias</th>
+                  <th key={i} style={{ padding: '2px', fontSize: 7, fontWeight: 400, border: '1px solid #ccc', writingMode: 'vertical-rl' as any, textOrientation: 'mixed' as any, height: 45 }}>Nº de dias</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr style={{ background: '#4472c4', color: '#fff', fontWeight: 700 }}>
                 {[3,18,17,22,21,20,0,21,21,23,20,14].map((v,i) => (
-                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px' }}>{v}</td>
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px', border: '1px solid #3a63a8' }}>{v}</td>
                 ))}
-                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700 }}>200</td>
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700, border: '1px solid #3a63a8' }}>200</td>
               </tr>
-              <tr style={{ fontWeight: 700, fontSize: 8 }}>
-                <td colSpan={13} style={{ padding: '3px 4px' }}>Aulas semanais</td>
+              <tr style={{ fontWeight: 700, fontSize: 8, background: '#f5f5f5' }}>
+                <td colSpan={13} style={{ padding: '3px 4px', border: '1px solid #ccc' }}>Aulas semanais</td>
               </tr>
               <tr style={{ background: '#e9f0f9' }}>
                 {[5,5,5,5,5,5,0,5,5,5,5,5].map((v,i) => (
-                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px', fontSize: 9 }}>{v}</td>
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px', fontSize: 9, border: '1px solid #ccc' }}>{v}</td>
                 ))}
-                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700, fontSize: 9 }}>5</td>
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700, fontSize: 9, border: '1px solid #ccc' }}>5</td>
               </tr>
-              <tr style={{ fontWeight: 700, fontSize: 8 }}>
-                <td colSpan={13} style={{ padding: '3px 4px' }}>5 (cinco) aulas diárias</td>
+              <tr style={{ fontWeight: 700, fontSize: 8, background: '#f5f5f5' }}>
+                <td colSpan={13} style={{ padding: '3px 4px', border: '1px solid #ccc' }}>5 (cinco) aulas diárias</td>
               </tr>
               <tr style={{ background: '#4472c4', color: '#fff', fontWeight: 700 }}>
                 {[15,90,85,110,105,100,0,105,105,115,100,70].map((v,i) => (
-                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px' }}>{v}</td>
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px', border: '1px solid #3a63a8' }}>{v}</td>
                 ))}
-                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700 }}>1000</td>
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700, border: '1px solid #3a63a8' }}>1000</td>
               </tr>
-              <tr style={{ fontWeight: 700, fontSize: 8 }}>
-                <td colSpan={13} style={{ padding: '3px 4px' }}>NAA - Número de aulas anuais</td>
+              <tr style={{ fontWeight: 700, fontSize: 8, background: '#f5f5f5' }}>
+                <td colSpan={13} style={{ padding: '3px 4px', border: '1px solid #ccc' }}>NAA - Número de aulas anuais</td>
               </tr>
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0' }}>505</td>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0' }}>495</td>
-                <td></td>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0', border: '1px solid #bbb' }}>505</td>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0', border: '1px solid #bbb' }}>495</td>
+                <td style={{ border: '1px solid #ccc' }}></td>
               </tr>
             </tbody>
           </table>
