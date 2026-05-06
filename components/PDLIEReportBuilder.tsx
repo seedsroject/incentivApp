@@ -66,11 +66,7 @@ export const PDLIEReportBuilder: React.FC<Props> = ({ nucleos, evidences, onBack
     return items;
   }, []);
 
-  const PS: React.CSSProperties = {
-    width: '210mm', minHeight: '297mm', margin: '0 auto 24px', padding: '30mm 25mm',
-    background: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', fontFamily: "'Times New Roman', Times, serif",
-    fontSize: 13, lineHeight: 1.8, color: '#222', position: 'relative', pageBreakAfter: 'always',
-  };
+  const PS = 'freq-page';
 
   const resumoText = `Este relatório destaca as iniciativas da Escolinha de Triathlon, viabilizadas pela Lei de Incentivo ao Esporte, em promover o desenvolvimento e acesso ao esporte para crianças e jovens. O projeto, localizado em ${city}, ${uf === 'SC' ? 'Santa Catarina' : uf}, oferece oportunidades para alunos de 08 a 16 anos, com foco no Triathlon. A divulgação do projeto inclui o uso do selo e da Bandeira Nacional, assim como das logomarcas do Ministério do Esporte e do Governo Federal. O relatório apresenta o layout das peças de divulgação e destaca o compromisso conjunto do Ministério do Esporte e do Governo Federal em ampliar o acesso ao esporte, conforme destacado pela Diretora de Programas e Políticas de Incentivo ao Esporte, Michelle Moysés Melul Vinecky. A Lei de Incentivo ao Esporte visa fortalecer a engrenagem esportiva do Brasil e consolidar o esporte como meio de inclusão social.`;
 
@@ -115,7 +111,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
       <div ref={reportRef} className="freq-report-content">
 
         {/* ━━━ 1. CAPA (colorida, modelo governo) ━━━ */}
-        <div style={{ ...PS, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className={PS} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           {/* Header logos */}
           <div style={{ padding: 0 }}>
             <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -156,7 +152,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 2. CONTRA CAPA ━━━ */}
-        <div style={{ ...PS, padding: 0, display: 'flex', flexDirection: 'column' }}>
+        <div className={PS} style={{ padding: 0, display: 'flex', flexDirection: 'column', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <div style={{ padding: 0 }}>
             <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
@@ -175,7 +171,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 3. FOLHA DE ROSTO ━━━ */}
-        <div style={{ ...PS, display: 'flex', flexDirection: 'column' }}>
+        <div className={PS} style={{ display: 'flex', flexDirection: 'column', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           {/* Espaçador flexível superior */}
           <div style={{ flex: 1 }} />
           
@@ -196,7 +192,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 4. RESUMO ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#111' }}>RESUMO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333' }}>
             {resumoText}
@@ -207,7 +203,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 5. LISTA DE FIGURAS ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#111' }}>LISTA DE FIGURAS</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
@@ -233,7 +229,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 6. SUMÁRIO ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#111' }}>SUMÁRIO</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
@@ -251,7 +247,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ 7. INTRODUÇÃO ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>1 INTRODUÇÃO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', whiteSpace: 'pre-wrap' }}>
             {introText}
@@ -263,7 +259,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
           const catEvs = getEvs(sec.id);
           return (
             <React.Fragment key={sec.id}>
-              <div style={PS}>
+              <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
                 <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>{sec.num} {sec.title}</h2>
                 {catEvs.length === 0 ? (
                   <div style={{ padding: 40, textAlign: 'center', border: '2px dashed #ddd', borderRadius: 12, marginTop: 30 }}>
@@ -309,7 +305,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         })}
 
         {/* ━━━ CONCLUSÃO ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>CONCLUSÃO</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', whiteSpace: 'pre-wrap' }}>
             {conclusionText}
@@ -317,7 +313,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ REFERÊNCIAS ━━━ */}
-        <div style={PS}>
+        <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>REFERÊNCIAS</h2>
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, lineHeight: 2, textAlign: 'justify', color: '#333' }}>
             <p>ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. MANUAL DA LEI DE INCENTIVO AO ESPORTE. Diretoria de Programas e Políticas de Incentivo ao Esporte (DPPIE). Brasília, 2023.</p>
@@ -326,7 +322,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
 
         {/* ━━━ APÊNDICE ━━━ */}
-        <div style={{ ...PS, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+        <div className={PS} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h1 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', textTransform: 'uppercase', lineHeight: 1.6 }}>
             APÊNDICE DO RELATÓRIO DO PLANO DE DIVULGAÇÃO<br/>DA LEI DE INCENTIVO AO ESPORTE – PDLIE DA<br/>ESCOLINHA DE TRIATHLON {city.toUpperCase()}
           </h1>
@@ -338,13 +334,6 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
 
       </div>
 
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          @page { size: A4 portrait; margin: 0; }
-        }
-      `}</style>
     </div>
   );
 };

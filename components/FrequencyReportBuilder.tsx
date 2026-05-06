@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
+import { ChartDataEditor } from './ChartDataEditor';
 import { StudentDraft, DocumentLog, Nucleo } from '../types';
 import {
   buildFrequencyReportData,
@@ -122,6 +123,12 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [nSli, setNSli] = useState('2301005');
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // --- Chart data override system (same pattern as InscricaoReportBuilder) ---
+  const [freqPieOverrides, setFreqPieOverrides] = useState<{ freq: number; falta: number } | null>(null);
+  const [monthlyFreqOverrides, setMonthlyFreqOverrides] = useState<Record<string, { diasAula: number; avgFrequency: number }> | null>(null);
+  const [monthlyFaltaOverrides, setMonthlyFaltaOverrides] = useState<Record<string, { diasAula: number; avgAbsence: number }> | null>(null);
+  const [faltasHistOverrides, setFaltasHistOverrides] = useState<Record<string, number> | null>(null);
 
   // ─── COMPUTED DATA ───
   const selectedNucleo = useMemo(() => nucleos.find(n => n.id === selectedNucleoId), [nucleos, selectedNucleoId]);
@@ -456,7 +463,11 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
 
           {/* Brief text about frequency */}
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 20, fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            A tabela acima apresenta o resumo geral da frequência dos alunos do projeto "{projectTitle}" no município de {cityLabel}/{stateLabel}, referente ao período de {period.startLabel} a {period.endLabel}. Os dados demonstram que a média geral de frequência foi de {totals.avgFreqPct}%, superando amplamente a meta estabelecida de 70%. O total de faltas registrado foi de {totals.avgFaltaPct}%, evidenciando o elevado comprometimento dos beneficiados com as atividades propostas.
+            {(() => {
+              const eFreq = freqPieOverrides ? freqPieOverrides.freq : totals.avgFreqPct;
+              const eFalta = freqPieOverrides ? freqPieOverrides.falta : totals.avgFaltaPct;
+              return `A tabela acima apresenta o resumo geral da frequência dos alunos do projeto "${projectTitle}" no município de ${cityLabel}/${stateLabel}, referente ao período de ${period.startLabel} a ${period.endLabel}. A média geral de frequência foi de ${eFreq}%${eFreq >= 70 ? ', superando amplamente a meta estabelecida de 70%' : ''}. ${eFalta === 0 ? 'O percentual de faltas foi de 0%.' : `O total de faltas registrado foi de ${eFalta}%, evidenciando o elevado comprometimento dos beneficiados com as atividades propostas.`}`;
+            })()}
           </div>
         </div>
 
@@ -465,36 +476,46 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 16 }}>
             <strong>Figura 1</strong> — Média da Frequência e faltas dos alunos do projeto "{projectTitle}", referente ao período de {period.startLabel} a {period.endLabel}, no município de {cityLabel}
           </p>
-          <div className="freq-pie-chart-container">
+          <div className="freq-pie-chart-container" style={{ position: 'relative' }}>
+            <ChartDataEditor chartId="freq_fig1_pie" title="Frequência / Faltas (%)" isEditing={isEditing} rows={[
+              { key: 'freq', label: 'Frequência (%)', value: freqPieOverrides?.freq ?? totals.avgFreqPct },
+              { key: 'falta', label: 'Faltas (%)', value: freqPieOverrides?.falta ?? totals.avgFaltaPct },
+            ]} onSave={data => setFreqPieOverrides({ freq: data.freq, falta: data.falta })} />
             <h4 style={{ textAlign: 'center', fontSize: 13, fontWeight: 'bold', color: '#333', marginBottom: 16 }}>
               Média da Frequência e faltas dos alunos do projeto "{projectTitle}" em {cityLabel}
             </h4>
-            <svg viewBox="0 0 260 260" style={{ width: 240, height: 240 }}>
-              {(() => {
-                const cx = 130, cy = 130, r = 100;
-                const faltaAngle = (totals.avgFaltaPct / 100) * 360;
-                const rad = (a: number) => (a - 90) * (Math.PI / 180);
-                const x1 = cx + r * Math.cos(rad(0));
-                const y1 = cy + r * Math.sin(rad(0));
-                const x2 = cx + r * Math.cos(rad(faltaAngle));
-                const y2 = cy + r * Math.sin(rad(faltaAngle));
-                const largeArc = faltaAngle > 180 ? 1 : 0;
-                return (
-                  <>
-                    <circle cx={cx} cy={cy} r={r} fill="#4472c4" />
-                    {totals.avgFaltaPct > 0 && <path d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`} fill="#ed7d31" />}
-                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize="14" fontWeight="bold" fill="white">Frequência</text>
-                    <text x={cx} y={cy + 28} textAnchor="middle" fontSize="12" fill="white">{totals.avgFreqPct}%</text>
-                    {totals.avgFaltaPct > 0 && (
+            {(() => {
+              const eFreq = freqPieOverrides?.freq ?? totals.avgFreqPct;
+              const eFalta = freqPieOverrides?.falta ?? totals.avgFaltaPct;
+              return (
+                <svg viewBox="0 0 260 260" style={{ width: 240, height: 240 }}>
+                  {(() => {
+                    const cx = 130, cy = 130, r = 100;
+                    const faltaAngle = (eFalta / 100) * 360;
+                    const rad = (a: number) => (a - 90) * (Math.PI / 180);
+                    const x1 = cx + r * Math.cos(rad(0));
+                    const y1 = cy + r * Math.sin(rad(0));
+                    const x2 = cx + r * Math.cos(rad(faltaAngle));
+                    const y2 = cy + r * Math.sin(rad(faltaAngle));
+                    const largeArc = faltaAngle > 180 ? 1 : 0;
+                    return (
                       <>
-                        <text x={cx + r * 0.4} y={cy - r * 0.5} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ed7d31">Faltas</text>
-                        <text x={cx + r * 0.4} y={cy - r * 0.35} textAnchor="middle" fontSize="10" fill="#ed7d31">{totals.avgFaltaPct}%</text>
+                        <circle cx={cx} cy={cy} r={r} fill="#4472c4" />
+                        {eFalta > 0 && <path d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`} fill="#ed7d31" />}
+                        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="14" fontWeight="bold" fill="white">Frequência</text>
+                        <text x={cx} y={cy + 28} textAnchor="middle" fontSize="12" fill="white">{eFreq}%</text>
+                        {eFalta > 0 && (
+                          <>
+                            <text x={cx + r * 0.4} y={cy - r * 0.5} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ed7d31">Faltas</text>
+                            <text x={cx + r * 0.4} y={cy - r * 0.35} textAnchor="middle" fontSize="10" fill="#ed7d31">{eFalta}%</text>
+                          </>
+                        )}
                       </>
-                    )}
-                  </>
-                );
-              })()}
-            </svg>
+                    );
+                  })()}
+                </svg>
+              );
+            })()}
             <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ width: 14, height: 14, background: '#4472c4', display: 'inline-block', borderRadius: 2 }}></span>
@@ -514,13 +535,22 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 16 }}>
             <strong>Figura 2</strong> — Média de frequência dos alunos do projeto "{projectTitle}", referente ao período de {period.startLabel} a {period.endLabel}, no município de {cityLabel}
           </p>
-          <ReportBarChart
-            data={monthlyAggregates.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgFrequency }))}
-            maxY={Math.max(10, ...monthlyAggregates.map(m => m.daysOfClass))}
-            title={`Média de frequência dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
-            legend1="Dias de aula no mês"
-            legend2="Média de frequência"
-          />
+          <div style={{ position: 'relative' }}>
+            <ChartDataEditor chartId="freq_fig2_bar" title="Frequência Mensal" isEditing={isEditing} rows={
+              monthlyAggregates.map(m => ({ key: m.label, label: m.label, value: monthlyFreqOverrides?.[m.label]?.avgFrequency ?? m.avgFrequency }))
+            } onSave={data => {
+              const ov: Record<string, { diasAula: number; avgFrequency: number }> = {};
+              monthlyAggregates.forEach(m => { ov[m.label] = { diasAula: m.daysOfClass, avgFrequency: data[m.label] ?? m.avgFrequency }; });
+              setMonthlyFreqOverrides(ov);
+            }} />
+            <ReportBarChart
+              data={monthlyAggregates.map(m => ({ label: m.label, value1: m.daysOfClass, value2: monthlyFreqOverrides?.[m.label]?.avgFrequency ?? m.avgFrequency }))}
+              maxY={Math.max(10, ...monthlyAggregates.map(m => m.daysOfClass))}
+              title={`Média de frequência dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
+              legend1="Dias de aula no mês"
+              legend2="Média de frequência"
+            />
+          </div>
           <p style={{ fontSize: 10, color: '#888', marginTop: 8 }}>Fonte: {projectTitle} ({new Date().getFullYear()})</p>
         </div>
 
@@ -529,13 +559,22 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 16 }}>
             <strong>Figura 3</strong> — Média de faltas dos alunos projeto "{projectTitle}", referente ao período de {period.startLabel} a {period.endLabel}, no município de {cityLabel}
           </p>
-          <ReportBarChart
-            data={monthlyAggregates.map(m => ({ label: m.label, value1: m.daysOfClass, value2: m.avgAbsence }))}
-            maxY={Math.max(10, ...monthlyAggregates.map(m => m.daysOfClass))}
-            title={`Média de faltas dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
-            legend1="Dias de aula no mês"
-            legend2="Média de faltas dos alunos"
-          />
+          <div style={{ position: 'relative' }}>
+            <ChartDataEditor chartId="freq_fig3_bar" title="Faltas Mensais" isEditing={isEditing} rows={
+              monthlyAggregates.map(m => ({ key: m.label, label: m.label, value: monthlyFaltaOverrides?.[m.label]?.avgAbsence ?? m.avgAbsence }))
+            } onSave={data => {
+              const ov: Record<string, { diasAula: number; avgAbsence: number }> = {};
+              monthlyAggregates.forEach(m => { ov[m.label] = { diasAula: m.daysOfClass, avgAbsence: data[m.label] ?? m.avgAbsence }; });
+              setMonthlyFaltaOverrides(ov);
+            }} />
+            <ReportBarChart
+              data={monthlyAggregates.map(m => ({ label: m.label, value1: m.daysOfClass, value2: monthlyFaltaOverrides?.[m.label]?.avgAbsence ?? m.avgAbsence }))}
+              maxY={Math.max(10, ...monthlyAggregates.map(m => m.daysOfClass))}
+              title={`Média de faltas dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
+              legend1="Dias de aula no mês"
+              legend2="Média de faltas dos alunos"
+            />
+          </div>
           <p style={{ fontSize: 10, color: '#888', marginTop: 8 }}>Fonte: {projectTitle} ({new Date().getFullYear()})</p>
         </div>
 
@@ -544,13 +583,18 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 16 }}>
             <strong>Figura 4</strong> — Histórico do número de faltas dos alunos do projeto "{projectTitle}", referente ao período de {period.startLabel} a {period.endLabel}, no município de {cityLabel}
           </p>
-          <ReportBarChart
-            data={faltasHistorico.map(f => ({ label: f.label, value1: f.totalFaltas }))}
-            maxY={Math.max(10, ...faltasHistorico.map(f => f.totalFaltas))}
-            title={`Histórico de número de faltas dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
-            legend1="Nº de faltas"
-            singleColor
-          />
+          <div style={{ position: 'relative' }}>
+            <ChartDataEditor chartId="freq_fig4_hist" title="Histórico de Faltas" isEditing={isEditing} rows={
+              faltasHistorico.map(f => ({ key: f.label, label: f.label, value: faltasHistOverrides?.[f.label] ?? f.totalFaltas }))
+            } onSave={data => setFaltasHistOverrides(data)} />
+            <ReportBarChart
+              data={faltasHistorico.map(f => ({ label: f.label, value1: faltasHistOverrides?.[f.label] ?? f.totalFaltas }))}
+              maxY={Math.max(10, ...faltasHistorico.map(f => faltasHistOverrides?.[f.label] ?? f.totalFaltas))}
+              title={`Histórico de número de faltas dos alunos do projeto "${projectTitle}" em ${cityLabel}`}
+              legend1="Nº de faltas"
+              singleColor
+            />
+          </div>
           <p style={{ fontSize: 10, color: '#888', marginTop: 8 }}>Fonte: {projectTitle} ({new Date().getFullYear()})</p>
         </div>
 
