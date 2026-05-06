@@ -279,28 +279,292 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </div>
         </div>
 
-        {/* ━━━ SECTION 2: PROCEDIMENTOS METODOLÓGICOS (pg 8) ━━━ */}
+        {/* ━━━ SECTION 2 + 2.1: PROCEDIMENTOS METODOLÓGICOS (pg 8-10) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="2" />
           <SectionTitle num="2.1" tag="h3" />
+
+          <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 1 — Princípios metodológicos para notas de 0 a 40</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700 }}>Princípios metodológicos para notas de 0 a 40</th></tr></thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #ccc' }}><td style={{ padding: '4px 10px', fontWeight: 700 }}>Avaliação</td><td style={{ padding: '4px 10px', fontWeight: 700 }}>Média de notas (M)</td></tr>
+              {[['Bom','19 ≤ M ≤ 40'],['Regular','16 ≤ M < 19'],['Insatisfatório','11 ≤ M < 15'],['Péssimo','M < 11']].map(([a,b],i)=>(
+                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff', borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 10px' }}>{a}</td><td style={{ padding: '4px 10px' }}>{b}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
+
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+            Faz-se necessário tecer algumas observações acerca dos princípios metodológicos para notas de 0 a 40, na regra, a escola irá somar as três notas. Ou seja, nota do 1° trimestre (30), 2° trimestre (30) e 3° trimestre (40). O valor total final será 100, como, por exemplo, baseado em análise das notas ponderadas do boletim escolar.
+          </div>
+
+          <table style={{ width: '80%', margin: '0 auto 16px', borderCollapse: 'collapse', fontSize: 11 }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}>
+              <td style={{ padding: '4px 8px', fontWeight: 700 }}>Componente Curricular</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>1°<br/>Trimestre<br/>(30)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>2°<br/>Trimestre<br/>(30)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>3°<br/>Trimestre<br/>(40)</td>
+              <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700 }}>Nota Final<br/>(100)</td>
+            </tr></thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 8px', fontWeight: 700 }}>LÍNGUA PORTUGUESA</td><td style={{ textAlign: 'center', padding: '4px' }}>28,90</td><td style={{ textAlign: 'center', padding: '4px' }}>24,10</td><td style={{ textAlign: 'center', padding: '4px' }}>33,20</td><td style={{ textAlign: 'center', padding: '4px' }}>86,20</td></tr>
+              <tr style={{ borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 8px', fontWeight: 700 }}>HISTÓRIA</td><td style={{ textAlign: 'center', padding: '4px' }}>30,00</td><td style={{ textAlign: 'center', padding: '4px' }}>26,25</td><td style={{ textAlign: 'center', padding: '4px' }}>37,20</td><td style={{ textAlign: 'center', padding: '4px' }}>93,45</td></tr>
+            </tbody>
+          </table>
+
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+            Logo, os princípios metodológicos para notas de 0 a 10 foram baseados, seguindo também análise de boletim escolar bimestral e chegou à seguinte metodologia:
+          </div>
+
+          <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 2 — Princípios metodológicos</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6 }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700 }}>Princípios metodológicos</th></tr></thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #ccc' }}><td style={{ padding: '4px 10px', fontWeight: 700 }}>Avaliação</td><td style={{ padding: '4px 10px', fontWeight: 700 }}>Média de notas (M)</td></tr>
+              {[['Bom','6 ≤ M ≤ 9'],['Regular','5 ≤ M < 6'],['Insatisfatório','3 ≤ M < 5'],['Péssimo','M < 3']].map(([a,b],i)=>(
+                <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff', borderBottom: '1px solid #ddd' }}><td style={{ padding: '4px 10px' }}>{a}</td><td style={{ padding: '4px 10px' }}>{b}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
+
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            {/* Texto será adicionado pelo usuário */}
+            As faixas estabelecidas para cada categoria - bom, regular, insatisfatório e péssimo - proporcionam uma estrutura clara e compreensível para a interpretação dos resultados, seguindo os seguintes critérios:
           </div>
         </div>
 
-        {/* ━━━ SECTION 2.2 (pg 11) ━━━ */}
+        {/* ━━━ PAGE 9: Critérios + Tabela 3 ━━━ */}
+        <div className="freq-page">
+          <div style={{ display: 'flex', gap: 24, marginBottom: 24 }}>
+            <div style={{ flex: 1 }}>
+              <ul style={{ fontSize: 12, color: '#333', lineHeight: 1.8, paddingLeft: 20 }}>
+                <li><strong>Bom:</strong> notas entre 6 e 9, refletindo um desempenho satisfatório e o alcance de um padrão de excelência estudantil.</li>
+                <li style={{ marginTop: 8 }}><strong>Regular:</strong> notas entre 5 e abaixo de 6, indicando um desempenho dentro da média esperada, com margem para melhoria.</li>
+              </ul>
+            </div>
+            <div style={{ flex: 1 }}>
+              <ul style={{ fontSize: 12, color: '#333', lineHeight: 1.8, paddingLeft: 20 }}>
+                <li><strong>Insatisfatório:</strong> notas entre 3 e abaixo de 5, sinalizando áreas de preocupação que exigem intervenção e suporte adicionais.</li>
+                <li style={{ marginTop: 8 }}><strong>Péssimo:</strong> notas abaixo de 3, destacando a necessidade urgente de medidas de apoio e acompanhamento para o aluno.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 16 }}>
+            A seguir temos uma Tabela de Equivalência entre Conceitos e Notas Numéricas que recorremos para converter os conceitos em notas numéricas durante a análise de boletim ou sistema de pontuação similar da Escola regular do aluno ao iniciar na {projectFull}.
+          </div>
+
+          <p style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 3 — Tabela de Equivalência entre Conceitos e Notas Numéricas</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
+            <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px', textAlign: 'center', fontWeight: 700 }}>Tabela de Equivalência entre Conceitos e Notas Numéricas</th></tr>
+              <tr style={{ background: '#d6e4f0' }}><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, borderBottom: '1px solid #999' }}>Conceito</th><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, borderBottom: '1px solid #999' }}>Nota Numérica</th></tr>
+            </thead>
+            <tbody>
+              {[
+                {concepts:['A','Excelente','Plenamente satisfatório'], note:'10,00'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['Aprovado médio superior'], note:'9,00'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['A- / B+','Ótimo','Muito bom'], note:'8,75'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['Aprovado médio inferior'], note:'8,00'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['B','Bom','Significativo','Aprovado','Atingiu os objetivos'], note:'7,50'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['C+ / B'], note:'6,25'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['Regular para bom'], note:''},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['C','Satisfatório','Regular','Suficiente'], note:'5,00'},
+              ].map((row, ri) => row.concepts.map((c, ci) => (
+                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff'), borderBottom: '1px solid #ddd' }}>
+                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700 }}>{c}</td>
+                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle' }}>{row.note}</td>}
+                </tr>
+              )))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ━━━ PAGE 10: Continuação Tabela 3 + fechamento ━━━ */}
+        <div className="freq-page">
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6 }}>
+            <tbody>
+              {[
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['C- / D+','Promovido parcialmente','Aprovado com dependência'], note:'3,75'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['D','Sofrível','Necessita de intervenção'], note:'2,50'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['D- / E+'], note:'1,25'},
+                {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
+                {concepts:['E','Não satisfatório','Insatisfatório','Reprovado','Não promovido','Progressão não avaliada'], note:'0,00'},
+              ].map((row, ri) => row.concepts.map((c, ci) => (
+                <tr key={`${ri}-${ci}`} style={{ background: row.isSep ? '#fff' : (ri%2===0?'#e9f0f9':'#fff'), borderBottom: '1px solid #ddd' }}>
+                  <td style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 400 : 700 }}>{c}</td>
+                  {ci === 0 && <td rowSpan={row.concepts.length} style={{ padding: '3px 8px', textAlign: 'center', fontWeight: row.isSep ? 700 : 400, verticalAlign: 'middle' }}>{row.note}</td>}
+                </tr>
+              )))}
+            </tbody>
+          </table>
+          <p style={{ fontSize: 9, color: '#666', marginBottom: 24 }}>Disponível em: https://ist.ifsp.edu.br/images/Documentos2017/ANEXO-I---Tabela-de-Equivalncia-entre-Conceitos-e-Notas-Numricas.pdf. Acesso em: 10 set. 2024. (Adaptado pelos autores do relatório) (2024).</p>
+
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
+            Essa abordagem busca garantir que todos os alunos, independentemente de sua situação socioeconômica, tenham acesso a uma avaliação justa e equitativa, que reconheça tanto suas conquistas quanto suas dificuldades. Ao estabelecer diretrizes claras e transparentes, o objetivo é promover um ambiente de aprendizado estimulante e inclusivo, onde cada aluno possa alcançar seu pleno potencial e contribuir para o seu próprio desenvolvimento pessoal e estudantil, bem como para o progresso da sociedade como um todo.
+          </div>
+        </div>
+
+        {/* ━━━ SECTION 2.2 (pg 11-12) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="2.2" tag="h3" />
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 12 }}>
+            O relatório apresenta os dados referentes ao levantamento da assiduidade escolar dos alunos no primeiro semestre. Para essa análise, foram adotados indicadores fixos, como o total de 200 dias letivos anuais, distribuídos em 40 semanas, com uma carga de 25 aulas semanais, totalizando 1.000 aulas ao longo do ano. Com base nesses parâmetros, torna-se possível realizar o levantamento da assiduidade dos alunos utilizando princípios metodológicos adequados à verificação da frequência escolar.
+          </div>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, marginBottom: 12 }}>
+            Em síntese, procurou-se trabalhar com indicadores fixos:
+          </div>
+          <ul style={{ fontSize: 12, color: '#333', lineHeight: 1.8, paddingLeft: 40, marginBottom: 16 }}>
+            <li>Dias letivos anuais – 200 (40 semanas)</li>
+            <li>Número de aulas semanais: 25 aulas</li>
+            <li>Número de aulas anuais: 1000 aulas</li>
+          </ul>
+          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', marginBottom: 12 }}>
+            Neste caso, será possível, por exemplo, o fornecimento do levantamento da assiduidade dos alunos utilizando princípios metodológicos da verificação da assiduidade escolar:
+          </div>
+          <p style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 4 — Princípios metodológicos da verificação da assiduidade escolar</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, marginBottom: 16 }}>
+            <thead>
+              <tr style={{ background: '#4472c4', color: '#fff' }}>
+                <th style={{ padding: '4px 6px', fontWeight: 700 }}>Nome (ordem alfabética)</th>
+                <th style={{ padding: '4px 6px', fontWeight: 700 }}>200 dias letivos/ horas diárias</th>
+                <th style={{ padding: '4px 6px', fontWeight: 700 }}>Número de aulas semanais</th>
+                <th style={{ padding: '4px 6px', fontWeight: 700 }}>NAA - Número de aulas anuais</th>
+                <th colSpan={2} style={{ padding: '4px 6px', fontWeight: 700 }}>Faltas</th>
+                <th colSpan={2} style={{ padding: '4px 6px', fontWeight: 700 }}>Assiduidade Escolar</th>
+                <th style={{ padding: '4px 6px', fontWeight: 700 }}>NAA em %</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ background: '#e9f0f9', borderBottom: '1px solid #ddd' }}>
+                <td style={{ padding: '4px 6px', fontWeight: 700 }}>PINHEIRO</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>5 horas diárias</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>25</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>1000</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>59</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>5,90%</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>941</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>94,10%</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>100,00%</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #ddd' }}>
+                <td style={{ padding: '4px 6px', fontWeight: 700 }}>SOUSA</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>5 horas diárias</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>25</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>1000</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>146</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>14,60%</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>854</td>
+                <td style={{ textAlign: 'center', padding: '4px', fontWeight: 700 }}>85,40%</td>
+                <td style={{ textAlign: 'center', padding: '4px' }}>100,00%</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Monthly breakdown table */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 9, marginBottom: 6 }}>
+            <thead>
+              <tr style={{ background: '#4472c4', color: '#fff' }}>
+                <th colSpan={6} style={{ padding: '4px', fontWeight: 700 }}>1º semestre</th>
+                <th colSpan={6} style={{ padding: '4px', fontWeight: 700 }}>2º semestre</th>
+                <th rowSpan={3}></th>
+              </tr>
+              <tr style={{ background: '#d6e4f0' }}>
+                {['Jan','Fev.','Mar.','Abr.','Mai.','Jun.','Jul.','Ago.','Set.','Out.','Nov.','Dez.'].map(m => (
+                  <th key={m} style={{ padding: '3px 2px', fontWeight: 700, fontSize: 8 }}>{m}</th>
+                ))}
+              </tr>
+              <tr style={{ background: '#e9f0f9' }}>
+                {Array(12).fill(null).map((_,i) => (
+                  <th key={i} style={{ padding: '2px', fontSize: 7, fontWeight: 400 }}>Nº de dias</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ background: '#4472c4', color: '#fff', fontWeight: 700 }}>
+                {[3,18,17,22,21,20,0,21,21,23,20,14].map((v,i) => (
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px' }}>{v}</td>
+                ))}
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700 }}>200</td>
+              </tr>
+              <tr style={{ fontWeight: 700, fontSize: 8 }}>
+                <td colSpan={13} style={{ padding: '3px 4px' }}>Aulas semanais</td>
+              </tr>
+              <tr style={{ background: '#e9f0f9' }}>
+                {[5,5,5,5,5,5,0,5,5,5,5,5].map((v,i) => (
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px', fontSize: 9 }}>{v}</td>
+                ))}
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700, fontSize: 9 }}>5</td>
+              </tr>
+              <tr style={{ fontWeight: 700, fontSize: 8 }}>
+                <td colSpan={13} style={{ padding: '3px 4px' }}>5 (cinco) aulas diárias</td>
+              </tr>
+              <tr style={{ background: '#4472c4', color: '#fff', fontWeight: 700 }}>
+                {[15,90,85,110,105,100,0,105,105,115,100,70].map((v,i) => (
+                  <td key={i} style={{ textAlign: 'center', padding: '3px 2px' }}>{v}</td>
+                ))}
+                <td style={{ textAlign: 'center', padding: '3px', fontWeight: 700 }}>1000</td>
+              </tr>
+              <tr style={{ fontWeight: 700, fontSize: 8 }}>
+                <td colSpan={13} style={{ padding: '3px 4px' }}>NAA - Número de aulas anuais</td>
+              </tr>
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0' }}>505</td>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '4px', fontWeight: 700, background: '#d6e4f0' }}>495</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* ━━━ PAGE 12: Continuação 2.2 — bimestres + LDB ━━━ */}
+        <div className="freq-page">
+          <div style={{ background: '#d6e4f0', padding: 12, borderRadius: 4, marginBottom: 16 }}>
+            <ul style={{ fontSize: 11, color: '#333', lineHeight: 1.8, paddingLeft: 20, margin: 0 }}>
+              <li>1º bimestre – de 06/02 a 28/04, com 54 dias de aula e 56 dias letivos.</li>
+              <li>2º bimestre – de 02/05 a 07/07, com 46 dias de aula e 47 dias letivos.</li>
+              <li>3º bimestre – de 24/07 a 29/09, com 48 dias de aula e 50 dias letivos.</li>
+              <li>4º bimestre – de 02/10 a 15/12, com 45 dias de aula e 50 dias letivos.</li>
+              <li>1º trimestre – 67 dias no 1º trimestre (fevereiro a maio).</li>
+              <li>2º trimestre – 70 dias no 2º trimestre (maio a setembro).</li>
+              <li>3º trimestre – 63 dias no 3º trimestre (setembro a dezembro).</li>
+            </ul>
+          </div>
+          <p style={{ fontSize: 10, color: '#888', marginBottom: 16 }}>Fonte: {projectFull} ({currentYear}).</p>
+
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            {/* Texto será adicionado pelo usuário */}
+            {`Sendo assim, os indicadores de Assiduidade Escolar foram elaborados recorrendo à Lei de Diretrizes e Bases da Educação Nacional (LDB) que aponta no artigo 24, inciso I, a "carga horária mínima anual será de oitocentas horas para o ensino fundamental e para o ensino médio, distribuídas por um mínimo de duzentos dias de efetivo trabalho escolar, excluído o tempo reservado aos exames finais, quando houver". (EDUCAÇÃO, Da. Lei nº 9.394, de 20 de dezembro de 1996. `}<strong>Estabelece as diretrizes e bases da,</strong> 2014).
           </div>
         </div>
 
-        {/* ━━━ SECTION 2.3: Faixa Etária (pg 13) ━━━ */}
+        {/* ━━━ SECTION 2.3: Faixa Etária (pg 13-14) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="2.3" tag="h3" />
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
-            {/* Texto será adicionado pelo usuário */}
+            {`A análise da distribuição etária dos alunos regularmente inscritos no projeto "Escolinha de Triathlon Horizonte", executado no município de Horizonte (CE), demonstrou a adequação do público atendido ao objeto proposto no Plano de Trabalho, que previu a realização de aulas de triathlon para crianças e adolescentes de 8 a 17 anos regularmente matriculados na rede oficial de ensino. O projeto atendeu ao total de 50 beneficiados, contemplando uma faixa etária diversificada e compatível com sua proposta educacional.
+
+Observou-se maior concentração de participantes nas idades de 10 e 11 anos, que somaram, respectivamente, 11 alunos (22%) e 13 alunos (26%), representando juntas 48% do total atendido. Esse resultado indicou predominância de crianças em fase intermediária do Ensino Fundamental, período considerado estratégico para o desenvolvimento das capacidades motoras, sociais e educacionais por meio do esporte.
+
+As idades de 12 e 14 anos também apresentaram participação significativa, com 7 alunos em cada faixa etária (14%), evidenciando a continuidade do interesse e da permanência dos adolescentes nas atividades do projeto. As demais idades — 8, 9, 13, 15 e 16 anos — registraram participações variando entre 4% e 6%, assegurando a heterogeneidade etária do grupo atendido.
+
+De forma geral, a distribuição etária confirmou que o projeto foi executado em plena conformidade com seu objeto, atendendo crianças e adolescentes dentro da faixa etária prevista e garantindo equilíbrio entre as diferentes idades. Esse perfil reforçou a efetividade do projeto como iniciativa de esporte educacional, capaz de promover inclusão, desenvolvimento integral e acesso democrático às práticas esportivas.
+
+Além da distribuição etária, é relevante considerar a relação entre idade e nível de ensino. O sistema educacional brasileiro organiza-se em etapas que correspondem a faixas etárias específicas: o Ensino Fundamental I (1º ao 5º ano) atende alunos de 6 a 10 anos; o Ensino Fundamental II (6º ao 9º ano) abrange estudantes de 11 a 14 anos; e o Ensino Médio (1º ao 3º ano) contempla jovens de 15 a 18 anos. Essa estrutura permite um aprendizado progressivo, alinhado às necessidades cognitivas, emocionais e sociais de cada fase.
+
+A Base Nacional Comum Curricular (BNCC) reforça essa organização ao estabelecer que o Ensino Fundamental, com duração de nove anos, atende estudantes de 6 a 14 anos, período marcado por intensas mudanças físicas, cognitivas e socioemocionais. Já o Ensino Médio visa aprofundar conhecimentos e desenvolver competências para a vida acadêmica, profissional e cidadã.
+
+Com base nas informações apresentadas, conclui-se que os alunos da Escolinha de Triathlon Horizonte estão, em sua maioria, alinhados às expectativas da BNCC em termos de faixa etária e nível de ensino. A observância dessas etapas educacionais é fundamental para garantir que os beneficiários, além de aprimorarem suas competências escolares, estejam inseridos em um processo de aprendizagem estruturado e adequado ao seu desenvolvimento. Dessa forma, o projeto atua em conformidade com os princípios pedagógicos da BNCC, contribuindo para a formação integral dos alunos e para o cumprimento dos objetivos educacionais propostos.`}
           </div>
         </div>
 
