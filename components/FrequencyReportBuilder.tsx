@@ -237,7 +237,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
       </div>
 
       {/* ═══════════ REPORT CONTENT ═══════════ */}
-      <div ref={reportRef} className="freq-report-content" style={{ contentVisibility: 'auto' }}>
+      <div ref={reportRef} className="freq-report-content">
 
         {/* ━━━ PAGE 1: COVER (matches PDF) ━━━ */}
         <div className="freq-page freq-cover-page">

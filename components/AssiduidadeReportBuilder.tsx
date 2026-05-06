@@ -99,7 +99,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
       </div>
 
       {/* ═══════════ REPORT CONTENT ═══════════ */}
-      <div ref={reportRef} className="freq-report-content" style={{ contentVisibility: 'auto' }}>
+      <div ref={reportRef} className="freq-report-content">
 
         {/* ━━━ PAGE 1: COVER ━━━ */}
         <div className="freq-page freq-cover-page">

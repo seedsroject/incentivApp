@@ -322,7 +322,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
       `}</style>
 
       {/* REPORT */}
-      <div ref={reportRef} className={`freq-report-content ${drawMode ? 'draw-active' : ''}`} onMouseDown={onDrawMouseDown} style={{ paddingTop: isEditing ? 100 : 60 }}>
+      <div ref={reportRef} className={`freq-report-content ${drawMode ? 'draw-active' : ''}`} onMouseDown={onDrawMouseDown}>
 
         {/* PAGE 0: COVER */}
         <div className="freq-page freq-cover-page">

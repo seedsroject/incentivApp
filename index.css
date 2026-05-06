@@ -16,9 +16,11 @@ html, body {
 
 /* ─── TOOLBAR ─── */
 .freq-report-toolbar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   padding: 12px 24px;
   display: flex;
@@ -28,6 +30,11 @@ html, body {
   gap: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   border-bottom: 2px solid rgba(68, 114, 196, 0.5);
+}
+
+/* Offset content below fixed toolbar */
+.freq-report-content {
+  padding-top: 80px;
 }
 
 .freq-btn-back {
@@ -478,6 +485,10 @@ html, body {
   .freq-report-root {
     background: #fff !important;
     overflow: visible !important;
+  }
+
+  .freq-report-toolbar {
+    display: none !important;
   }
 
   .freq-report-content {
