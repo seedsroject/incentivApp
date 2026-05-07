@@ -107,10 +107,9 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
           </button>
           <button onClick={() => window.print()} className="freq-btn freq-btn-print">🖨️ Exportar PDF</button>
         </div>
+        {/* ═══ EDITOR TOOLBAR (inside fixed toolbar) ═══ */}
+        <ReportEditorToolbar isEditing={isEditing} />
       </div>
-
-      {/* ═══════════ EDITOR TOOLBAR ═══════════ */}
-      <ReportEditorToolbar isEditing={isEditing} />
 
       <div ref={reportRef} className="freq-report-content">
 

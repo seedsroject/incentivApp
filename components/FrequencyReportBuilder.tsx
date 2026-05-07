@@ -235,10 +235,9 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
             🖨️ Exportar PDF
           </button>
         </div>
+        {/* ═══ EDITOR TOOLBAR (inside fixed toolbar) ═══ */}
+        <ReportEditorToolbar isEditing={isEditing} />
       </div>
-
-      {/* ═══════════ EDITOR TOOLBAR ═══════════ */}
-      <ReportEditorToolbar isEditing={isEditing} />
 
       {/* ═══════════ REPORT CONTENT ═══════════ */}
       <div ref={reportRef} className="freq-report-content">

@@ -232,10 +232,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           <button onClick={handleGenerateAI} disabled={isGeneratingAI} className="freq-btn freq-btn-ai">{isGeneratingAI ? <span className="freq-spinner"></span> : '🤖'} Gerar Resumo IA</button>
           <button onClick={handlePrint} className="freq-btn freq-btn-print">{'🖨️'} Exportar PDF</button>
         </div>
+        {/* ═══ EDITOR TOOLBAR (inside fixed toolbar) ═══ */}
+        <ReportEditorToolbar isEditing={isEditing} />
       </div>
-
-      {/* EDIT TOOLBAR - shared rich text editor */}
-      <ReportEditorToolbar isEditing={isEditing} />
 
       {/* MODAL: Inserir / Editar Bloco de Texto */}
       {showBlockModal && (
