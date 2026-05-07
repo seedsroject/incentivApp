@@ -996,6 +996,102 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   {`Fonte: ${projectFull} (${currentYear}).`}
                 </p>
               </div>
+
+              {/* ─── Figuras 5 e 6: Barras horizontais por aluno ─── */}
+              {(() => {
+                // Split students into two groups for 2 pages
+                const half = Math.ceil(studentGrades.length / 2);
+                const group1 = studentGrades.slice(0, half);
+                const group2 = studentGrades.slice(half);
+                const maxGrade = 12;
+                const barH = 14;
+                const gapY = 4;
+                const leftMargin = 200;
+                const chartW = 380;
+                const BLUE = '#4472C4';
+                const ORANGE = '#ED7D31';
+
+                const HBarChart = ({ grp, figNum }: { grp: typeof studentGrades; figNum: number }) => {
+                  const svgH = grp.length * (barH * 2 + gapY + 8) + 60;
+                  return (
+                    <div className="freq-page">
+                      <div contentEditable={isEditing} suppressContentEditableWarning>
+                        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
+                          {`Figura ${figNum} — Média das notas escolar dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}"`}
+                        </p>
+                      </div>
+                      <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, background: '#fff', marginBottom: 16 }}>
+                        <ChartDataEditor chartId={`assid_fig${figNum}_hbar`} title={`Notas por Aluno (Fig. ${figNum})`} isEditing={isEditing} rows={
+                          grp.flatMap((sg, i) => [
+                            { key: `s${i}_m1`, label: `${sg.student.nome.split(' ').slice(0, 2).join(' ')} (1º)`, value: Math.round(sg.media1 * 100) / 100 },
+                            { key: `s${i}_m4`, label: `${sg.student.nome.split(' ').slice(0, 2).join(' ')} (4º)`, value: Math.round(sg.media4 * 100) / 100 },
+                          ])
+                        } onSave={() => {}} />
+                        <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
+                          {`Média das notas do 1° e 4° bimestre de ${currentYear} dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                        </p>
+                        <svg viewBox={`0 0 ${leftMargin + chartW + 50} ${svgH}`} style={{ width: '100%', display: 'block' }}>
+                          {/* Grid lines */}
+                          {[0, 2, 4, 6, 8, 10, 12].map((v, i) => {
+                            const x = leftMargin + (v / maxGrade) * chartW;
+                            return (
+                              <g key={i}>
+                                <line x1={x} y1={0} x2={x} y2={svgH - 40} stroke="#eee" strokeWidth="0.5" />
+                                <text x={x} y={svgH - 25} textAnchor="middle" fontSize="7" fill="#999">{v.toFixed(2).replace('.', ',')}</text>
+                              </g>
+                            );
+                          })}
+                          {/* Bars per student */}
+                          {grp.map((sg, i) => {
+                            const y = i * (barH * 2 + gapY + 8) + 8;
+                            const w1 = (sg.media1 / maxGrade) * chartW;
+                            const w4 = (sg.media4 / maxGrade) * chartW;
+                            return (
+                              <g key={i}>
+                                {/* Student name */}
+                                <text x={leftMargin - 6} y={y + barH + 4} textAnchor="end" fontSize="7" fill="#333" dominantBaseline="middle">
+                                  {sg.student.nome.length > 30 ? sg.student.nome.substring(0, 28) + '...' : sg.student.nome}
+                                </text>
+                                {/* Bar 4º bimestre (orange, top) */}
+                                <rect x={leftMargin} y={y} width={Math.max(w4, 2)} height={barH} fill={ORANGE} rx="1.5" />
+                                <text x={leftMargin + w4 + 4} y={y + barH / 2 + 1} fontSize="6.5" fill={ORANGE} fontWeight="700" dominantBaseline="middle">
+                                  {sg.media4.toFixed(2).replace('.', ',')}
+                                </text>
+                                {/* Bar 1º bimestre (blue, bottom) */}
+                                <rect x={leftMargin} y={y + barH + 2} width={Math.max(w1, 2)} height={barH} fill={BLUE} rx="1.5" />
+                                <text x={leftMargin + w1 + 4} y={y + barH + 2 + barH / 2 + 1} fontSize="6.5" fill={BLUE} fontWeight="700" dominantBaseline="middle">
+                                  {sg.media1.toFixed(2).replace('.', ',')}
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </svg>
+                        {/* Legend */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 8 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                            <span style={{ width: 14, height: 10, background: ORANGE, display: 'inline-block', borderRadius: 2 }} />
+                            Média de notas 4º Bimestre
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                            <span style={{ width: 14, height: 10, background: BLUE, display: 'inline-block', borderRadius: 2 }} />
+                            Média de notas 1º Bimestre
+                          </span>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4 }}>
+                        {`Fonte: ${projectFull} (${currentYear}).`}
+                      </p>
+                    </div>
+                  );
+                };
+
+                return (
+                  <>
+                    <HBarChart grp={group1} figNum={5} />
+                    {group2.length > 0 && <HBarChart grp={group2} figNum={6} />}
+                  </>
+                );
+              })()}
             </>
           );
         })()}
