@@ -34,7 +34,7 @@ html, body {
 
 /* Offset content below fixed toolbar */
 .freq-report-content {
-  padding-top: 80px;
+  padding-top: 120px;
 }
 
 .freq-btn-back {
