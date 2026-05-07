@@ -1099,9 +1099,67 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ SECTION 3.1: Médias notas (pg 22) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.1" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Tabela/conteúdo será adicionado pelo usuário */}
-          </div>
+          {(() => {
+            // Compute grade distributions from studentGrades (same data as Tabela 5)
+            const grades1 = studentGrades.map(sg => Math.round(sg.media1));
+            const grades4 = studentGrades.map(sg => Math.round(sg.media4));
+            const total = studentGrades.length || 1;
+            const countGrade = (grades: number[], g: number) => grades.filter(v => v === g).length;
+            const pctGrade = (grades: number[], g: number) => Math.round((countGrade(grades, g) / total) * 100);
+
+            // 1º bimestre
+            const p1_6 = pctGrade(grades1, 6);
+            const p1_7 = pctGrade(grades1, 7);
+            const p1_8 = pctGrade(grades1, 8);
+            const p1_9 = pctGrade(grades1, 9);
+            const p1_10 = pctGrade(grades1, 10);
+            const p1_789 = p1_7 + p1_8 + p1_9;
+            // Find dominant grade in 1st bimester
+            const max1 = Math.max(p1_6, p1_7, p1_8, p1_9, p1_10);
+            const dom1Grade = [6,7,8,9,10][[p1_6,p1_7,p1_8,p1_9,p1_10].indexOf(max1)];
+            const dom1Pct = max1;
+
+            // 4º bimestre
+            const p4_6 = pctGrade(grades4, 6);
+            const p4_7 = pctGrade(grades4, 7);
+            const p4_8 = pctGrade(grades4, 8);
+            const p4_9 = pctGrade(grades4, 9);
+            const p4_10 = pctGrade(grades4, 10);
+            const p4_8910 = p4_8 + p4_9 + p4_10;
+            const max4 = Math.max(p4_6, p4_7, p4_8, p4_9, p4_10);
+            const dom4Grade = [6,7,8,9,10][[p4_6,p4_7,p4_8,p4_9,p4_10].indexOf(max4)];
+            const dom4Pct = max4;
+
+            // Helper: describe a grade's percentage — if 0%, just mention without explanation
+            const descGrade = (grade: number, pct: number) => {
+              if (pct === 0) return `média ${grade} (0%)`;
+              return `média ${grade}, alcançada por ${pct}% dos participantes`;
+            };
+
+            // Build text for grades that have > 0 in 1st bimester "top 3"
+            const topGrades1 = [7, 8, 9].filter(g => pctGrade(grades1, g) > 0);
+            const topGrades1Str = topGrades1.length > 0
+              ? topGrades1.map(String).join(', ') + ` e` .replace(', e', ' e')
+              : '7, 8 e 9';
+
+            // Build text for grades > 0 in 4th bimester "top 3"
+            const topGrades4 = [8, 9, 10].filter(g => pctGrade(grades4, g) > 0);
+            const hasMedia10_4 = p4_10 > 0;
+
+            return (
+              <div contentEditable={isEditing} suppressContentEditableWarning>
+                <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                  {`A análise comparativa das médias escolares dos alunos inscritos no Projeto "${projectFull}", no 1º e no 4º bimestres de ${currentYear}, evidencia uma evolução pedagógica significativa e coerente com os objetivos educacionais propostos. No 1º bimestre, observa-se que a maioria dos estudantes já apresentava desempenho satisfatório, com forte concentração nas médias ${topGrades1.join(', ')}, que, juntas, representaram ${p1_789}% do total de alunos. Destaca-se, especialmente, a predominância da ${descGrade(dom1Grade, dom1Pct)}, indicando um bom nível de aproveitamento escolar desde o início do acompanhamento.`}
+                </p>
+                <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                  {`No 4º bimestre, os resultados demonstram avanço expressivo no desempenho escolar geral. Nota-se uma redução proporcional dos alunos com médias mais baixas e um crescimento consistente nas faixas de médias mais elevadas. As médias ${topGrades4.join(', ')} passaram a concentrar ${p4_8910}% dos alunos, com destaque para a ${descGrade(dom4Grade, dom4Pct)}${hasMedia10_4 ? `, além do registro de alunos com média máxima 10 (${p4_10}%)` : ''}. Esse deslocamento do desempenho para patamares superiores indica não apenas a manutenção da assiduidade escolar, mas também a melhoria efetiva do aproveitamento no aprendizado ao longo do ano letivo.`}
+                </p>
+                <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                  Esses resultados confirmam o cumprimento da Meta Qualitativa 02, que visa reduzir a evasão escolar e melhorar o rendimento escolar dos alunos atendidos. O acompanhamento escolar permanente, definido como Indicador 02, mostrou-se eficaz ao possibilitar o monitoramento contínuo da frequência e do desempenho, permitindo intervenções pedagógicas oportunas quando necessárias. Os relatórios elaborados como instrumento de verificação atestam a assiduidade dos alunos e a evolução consistente das médias escolares, reforçando o papel do projeto como uma ação integrada de esporte educacional que contribui de forma concreta para o desenvolvimento escolar e social dos participantes.
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ━━━ SECTION 3.2: Desempenho escolar (pg 23) ━━━ */}
