@@ -1374,9 +1374,132 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ SECTION 3.3: Melhora/piora/manutenção (pg 25) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.3" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Gráfico/conteúdo será adicionado pelo usuário */}
-          </div>
+          {(() => {
+            // Compute MELHORA / PIORA / MANTEVE from studentGrades
+            const total = studentGrades.length || 1;
+            const countMelhora = studentGrades.filter(sg => sg.status === 'MELHORA').length;
+            const countPiora = studentGrades.filter(sg => sg.status === 'PIORA').length;
+            const countManteve = studentGrades.filter(sg => sg.status === 'MANTEVE').length;
+            const pctMelhora = Math.round((countMelhora / total) * 100);
+            const pctPiora = Math.round((countPiora / total) * 100);
+            const pctManteve = Math.round((countManteve / total) * 100);
+            const pctSucesso = pctMelhora + pctManteve;
+
+            // Average evolution and max improvement
+            const diffs = studentGrades.map(sg => sg.media4 - sg.media1);
+            const avgEvolucao = diffs.length > 0 ? (diffs.reduce((s, d) => s + d, 0) / diffs.length) : 0;
+            const maxMelhora = diffs.length > 0 ? Math.max(...diffs) : 0;
+
+            const STATUS_COLORS: Record<string, string> = {
+              'MELHORA': '#4472C4',
+              'PIORA': '#ED7D31',
+              'MANTEVE': '#FFC000',
+            };
+            const statusData = [
+              { label: 'MELHORA', count: countMelhora, pct: pctMelhora, color: STATUS_COLORS['MELHORA'] },
+              { label: 'PIORA', count: countPiora, pct: pctPiora, color: STATUS_COLORS['PIORA'] },
+              { label: 'MANTEVE', count: countManteve, pct: pctManteve, color: STATUS_COLORS['MANTEVE'] },
+            ];
+
+            const titleUpper = `Dados sobre a melhora, piora ou manutenção das médias escolares dos alunos da Educação Básica inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`;
+
+            // ── Pie Chart (Figura 9) ──
+            const cx = 180, cy = 160, r = 120;
+            const filtered = statusData.filter(d => d.count > 0);
+            const totalCount = filtered.reduce((s, d) => s + d.count, 0) || 1;
+
+            let pieSVG: React.ReactNode;
+            if (filtered.length === 1) {
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  <circle cx={cx} cy={cy} r={r} fill={filtered[0].color} stroke="#fff" strokeWidth="2" />
+                  <text x={cx} y={cy + 5} textAnchor="middle" fontSize="16" fontWeight="700" fill="#fff">{filtered[0].label}</text>
+                  <text x={cx} y={cy + 22} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">100%</text>
+                </svg>
+              );
+            } else {
+              let acc = -90;
+              const slices = filtered.map((d, i) => {
+                const startAngle = acc;
+                const angle = (d.count / totalCount) * 360;
+                acc += angle;
+                const s = (startAngle * Math.PI) / 180;
+                const e = ((startAngle + angle) * Math.PI) / 180;
+                const mid = ((startAngle + angle / 2) * Math.PI) / 180;
+                const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
+                const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
+                const large = angle > 180 ? 1 : 0;
+                const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`;
+                const labelR = d.pct >= 10 ? r * 0.55 : r + 30;
+                const labelColor = d.pct >= 10 ? '#fff' : d.color;
+                const lx = cx + labelR * Math.cos(mid), ly = cy + labelR * Math.sin(mid);
+                return (
+                  <g key={i}>
+                    <path d={path} fill={d.color} stroke="#fff" strokeWidth="2.5" />
+                    {d.pct > 0 && (
+                      <>
+                        <text x={lx} y={ly - 6} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill={labelColor}>
+                          {d.label}
+                        </text>
+                        <text x={lx} y={ly + 8} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="700" fill={labelColor}>
+                          {`${d.pct}%`}
+                        </text>
+                      </>
+                    )}
+                  </g>
+                );
+              });
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  {slices}
+                </svg>
+              );
+            }
+
+            return (
+              <>
+                <div contentEditable={isEditing} suppressContentEditableWarning>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
+                    {`Figura 9 — Dados sobre a melhora, piora ou manutenção das médias escolares dos alunos da Educação Básica inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                  </p>
+                </div>
+
+                {/* Figura 9 — Pie: Melhora/Piora/Manteve */}
+                <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
+                  <ChartDataEditor chartId="assid_fig9_pie" title="Melhora / Piora / Manteve" isEditing={isEditing} rows={
+                    statusData.map(d => ({ key: d.label, label: d.label, value: d.count }))
+                  } onSave={() => {}} />
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
+                    {titleUpper}
+                  </p>
+                  {pieSVG}
+                  {/* Legend */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+                    {statusData.map((d, i) => (
+                      <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                        <span style={{ width: 12, height: 12, borderRadius: 2, background: d.color, display: 'inline-block' }} />
+                        {`${d.label} (${d.pct}%)`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4, marginBottom: 16 }}>
+                  {`Fonte: ${projectFull} (${currentYear}).`}
+                </p>
+
+                {/* ─── Texto analítico Melhora/Piora/Manteve ─── */}
+                <div contentEditable={isEditing} suppressContentEditableWarning>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`O projeto ${projectFull}, executado em ${cityLabel} (${stateLabel}), revelou resultados sólidos no que diz respeito ao desempenho escolar de seus participantes na Educação Básica. Durante o período de execução, a análise dos dados demonstrou que o esporte foi um motor de disciplina, visto que ${pctMelhora > 0 ? `${pctMelhora.toFixed(2).replace('.', ',')}% dos alunos-atletas apresentaram uma melhora efetiva em suas médias escolares` : `${pctMelhora.toFixed(2).replace('.', ',')}% dos alunos-atletas apresentaram melhora`}. ${pctManteve > 0 ? `Quando somados aos ${pctManteve.toFixed(2).replace('.', ',')}% que mantiveram o rendimento estável, o índice de sucesso escolar do projeto alcançou a marca de ${pctSucesso.toFixed(2).replace('.', ',')}%, o que validou a iniciativa como uma ferramenta eficaz de transformação social e pedagógica.` : `O percentual que manteve o rendimento foi de ${pctManteve.toFixed(2).replace('.', ',')}%.`}`}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`A média geral de evolução do grupo fixou-se em ${avgEvolucao.toFixed(2).replace('.', ',')}, um valor que representou um ganho substancial de aprendizado coletivo dentro do contexto escolar. ${maxMelhora > 0 ? `Houve casos de destaque individual onde estudantes registraram saltos impressionantes de até ${maxMelhora.toFixed(2).replace('.', ',')} pontos em suas médias anuais.` : ''} ${pctPiora > 0 ? `Por outro lado, a parcela de alunos que teve uma queda no desempenho (${pctPiora.toFixed(2).replace('.', ',')}%) apresentou, em sua maioria, oscilações pequenas, indicando que a rotina de treinos não prejudicou o aprendizado, mas sim exigiu ajustes pontuais de foco.` : `O percentual de piora foi de ${pctPiora.toFixed(2).replace('.', ',')}%.`} Em suma, os dados confirmaram que o projeto cumpriu seu papel integral, provando que o esforço no esporte caminhou lado a lado com o sucesso nos boletins.`}
+                  </p>
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* ━━━ SECTION 4: LEVANTAMENTO DA ASSIDUIDADE (pg 27) ━━━ */}
