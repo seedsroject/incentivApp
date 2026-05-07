@@ -9,6 +9,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Nucleo, StudentDraft } from '../types';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
+import { ChartDataEditor } from './ChartDataEditor';
 
 interface AssiduidadeReportBuilderProps {
   nucleos: Nucleo[];
@@ -47,6 +48,11 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   const [isEditing, setIsEditing] = useState(false);
   const [aiResumo, setAiResumo] = useState<string>('');
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  // Chart data overrides (ChartDataEditor)
+  const [pieOverride1, setPieOverride1] = useState<Record<string, number> | null>(null);
+  const [pieOverride4, setPieOverride4] = useState<Record<string, number> | null>(null);
+  const [barOverride1, setBarOverride1] = useState<Record<string, number> | null>(null);
+  const [barOverride4, setBarOverride4] = useState<Record<string, number> | null>(null);
   const [nSli, setNSli] = useState('2301005');
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -756,8 +762,26 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             grades.forEach(g => { groups[g] = (groups[g] || 0) + 1; });
             return [6,7,8,9,10].map(g => ({ grade: g, count: groups[g] || 0, pct: grades.length > 0 ? Math.round(((groups[g] || 0) / grades.length) * 100) : 0 }));
           };
-          const dist1 = countByGrade(g1);
-          const dist4 = countByGrade(g4);
+          // Apply overrides if user edited chart data
+          const applyOverrides = (dist: { grade: number; count: number; pct: number }[], overrides: Record<string, number> | null) => {
+            if (!overrides) return dist;
+            return dist.map(d => {
+              const countKey = `g${d.grade}_count`;
+              const newCount = overrides[countKey] !== undefined ? overrides[countKey] : d.count;
+              return { ...d, count: newCount, pct: d.pct };
+            });
+          };
+          const rawDist1 = countByGrade(g1);
+          const rawDist4 = countByGrade(g4);
+          // Recalculate pct after overrides
+          const recalcPct = (dist: { grade: number; count: number; pct: number }[]) => {
+            const total = dist.reduce((s, d) => s + d.count, 0) || 1;
+            return dist.map(d => ({ ...d, pct: Math.round((d.count / total) * 100) }));
+          };
+          const dist1 = recalcPct(applyOverrides(rawDist1, pieOverride1));
+          const dist4 = recalcPct(applyOverrides(rawDist4, pieOverride4));
+          const barDist1 = recalcPct(applyOverrides(rawDist1, barOverride1));
+          const barDist4 = recalcPct(applyOverrides(rawDist4, barOverride4));
 
           // Colors matching system palette (flat, modern)
           const COLORS = ['#4472C4', '#ED7D31', '#A5A5A5', '#FFC000', '#264478'];
@@ -912,16 +936,26 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                 </div>
 
                 {/* Figura 1 — Pie: 1º Bimestre */}
-                <PieChart
-                  data={dist1}
-                  title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
-                />
+                <div style={{ position: 'relative' }}>
+                  <ChartDataEditor chartId="assid_fig1_pie" title="Médias 1º Bimestre (Pizza)" isEditing={isEditing} rows={
+                    dist1.filter(d => d.count > 0).map(d => ({ key: `g${d.grade}_count`, label: `Média ${d.grade}`, value: d.count }))
+                  } onSave={data => setPieOverride1(data)} />
+                  <PieChart
+                    data={dist1}
+                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                  />
+                </div>
 
                 {/* Figura 2 — Bar: 1º Bimestre */}
-                <BarChart
-                  data={dist1}
-                  title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
-                />
+                <div style={{ position: 'relative' }}>
+                  <ChartDataEditor chartId="assid_fig2_bar" title="Médias 1º Bimestre (Barras)" isEditing={isEditing} rows={
+                    barDist1.map(d => ({ key: `g${d.grade}_count`, label: `Média ${d.grade}`, value: d.count }))
+                  } onSave={data => setBarOverride1(data)} />
+                  <BarChart
+                    data={barDist1}
+                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                  />
+                </div>
 
                 <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4 }}>
                   {`Fonte: ${projectFull} (${currentYear}).`}
@@ -937,16 +971,26 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                 </div>
 
                 {/* Figura 3 — Pie: 4º Bimestre */}
-                <PieChart
-                  data={dist4}
-                  title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
-                />
+                <div style={{ position: 'relative' }}>
+                  <ChartDataEditor chartId="assid_fig3_pie" title="Médias 4º Bimestre (Pizza)" isEditing={isEditing} rows={
+                    dist4.filter(d => d.count > 0).map(d => ({ key: `g${d.grade}_count`, label: `Média ${d.grade}`, value: d.count }))
+                  } onSave={data => setPieOverride4(data)} />
+                  <PieChart
+                    data={dist4}
+                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                  />
+                </div>
 
                 {/* Figura 4 — Bar: 4º Bimestre */}
-                <BarChart
-                  data={dist4}
-                  title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
-                />
+                <div style={{ position: 'relative' }}>
+                  <ChartDataEditor chartId="assid_fig4_bar" title="Médias 4º Bimestre (Barras)" isEditing={isEditing} rows={
+                    barDist4.map(d => ({ key: `g${d.grade}_count`, label: `Média ${d.grade}`, value: d.count }))
+                  } onSave={data => setBarOverride4(data)} />
+                  <BarChart
+                    data={barDist4}
+                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                  />
+                </div>
 
                 <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4 }}>
                   {`Fonte: ${projectFull} (${currentYear}).`}
