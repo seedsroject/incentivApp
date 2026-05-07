@@ -1324,6 +1324,48 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                 <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4 }}>
                   {`Fonte: ${projectFull} (${currentYear}).`}
                 </p>
+
+                {/* ─── Texto analítico do desempenho escolar ─── */}
+                <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 16 }}>
+                  {(() => {
+                    const pBom = desempData.find(d => d.label === 'Bom')!;
+                    const pReg = desempData.find(d => d.label === 'Regular')!;
+                    const pIns = desempData.find(d => d.label === 'Insatisfatório')!;
+                    const pPes = desempData.find(d => d.label === 'Péssimo')!;
+
+                    // Build conditional sentences for Insatisfatório and Péssimo
+                    const zeroCategories = [pIns, pPes].filter(c => c.pct === 0);
+                    const nonZeroLow = [pIns, pPes].filter(c => c.pct > 0);
+
+                    let paragrafo3Intro = '';
+                    if (zeroCategories.length === 2) {
+                      paragrafo3Intro = `Não houve registros de alunos nas faixas Insatisfatório (${pIns.pct}%) ou Péssimo (${pPes.pct}%), o que reforça a inexistência de situações críticas de baixo rendimento escolar ou de risco imediato de evasão associada a dificuldades de aprendizagem.`;
+                    } else if (zeroCategories.length === 1 && nonZeroLow.length === 1) {
+                      const zero = zeroCategories[0];
+                      const nz = nonZeroLow[0];
+                      paragrafo3Intro = `Registrou-se ${nz.pct}% dos alunos na faixa ${nz.label}. Não houve registros na faixa ${zero.label} (${zero.pct}%).`;
+                    } else {
+                      paragrafo3Intro = `Registrou-se ${pIns.pct}% dos alunos na faixa Insatisfatório e ${pPes.pct}% na faixa Péssimo.`;
+                    }
+
+                    return (
+                      <>
+                        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                          {`A análise do desempenho escolar dos alunos da Educação Básica participantes do Projeto "${projectFull}", no município de ${cityLabel} (${stateLabel}), revela um quadro amplamente positivo e alinhado aos objetivos educacionais propostos. Os dados demonstram que ${pBom.pct}% dos alunos avaliados foram classificados na categoria Bom, com notas situadas entre 6 e 9, evidenciando um desempenho satisfatório e a consolidação de um padrão consistente de aproveitamento escolar. Esse resultado expressivo indica que a grande maioria dos participantes consegue acompanhar adequadamente as atividades escolares, mantendo rendimento compatível com as exigências pedagógicas da Educação Básica.`}
+                        </p>
+                        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                          {pReg.pct > 0
+                            ? `Observa-se ainda que ${pReg.pct}% dos alunos foram enquadrados na categoria Regular, correspondente a notas entre 5 e abaixo de 6, o que sinaliza desempenho dentro da média esperada, porém com necessidade de atenção pedagógica pontual para aprimoramento. ${paragrafo3Intro}`
+                            : `Observa-se que ${pReg.pct}% dos alunos foram enquadrados na categoria Regular. ${paragrafo3Intro}`
+                          }
+                        </p>
+                        <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                          Esse cenário evidencia a efetividade das ações de acompanhamento escolar permanente previstas no Indicador 02, uma vez que o monitoramento contínuo da frequência e do desempenho contribuiu para a identificação precoce de eventuais dificuldades e para a adoção de medidas de apoio quando necessárias. Assim, os resultados confirmam o cumprimento da Meta Qualitativa 02, voltada à redução da evasão escolar e à melhoria do aproveitamento no aprendizado, demonstrando que o projeto, ao articular práticas esportivas educacionais com o acompanhamento pedagógico sistemático, promove impactos positivos e duradouros no desenvolvimento escolar dos alunos atendidos.
+                        </p>
+                      </>
+                    );
+                  })()}
+                </div>
               </>
             );
           })()}
