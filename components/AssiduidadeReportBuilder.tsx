@@ -1165,9 +1165,168 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ SECTION 3.2: Desempenho escolar (pg 23) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3.2" tag="h3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Gráfico/conteúdo será adicionado pelo usuário */}
-          </div>
+          {(() => {
+            // Classify each student's overall performance using 4th bimester grade
+            const categories = ['Bom', 'Regular', 'Insatisfatório', 'Péssimo'] as const;
+            const CAT_COLORS: Record<string, string> = {
+              'Bom': '#4472C4',
+              'Regular': '#ED7D31',
+              'Insatisfatório': '#A5A5A5',
+              'Péssimo': '#FFC000',
+            };
+            const total = studentGrades.length || 1;
+            const catCount = (cat: string) => studentGrades.filter(sg => avaliarNota(sg.media4) === cat).length;
+            const desempData = categories.map(cat => ({
+              label: cat,
+              count: catCount(cat),
+              pct: Math.round((catCount(cat) / total) * 100),
+              color: CAT_COLORS[cat],
+            }));
+
+            const titleUpper = `DESEMPENHO ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
+
+            // ── Pie Chart (Figura 7) ──
+            const cx = 180, cy = 160, r = 120;
+            const filtered = desempData.filter(d => d.count > 0);
+            const totalCount = filtered.reduce((s, d) => s + d.count, 0) || 1;
+
+            let pieSVG: React.ReactNode;
+            if (filtered.length === 1) {
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  <circle cx={cx} cy={cy} r={r} fill={filtered[0].color} stroke="#fff" strokeWidth="2" />
+                  <text x={cx} y={cy + 5} textAnchor="middle" fontSize="16" fontWeight="700" fill="#fff">{filtered[0].label}</text>
+                  <text x={cx} y={cy + 22} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">100%</text>
+                </svg>
+              );
+            } else {
+              let acc = -90;
+              const slices = filtered.map((d, i) => {
+                const startAngle = acc;
+                const angle = (d.count / totalCount) * 360;
+                acc += angle;
+                const s = (startAngle * Math.PI) / 180;
+                const e = ((startAngle + angle) * Math.PI) / 180;
+                const mid = ((startAngle + angle / 2) * Math.PI) / 180;
+                const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
+                const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
+                const large = angle > 180 ? 1 : 0;
+                const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`;
+                // Label position
+                const labelR = d.pct >= 10 ? r * 0.6 : r + 30;
+                const labelColor = d.pct >= 10 ? '#fff' : d.color;
+                const lx = cx + labelR * Math.cos(mid), ly = cy + labelR * Math.sin(mid);
+                return (
+                  <g key={i}>
+                    <path d={path} fill={d.color} stroke="#fff" strokeWidth="2.5" />
+                    {d.pct > 0 && (
+                      <>
+                        <text x={lx} y={ly - 6} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill={labelColor}>
+                          {d.label}
+                        </text>
+                        <text x={lx} y={ly + 8} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="700" fill={labelColor}>
+                          {`${d.pct}%`}
+                        </text>
+                      </>
+                    )}
+                  </g>
+                );
+              });
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  {slices}
+                </svg>
+              );
+            }
+
+            // ── Bar Chart (Figura 8) ──
+            const maxVal = Math.max(...desempData.map(d => d.count), 1);
+            const bw = 60, gap = 40, startX = 60, chartH = 200, baseY = 230;
+            const barSVG = (
+              <svg viewBox="0 0 460 290" style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto' }}>
+                {/* Grid lines */}
+                {[0, 0.25, 0.5, 0.75, 1].map((f, i) => (
+                  <line key={i} x1={startX - 5} y1={baseY - chartH * f} x2={430} y2={baseY - chartH * f} stroke="#eee" strokeWidth="1" />
+                ))}
+                {/* Bars */}
+                {desempData.map((d, i) => {
+                  const x = startX + i * (bw + gap);
+                  const h = (d.count / maxVal) * chartH;
+                  const hPct = (d.pct / 100) * chartH;
+                  return (
+                    <g key={i}>
+                      {/* Count bar — BLUE */}
+                      <rect x={x} y={baseY - h} width={bw * 0.5} height={h} fill="#4472C4" rx="2" />
+                      {/* Pct bar — ORANGE */}
+                      <rect x={x + bw * 0.5 + 4} y={baseY - hPct} width={bw * 0.4} height={hPct} fill="#ED7D31" rx="2" />
+                      {/* Count label */}
+                      <text x={x + bw * 0.25} y={baseY - h - 8} textAnchor="middle" fontSize="12" fontWeight="700" fill="#4472C4">{d.count}</text>
+                      {/* Pct label */}
+                      <text x={x + bw * 0.5 + 4 + bw * 0.2} y={baseY - hPct - 8} textAnchor="middle" fontSize="10" fontWeight="700" fill="#ED7D31">{`${d.pct}%`}</text>
+                      {/* X-axis label */}
+                      <text x={x + bw / 2} y={baseY + 16} textAnchor="middle" fontSize="9" fill="#555">{d.label}</text>
+                    </g>
+                  );
+                })}
+                {/* Axis */}
+                <line x1={startX - 5} y1={baseY} x2={430} y2={baseY} stroke="#999" strokeWidth="1" />
+              </svg>
+            );
+
+            return (
+              <>
+                <div contentEditable={isEditing} suppressContentEditableWarning>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
+                    {`Figuras 7 e 8 — Desempenho escolar dos alunos da Educação Básica matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                  </p>
+                </div>
+
+                {/* Figura 7 — Pie: Desempenho Escolar */}
+                <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
+                  <ChartDataEditor chartId="assid_fig7_pie" title="Desempenho Escolar (Pizza)" isEditing={isEditing} rows={
+                    desempData.map(d => ({ key: d.label, label: d.label, value: d.count }))
+                  } onSave={() => {}} />
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
+                    {titleUpper}
+                  </p>
+                  {pieSVG}
+                  {/* Legend */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+                    {desempData.map((d, i) => (
+                      <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                        <span style={{ width: 10, height: 10, borderRadius: 2, background: d.color, display: 'inline-block' }} />
+                        {`${d.label} (${d.pct}%)`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Figura 8 — Bar: Desempenho Escolar */}
+                <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
+                  <ChartDataEditor chartId="assid_fig8_bar" title="Desempenho Escolar (Barras)" isEditing={isEditing} rows={
+                    desempData.map(d => ({ key: d.label, label: d.label, value: d.count }))
+                  } onSave={() => {}} />
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
+                    {titleUpper}
+                  </p>
+                  {barSVG}
+                  {/* Legend */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 6 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                      <span style={{ width: 10, height: 10, background: '#4472C4', display: 'inline-block', borderRadius: 2 }} /> Número de alunos
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                      <span style={{ width: 10, height: 10, background: '#ED7D31', display: 'inline-block', borderRadius: 2 }} /> Em %
+                    </span>
+                  </div>
+                </div>
+
+                <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4 }}>
+                  {`Fonte: ${projectFull} (${currentYear}).`}
+                </p>
+              </>
+            );
+          })()}
         </div>
 
         {/* ━━━ SECTION 3.3: Melhora/piora/manutenção (pg 25) ━━━ */}
