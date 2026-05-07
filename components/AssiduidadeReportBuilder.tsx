@@ -1505,8 +1505,13 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ SECTION 4: LEVANTAMENTO DA ASSIDUIDADE (pg 27) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="4" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Tabela/conteúdo será adicionado pelo usuário */}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Semelhantemente, as primeiras análises, o projeto trabalhou os dados dos boletins dos alunos matriculados na ${projectFull} e a partir disso, fizemos o levantamento da assiduidade escolar no 1º e 2° semestre.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              Assim sendo, para fins deste relatório, lembramos que os indicadores de Assiduidade Escolar foram elaborados recorrendo à Lei de Diretrizes e Bases da Educação Nacional (LDB) que aponta no artigo 24, inciso I, a "carga horária mínima anual será de oitocentas horas para o ensino fundamental e para o ensino médio, distribuídas por um mínimo de duzentos dias de efetivo trabalho escolar, excluído o tempo reservado aos exames finais, quando houver". (EDUCAÇÃO, 2014).
+            </p>
           </div>
         </div>
 
