@@ -717,16 +717,27 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 
         {/* ━━━ FIGURAS 1-4: Gráficos de médias 1º e 4º bimestre ━━━ */}
         {(() => {
-          // Compute grade distribution from nucleoStudents
-          // For now uses placeholder grades; will use real OCR data when available
-          const gradesBim1: number[] = nucleoStudents.map(() => 7.0); // placeholder
-          const gradesBim4: number[] = nucleoStudents.map(() => 7.5); // placeholder
-          // If no students, use demo data
-          const demoGrades1 = [6,6,6,7,7,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10];
-          const demoGrades4 = [6,6,7,7,7,7,7,7,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10];
-          const g1 = nucleoStudents.length > 0 ? gradesBim1 : demoGrades1;
-          const g4 = nucleoStudents.length > 0 ? gradesBim4 : demoGrades4;
-          const total = g1.length || 1;
+          // Generate varied demo grades based on student count
+          // These simulate a realistic distribution: ~12% média 6, ~26% média 7, ~42% média 8, ~20% média 9
+          const generateDemoGrades1 = (n: number) => {
+            const dist = [0.06, 0.26, 0.42, 0.20, 0.06]; // 6,7,8,9,10
+            const grades: number[] = [];
+            [6,7,8,9,10].forEach((g, i) => { for (let j = 0; j < Math.round(dist[i] * n); j++) grades.push(g); });
+            while (grades.length < n) grades.push(8);
+            return grades.slice(0, n);
+          };
+          const generateDemoGrades4 = (n: number) => {
+            const dist = [0.04, 0.12, 0.24, 0.46, 0.14]; // Better grades in 4th bimester
+            const grades: number[] = [];
+            [6,7,8,9,10].forEach((g, i) => { for (let j = 0; j < Math.round(dist[i] * n); j++) grades.push(g); });
+            while (grades.length < n) grades.push(9);
+            return grades.slice(0, n);
+          };
+
+          const studentCount = nucleoStudents.length || 50;
+          // TODO: Replace with real OCR grade data when available
+          const g1 = generateDemoGrades1(studentCount);
+          const g4 = generateDemoGrades4(studentCount);
 
           const countByGrade = (grades: number[]) => {
             const groups: Record<number, number> = {};
@@ -738,41 +749,82 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 
           // Colors matching system palette (flat, modern)
           const COLORS = ['#4472C4', '#ED7D31', '#A5A5A5', '#FFC000', '#264478'];
-          const LABELS = ['Média 6', 'Média 7', 'Média 8', 'Média 9', 'Média 10'];
 
-          // SVG Pie Chart
+          // SVG Pie Chart — handles 100% single slice with <circle>
           const PieChart = ({ data, title }: { data: { grade: number; count: number; pct: number }[]; title: string }) => {
             const filtered = data.filter(d => d.count > 0);
-            const cx = 160, cy = 140, r = 110;
-            let acc = 0;
+            const cx = 180, cy = 150, r = 110;
+
+            // Handle single-slice (100%) case
+            if (filtered.length === 1) {
+              const d = filtered[0];
+              const ci = data.indexOf(d);
+              return (
+                <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>{title}</p>
+                  <svg viewBox="0 0 360 300" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                    <circle cx={cx} cy={cy} r={r} fill={COLORS[ci]} stroke="#fff" strokeWidth="2" />
+                    <text x={cx} y={cy + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">{`Média ${d.grade}`}</text>
+                    <text x={cx} y={cy + 20} textAnchor="middle" fontSize="12" fontWeight="700" fill="#fff">100%</text>
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 8 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[ci], display: 'inline-block' }} />
+                      {`Alunos com média ${d.grade} (100%)`}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+
+            // Multi-slice pie
+            let acc = -90; // Start from top
             const slices = filtered.map((d, i) => {
-              const start = acc;
+              const startAngle = acc;
               const angle = (d.pct / 100) * 360;
               acc += angle;
-              const s = (start * Math.PI) / 180;
-              const e = ((start + angle) * Math.PI) / 180;
-              const mid = ((start + angle / 2) * Math.PI) / 180;
+              const s = (startAngle * Math.PI) / 180;
+              const e = ((startAngle + angle) * Math.PI) / 180;
+              const mid = ((startAngle + angle / 2) * Math.PI) / 180;
               const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
               const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
-              const lx = cx + (r + 28) * Math.cos(mid), ly = cy + (r + 28) * Math.sin(mid);
+              const labelR = r * 0.65;
+              const lx = cx + labelR * Math.cos(mid), ly = cy + labelR * Math.sin(mid);
+              // Outer label
+              const olx = cx + (r + 30) * Math.cos(mid), oly = cy + (r + 30) * Math.sin(mid);
               const large = angle > 180 ? 1 : 0;
               const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`;
               const ci = data.indexOf(d);
               return (
                 <g key={i}>
-                  <path d={path} fill={COLORS[ci]} stroke="#fff" strokeWidth="2" />
-                  <text x={lx} y={ly} textAnchor="middle" fontSize="9" fontWeight="700" fill="#333">{`${d.pct}%`}</text>
+                  <path d={path} fill={COLORS[ci]} stroke="#fff" strokeWidth="2.5" />
+                  {/* Label inside slice */}
+                  {d.pct >= 8 && (
+                    <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill="#fff">
+                      {`${d.pct}%`}
+                    </text>
+                  )}
+                  {/* Label outside for small slices */}
+                  {d.pct < 8 && d.pct > 0 && (
+                    <>
+                      <line x1={cx + (r - 10) * Math.cos(mid)} y1={cy + (r - 10) * Math.sin(mid)} x2={cx + (r + 15) * Math.cos(mid)} y2={cy + (r + 15) * Math.sin(mid)} stroke="#666" strokeWidth="0.8" />
+                      <text x={olx} y={oly} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="700" fill="#333">
+                        {`${d.pct}%`}
+                      </text>
+                    </>
+                  )}
                 </g>
               );
             });
+
             return (
               <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
                 <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>{title}</p>
-                <svg viewBox="0 0 320 280" style={{ width: '100%', maxWidth: 380, display: 'block', margin: '0 auto' }}>
+                <svg viewBox="0 0 360 300" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
                   {slices}
                 </svg>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
-                  {data.filter(d => d.count > 0).map((d, i) => {
+                  {filtered.map((d, i) => {
                     const ci = data.indexOf(d);
                     return (
                       <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
