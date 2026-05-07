@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { StudentDraft, Nucleo, DocumentLog } from '../types';
 import { ChartDataEditor as SharedChartDataEditor } from './ChartDataEditor';
+import { ReportEditorToolbar } from './ReportEditorToolbar';
 
 interface Props {
   students: StudentDraft[];
@@ -233,20 +234,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* EDIT TOOLBAR - fixed below main toolbar */}
-      {isEditing && (
-        <div className="no-print" style={{ position: 'fixed', top: 56, left: 0, right: 0, zIndex: 109, background: 'linear-gradient(135deg, #1a1a2e, #16213e)', padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', borderBottom: '2px solid #4472C4' }}>
-          <span style={{ color: '#4472C4', fontWeight: 800, fontSize: 12 }}>{'✏️'} EDIÇÃO</span>
-          <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <button onClick={() => setDrawMode(!drawMode)} style={{ background: drawMode ? '#e74c3c' : '#4472C4', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all .2s' }}>{drawMode ? '✕ Cancelar Desenho' : '＋ Desenhar Caixa de Texto'}</button>
-          {drawMode && <span style={{ color: '#ff6b6b', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' }}>➔ Clique e arraste na página para criar a caixa</span>}
-          <div style={{ height: 20, width: 1, background: '#444' }}></div>
-          <span style={{ color: '#aaa', fontSize: 10 }}>Caixas: {textBoxes.length}</span>
-          <select onChange={e => { if (e.target.value) { setBlockForm(p => ({ ...p, fontFamily: e.target.value })); } }} style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '4px 8px', fontSize: 10 }}>
-            {fontOptions.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-      )}
+      {/* EDIT TOOLBAR - shared rich text editor */}
+      <ReportEditorToolbar isEditing={isEditing} />
 
       {/* MODAL: Inserir / Editar Bloco de Texto */}
       {showBlockModal && (

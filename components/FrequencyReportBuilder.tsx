@@ -8,6 +8,7 @@
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { ChartDataEditor } from './ChartDataEditor';
+import { ReportEditorToolbar } from './ReportEditorToolbar';
 import { StudentDraft, DocumentLog, Nucleo } from '../types';
 import {
   buildFrequencyReportData,
@@ -235,6 +236,9 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
           </button>
         </div>
       </div>
+
+      {/* ═══════════ EDITOR TOOLBAR ═══════════ */}
+      <ReportEditorToolbar isEditing={isEditing} />
 
       {/* ═══════════ REPORT CONTENT ═══════════ */}
       <div ref={reportRef} className="freq-report-content">

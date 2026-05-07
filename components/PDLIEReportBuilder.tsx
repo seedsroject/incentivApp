@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Nucleo, EvidenceLog } from '../types';
+import { ReportEditorToolbar } from './ReportEditorToolbar';
 
 interface Props { nucleos: Nucleo[]; evidences: EvidenceLog[]; onBack: () => void; headerImage?: string; }
 
@@ -107,6 +108,9 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
           <button onClick={() => window.print()} className="freq-btn freq-btn-print">🖨️ Exportar PDF</button>
         </div>
       </div>
+
+      {/* ═══════════ EDITOR TOOLBAR ═══════════ */}
+      <ReportEditorToolbar isEditing={isEditing} />
 
       <div ref={reportRef} className="freq-report-content">
 

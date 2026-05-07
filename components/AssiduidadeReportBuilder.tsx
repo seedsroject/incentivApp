@@ -8,6 +8,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Nucleo } from '../types';
+import { ReportEditorToolbar } from './ReportEditorToolbar';
 
 interface AssiduidadeReportBuilderProps {
   nucleos: Nucleo[];
@@ -155,6 +156,9 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
           </button>
         </div>
       </div>
+
+      {/* ═══════════ EDITOR TOOLBAR ═══════════ */}
+      <ReportEditorToolbar isEditing={isEditing} />
 
       {/* ═══════════ REPORT CONTENT ═══════════ */}
       <div ref={reportRef} className="freq-report-content">
