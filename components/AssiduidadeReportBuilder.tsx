@@ -7,11 +7,12 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Nucleo } from '../types';
+import { Nucleo, StudentDraft } from '../types';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
 
 interface AssiduidadeReportBuilderProps {
   nucleos: Nucleo[];
+  students?: StudentDraft[];
   onBack: () => void;
   headerImage?: string;
   projectName?: string;
@@ -35,6 +36,7 @@ const DEFAULT_TOC = (city: string, uf: string, project: string) => [
 
 export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> = ({
   nucleos,
+  students = [],
   onBack,
   headerImage = '/header_full.png',
   projectName = 'Escolinha de Triathlon',
@@ -75,6 +77,23 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
     if (n < 100) { const d = Math.floor(n/10)*10; const u = n%10; return `${ext[d]} e ${ext[u]}`; }
     return String(n);
   };
+
+  // --- Grade evaluation helpers ---
+  const avaliarNota = (nota: number): string => {
+    if (nota >= 6) return 'Bom';
+    if (nota >= 5) return 'Regular';
+    if (nota >= 3) return 'Insatisfatório';
+    return 'Péssimo';
+  };
+  const calcAge = (dob: string) => {
+    if (!dob) return 0;
+    const b = new Date(dob); const now = new Date();
+    let age = now.getFullYear() - b.getFullYear();
+    if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--;
+    return age;
+  };
+  // Build student rows for Tabela 5 from selected nucleo
+  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId).sort((a, b) => a.nome.localeCompare(b.nome));
 
   // --- Editable TOC titles (synced between sumário and section headers) ---
   const [tocItems, setTocItems] = useState(() => DEFAULT_TOC(cityLabel, stateLabel, projectFull));
@@ -629,9 +648,71 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ SECTION 3: MÉDIAS GERAIS (pg 15) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="3" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Texto será adicionado pelo usuário */}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`A Tabela 5 apresenta uma visão geral das médias e do aproveitamento escolar dos alunos regularmente matriculados no Ensino Fundamental I, Ensino Fundamental II e Ensino Médio atendidos pela ${projectFull}. Este relatório traz uma análise comparativa das notas obtidas no primeiro e no quarto bimestre de ${currentYear}, considerando dados provenientes de escolas públicas e particulares. Além disso, inclui a avaliação do aproveitamento escolar dos alunos, fundamentada em princípios metodológicos adequados, bem como os registros de assiduidade referentes ao primeiro e ao segundo semestre, conforme informações disponibilizadas pelas escolas públicas municipais e estaduais.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              O sistema bimestral, amplamente adotado no Brasil, organiza o ano letivo em quatro períodos de aproximadamente dois meses e meio, permitindo uma distribuição equilibrada dos conteúdos e avaliações ao longo do ano. Segundo o Ministério da Educação, essa divisão favorece o planejamento pedagógico e a avaliação contínua da aprendizagem. Já o sistema trimestral, utilizado por algumas instituições, organiza o ano em três períodos mais extensos, possibilitando maior aprofundamento dos conteúdos e mais tempo para o desenvolvimento de projetos e atividades. Apesar das diferenças entre os dois modelos, ambos têm como objetivo garantir o acompanhamento eficiente do desempenho escolar dos estudantes.
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 14 }}>
+              {`A seguir, apresenta-se a Tabela 5, que reúne as médias gerais das notas referentes ao 1º e ao 4º bimestre, conforme os dados fornecidos pelas escolas públicas e particulares nas quais os alunos estão regularmente matriculados.`}
+            </p>
+
+            {/* Caption */}
+            <p style={{ fontSize: 12, color: '#333', marginBottom: 6, textAlign: 'justify' }}>
+              {`Tabela 5 — Médias das notas e aproveitamento escolar do 1º e 4º bimestre dos alunos matriculados no Ensino Fundamental I e Ensino Fundamental II na ${projectFull}`}
+            </p>
           </div>
+
+          {/* ─── TABELA 5 ─── */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10, border: '2px solid #4472c4', marginBottom: 12 }}>
+            <thead>
+              <tr style={{ background: '#4472c4', color: '#fff' }}>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', width: 30 }}>Nº</th>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center' }}>Núcleo</th>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center' }}>Nome (ordem por núcleo/ordem alfabética)</th>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', width: 40 }}>Idade</th>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', width: 70 }}>Escola Pública ou Particular</th>
+                <th colSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center' }}>1º bimestre</th>
+                <th colSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center' }}>4º bimestre</th>
+                <th rowSpan={2} style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', width: 70 }}>MELHORA / PIORA / MANTEVE</th>
+              </tr>
+              <tr style={{ background: '#4472c4', color: '#fff' }}>
+                <th style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', fontSize: 9 }}>Média de notas 1º bimestre</th>
+                <th style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', fontSize: 9 }}>Aproveitamento Escolar 1º bimestre</th>
+                <th style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', fontSize: 9 }}>Média de notas 4º bimestre</th>
+                <th style={{ border: '1px solid #3a63a8', padding: '4px 6px', fontWeight: 700, textAlign: 'center', fontSize: 9 }}>Aproveitamento Escolar 4º bimestre</th>
+              </tr>
+            </thead>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
+              {nucleoStudents.length > 0 ? nucleoStudents.map((st, i) => {
+                const age = calcAge(st.data_nascimento);
+                const escolaTipo = st.escola_tipo === 'PUBLICA' ? 'Pública' : st.escola_tipo === 'PARTICULAR' ? 'Particular' : 'Pública';
+                const media1 = 7.0; // placeholder — will be replaced by OCR data
+                const media4 = 7.5;
+                const aprov1 = avaliarNota(media1);
+                const aprov4 = avaliarNota(media4);
+                const status = media4 > media1 ? 'MELHORA' : media4 < media1 ? 'PIORA' : 'MANTEVE';
+                return (
+                  <tr key={st.id || i} style={{ background: i % 2 === 0 ? '#e9f0f9' : '#fff' }}>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{i + 1}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700, color: '#2856a0', fontSize: 9 }}>{`${nucleoShortName} - ${stateLabel}`}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px' }}>{st.nome}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{age}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center' }}>{escolaTipo}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{media1.toFixed(2).replace('.', ',')}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{aprov1}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{media4.toFixed(2).replace('.', ',')}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{aprov4}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700, color: status === 'MELHORA' ? '#27ae60' : status === 'PIORA' ? '#e74c3c' : '#f39c12' }}>{status}</td>
+                  </tr>
+                );
+              }) : (
+                <tr><td colSpan={10} style={{ padding: 16, textAlign: 'center', color: '#999', fontStyle: 'italic' }}>Nenhum aluno cadastrado neste núcleo</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* ━━━ SECTION 3.1: Médias notas (pg 22) ━━━ */}

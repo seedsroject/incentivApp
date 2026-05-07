@@ -1176,6 +1176,7 @@ const AppContent: React.FC = () => {
         {view === AppView.ASSIDUIDADE_REPORT && user && (
           <AssiduidadeReportBuilder
             nucleos={filteredNucleos}
+            students={projectStudents}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
