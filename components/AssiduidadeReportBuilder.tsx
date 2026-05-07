@@ -95,6 +95,40 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   // Build student rows for Tabela 5 from selected nucleo
   const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId).sort((a, b) => a.nome.localeCompare(b.nome));
 
+  // --- Unified mock grade data per student ---
+  // Deterministic "hash" based on student name to generate consistent grades
+  const hashName = (name: string) => {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  };
+  // Generate mock grade for a student (6-10 range, weighted towards 7-9)
+  const mockGrade1 = (name: string): number => {
+    const h = hashName(name);
+    const pool = [6, 6, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 10];
+    return pool[h % pool.length];
+  };
+  const mockGrade4 = (name: string): number => {
+    const h = hashName(name + '_4bim');
+    const pool = [6, 7, 7, 7, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10];
+    return pool[h % pool.length];
+  };
+  // Pre-compute all student grades (used in Tabela 5 AND charts)
+  const studentGrades = React.useMemo(() => {
+    return nucleoStudents.map(st => {
+      const g1 = mockGrade1(st.nome);
+      const g4 = mockGrade4(st.nome);
+      return {
+        student: st,
+        media1: g1 + (hashName(st.nome + 'dec') % 100) / 100, // e.g. 7.10, 8.50
+        media4: g4 + (hashName(st.nome + 'dec4') % 100) / 100,
+        get aprov1() { return avaliarNota(this.media1); },
+        get aprov4() { return avaliarNota(this.media4); },
+        get status() { return this.media4 > this.media1 ? 'MELHORA' as const : this.media4 < this.media1 ? 'PIORA' as const : 'MANTEVE' as const; },
+      };
+    });
+  }, [nucleoStudents]);
+
   // --- Editable TOC titles (synced between sumário and section headers) ---
   const [tocItems, setTocItems] = useState(() => DEFAULT_TOC(cityLabel, stateLabel, projectFull));
 
@@ -686,14 +720,10 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               </tr>
             </thead>
             <tbody contentEditable={isEditing} suppressContentEditableWarning>
-              {nucleoStudents.length > 0 ? nucleoStudents.map((st, i) => {
+              {studentGrades.length > 0 ? studentGrades.map((sg, i) => {
+                const st = sg.student;
                 const age = calcAge(st.data_nascimento);
                 const escolaTipo = st.escola_tipo === 'PUBLICA' ? 'Pública' : st.escola_tipo === 'PARTICULAR' ? 'Particular' : 'Pública';
-                const media1 = 7.0; // placeholder — will be replaced by OCR data
-                const media4 = 7.5;
-                const aprov1 = avaliarNota(media1);
-                const aprov4 = avaliarNota(media4);
-                const status = media4 > media1 ? 'MELHORA' : media4 < media1 ? 'PIORA' : 'MANTEVE';
                 return (
                   <tr key={st.id || i} style={{ background: i % 2 === 0 ? '#e9f0f9' : '#fff' }}>
                     <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{i + 1}</td>
@@ -701,11 +731,11 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                     <td style={{ border: '1px solid #ccc', padding: '4px 6px' }}>{st.nome}</td>
                     <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{age}</td>
                     <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center' }}>{escolaTipo}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{media1.toFixed(2).replace('.', ',')}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{aprov1}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{media4.toFixed(2).replace('.', ',')}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{aprov4}</td>
-                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700, color: status === 'MELHORA' ? '#27ae60' : status === 'PIORA' ? '#e74c3c' : '#f39c12' }}>{status}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{sg.media1.toFixed(2).replace('.', ',')}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{sg.aprov1}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{sg.media4.toFixed(2).replace('.', ',')}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700 }}>{sg.aprov4}</td>
+                    <td style={{ border: '1px solid #ccc', padding: '4px 6px', textAlign: 'center', fontWeight: 700, color: sg.status === 'MELHORA' ? '#27ae60' : sg.status === 'PIORA' ? '#e74c3c' : '#f39c12' }}>{sg.status}</td>
                   </tr>
                 );
               }) : (
@@ -717,32 +747,14 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
 
         {/* ━━━ FIGURAS 1-4: Gráficos de médias 1º e 4º bimestre ━━━ */}
         {(() => {
-          // Generate varied demo grades based on student count
-          // These simulate a realistic distribution: ~12% média 6, ~26% média 7, ~42% média 8, ~20% média 9
-          const generateDemoGrades1 = (n: number) => {
-            const dist = [0.06, 0.26, 0.42, 0.20, 0.06]; // 6,7,8,9,10
-            const grades: number[] = [];
-            [6,7,8,9,10].forEach((g, i) => { for (let j = 0; j < Math.round(dist[i] * n); j++) grades.push(g); });
-            while (grades.length < n) grades.push(8);
-            return grades.slice(0, n);
-          };
-          const generateDemoGrades4 = (n: number) => {
-            const dist = [0.04, 0.12, 0.24, 0.46, 0.14]; // Better grades in 4th bimester
-            const grades: number[] = [];
-            [6,7,8,9,10].forEach((g, i) => { for (let j = 0; j < Math.round(dist[i] * n); j++) grades.push(g); });
-            while (grades.length < n) grades.push(9);
-            return grades.slice(0, n);
-          };
-
-          const studentCount = nucleoStudents.length || 50;
-          // TODO: Replace with real OCR grade data when available
-          const g1 = generateDemoGrades1(studentCount);
-          const g4 = generateDemoGrades4(studentCount);
+          // Use the SAME studentGrades data from Tabela 5
+          const g1 = studentGrades.map(sg => Math.round(sg.media1));
+          const g4 = studentGrades.map(sg => Math.round(sg.media4));
 
           const countByGrade = (grades: number[]) => {
             const groups: Record<number, number> = {};
-            grades.forEach(g => { const r = Math.round(g); groups[r] = (groups[r] || 0) + 1; });
-            return [6,7,8,9,10].map(g => ({ grade: g, count: groups[g] || 0, pct: Math.round(((groups[g] || 0) / (grades.length || 1)) * 100) }));
+            grades.forEach(g => { groups[g] = (groups[g] || 0) + 1; });
+            return [6,7,8,9,10].map(g => ({ grade: g, count: groups[g] || 0, pct: grades.length > 0 ? Math.round(((groups[g] || 0) / grades.length) * 100) : 0 }));
           };
           const dist1 = countByGrade(g1);
           const dist4 = countByGrade(g4);
@@ -856,12 +868,12 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                     const h = (d.count / maxVal) * chartH;
                     return (
                       <g key={i}>
-                        {/* Main bar */}
-                        <rect x={x} y={baseY - h} width={bw * 0.55} height={h} fill={COLORS[i]} rx="2" />
-                        {/* Percentage bar */}
+                        {/* Main bar — ALWAYS BLUE */}
+                        <rect x={x} y={baseY - h} width={bw * 0.55} height={h} fill="#4472C4" rx="2" />
+                        {/* Percentage bar — ALWAYS ORANGE */}
                         <rect x={x + bw * 0.55 + 3} y={baseY - (d.pct / 100) * chartH} width={bw * 0.35} height={(d.pct / 100) * chartH} fill="#ED7D31" rx="2" />
                         {/* Count label */}
-                        <text x={x + bw * 0.27} y={baseY - h - 8} textAnchor="middle" fontSize="11" fontWeight="700" fill={COLORS[i]}>{d.count}</text>
+                        <text x={x + bw * 0.27} y={baseY - h - 8} textAnchor="middle" fontSize="11" fontWeight="700" fill="#4472C4">{d.count}</text>
                         {/* Pct label */}
                         <text x={x + bw * 0.55 + 3 + bw * 0.17} y={baseY - (d.pct / 100) * chartH - 8} textAnchor="middle" fontSize="9" fontWeight="700" fill="#ED7D31">{`${d.pct}%`}</text>
                         {/* X-axis label */}
