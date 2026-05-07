@@ -789,11 +789,12 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               );
             }
 
-            // Multi-slice pie
+            // Multi-slice pie — use raw counts for angles (not rounded pct)
+            const totalCount = filtered.reduce((s, d) => s + d.count, 0) || 1;
             let acc = -90; // Start from top
             const slices = filtered.map((d, i) => {
               const startAngle = acc;
-              const angle = (d.pct / 100) * 360;
+              const angle = (d.count / totalCount) * 360; // exact fraction, no rounding gap
               acc += angle;
               const s = (startAngle * Math.PI) / 180;
               const e = ((startAngle + angle) * Math.PI) / 180;
