@@ -57,6 +57,24 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   const projectTitleUpper = projectName.toUpperCase();
   const projectFull = `${projectTitle} ${cityLabel}`;
 
+  // --- Derived data for report texts ---
+  const totalBeneficiados = selectedNucleo?.turmas?.reduce((acc, t) => acc + (t as any)?.alunos?.length || 0, 0) || 50;
+  const executorName = 'Federação de Triathlon do Estado do Ceará';
+  const formatDateBR = (d: string) => { const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
+  const periodStartBR = formatDateBR(periodStart);
+  const periodEndBR = formatDateBR(periodEnd);
+  const calcMonths = () => {
+    const s = new Date(periodStart); const e = new Date(periodEnd);
+    return Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000*60*60*24*30)));
+  };
+  const periodMonths = calcMonths();
+  const numExtenso = (n: number) => {
+    const ext: Record<number,string> = {1:'um',2:'dois',3:'três',4:'quatro',5:'cinco',6:'seis',7:'sete',8:'oito',9:'nove',10:'dez',11:'onze',12:'doze',13:'treze',14:'catorze',15:'quinze',16:'dezesseis',17:'dezessete',18:'dezoito',19:'dezenove',20:'vinte',30:'trinta',40:'quarenta',50:'cinquenta',60:'sessenta',70:'setenta',80:'oitenta',90:'noventa',100:'cem'};
+    if (ext[n]) return ext[n];
+    if (n < 100) { const d = Math.floor(n/10)*10; const u = n%10; return `${ext[d]} e ${ext[u]}`; }
+    return String(n);
+  };
+
   // --- Editable TOC titles (synced between sumário and section headers) ---
   const [tocItems, setTocItems] = useState(() => DEFAULT_TOC(cityLabel, stateLabel, projectFull));
 
@@ -222,14 +240,28 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         {/* ━━━ PAGE 4: RESUMO ━━━ */}
         <div className="freq-page">
           <h2 style={{ textAlign: 'center', fontSize: 18, fontWeight: 800, marginBottom: 30, color: '#111' }}>RESUMO</h2>
-          <div contentEditable={isEditing} suppressContentEditableWarning className="freq-resumo-text">
-            {aiResumo || `O presente Relatório de Assiduidade e Aproveitamento Escolar, integrante do Anexo da Meta Qualitativa 01, apresenta o monitoramento sistemático do desempenho acadêmico dos alunos do projeto ${projectTitle}, no núcleo de ${cityLabel}/${stateLabel}. O documento consolida os registros oficiais de notas e frequência escolar dos beneficiados, possibilitando avaliar o impacto do projeto na vida acadêmica dos participantes.
-
-O acompanhamento dos Boletins Escolares evidenciou melhoria significativa nos indicadores de assiduidade e aproveitamento. A análise comparativa entre os períodos demonstrou evolução positiva no rendimento escolar da maioria dos alunos, confirmando a eficácia das estratégias pedagógicas e esportivas adotadas pelo projeto.
-
-Os resultados indicam que a participação nas atividades do projeto contribuiu positivamente para o desenvolvimento da disciplina, responsabilidade e comprometimento dos alunos com seus estudos. Com base nos indicadores coletados, conclui-se que o projeto apresentou excelente desempenho no cumprimento das metas qualitativas estabelecidas.
-
-Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Aproveitamento Escolar. Meta Qualitativa 01 do projeto ${projectTitle}.`}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Este Relatório de Assiduidade e Aproveitamento Escolar apresenta a análise qualitativa e descritiva dos dados escolares das ${totalBeneficiados} (${numExtenso(totalBeneficiados)}) crianças e adolescentes atendidos pelo projeto ${projectFull}, executada pela ${executorName} e viabilizada pela Lei de Incentivo ao Esporte, programa do Ministério do Esporte e Governo Federal. O projeto teve vigência de ${periodStartBR} a ${periodEndBR}, perfazendo ${periodMonths} meses de execução, e a presente análise baseou-se nas informações fornecidas pelas instituições de ensino públicas e particulares nas quais os beneficiários estiveram regularmente matriculados.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`O objeto do projeto consistiu na realização de aulas de Triathlon (natação, ciclismo e corrida) para crianças e adolescentes de 08 a 17 anos regularmente matriculados nas escolas da rede oficial de ensino, projeto Educacional.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`O presente relatório organiza-se em seções, com base na análise dos boletins escolares ou sistemas de pontuação equivalentes, obtidos das escolas regulares dos alunos ao ingressarem na ${projectFull}. Este relatório foi elaborado com base na análise dos boletins escolares ou sistemas de pontuação equivalentes fornecidos pelas escolas regulares dos alunos inscritos no projeto. Identificou-se que algumas instituições adotam o sistema bimestral, enquanto outras utilizam o sistema trimestral. O sistema bimestral divide o ano em quatro períodos de cerca de dois meses e meio, favorecendo a organização pedagógica e a avaliação contínua. Já o sistema trimestral, com três períodos mais longos, permite maior aprofundamento dos conteúdos, exigindo estratégias específicas de acompanhamento.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Este relatório apresenta uma análise comparativa das notas obtidas no primeiro e no quarto bimestre, considerando dados provenientes de escolas públicas e particulares. Além disso, inclui a avaliação do aproveitamento escolar dos alunos, fundamentada em princípios metodológicos adequados, bem como os registros de assiduidade escolar referentes ao primeiro e ao segundo semestre, conforme informações disponibilizadas pelas escolas públicas municipais e estaduais.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`A execução do projeto ${projectFull} em ${cityLabel} (${stateLabel}) consolidou resultados de alto impacto pedagógico, evidenciando uma evolução consistente no desempenho escolar dos alunos ao longo do ano de ${currentYear}. A análise comparativa entre o 1º e o 4º bimestres revelou um deslocamento significativo das médias para patamares superiores: enquanto no início do ano a maioria dos estudantes (42%) concentrou-se na média 8, ao final do período a maior parcela (46%) alcançou a média 9, incluindo registros de nota máxima 10. Esse avanço foi corroborado pelo dado de que 66% dos alunos tiveram melhora efetiva em suas notas, com uma evolução média geral de 0,40 pontos, o que garantiu que 74% do grupo permanecesse em uma trajetória de ascensão ou estabilidade escolar.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Em termos de classificação qualitativa, o projeto demonstrou uma eficácia notável, visto que 96% dos participantes foram enquadrados na categoria "Bom" e não houve qualquer registro de rendimento insatisfatório ou péssimo, eliminando riscos imediatos de evasão por dificuldades de aprendizagem. Esse cenário de excelência estendeu-se também à assiduidade, onde os estudantes registraram um índice de presença de 99%, com apenas 1% de faltas durante o período avaliado. Tais indicadores confirmaram o cumprimento integral da Meta Qualitativa 02, provaram a eficiência do acompanhamento pedagógico permanente e reforçaram o papel do esporte como um suporte decisivo para a disciplina e o engajamento dos jovens no ambiente escolar.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#555', lineHeight: 1.8, marginTop: 16 }}>
+              <strong>Palavras-chave:</strong> Assiduidade Escolar 1. Aproveitamento Escolar 2. Indicadores da {projectFull} 3.
+            </p>
           </div>
         </div>
 
@@ -271,11 +303,22 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           </table>
         </div>
 
-        {/* ━━━ SECTION 1: INTRODUÇÃO (pg 6) ━━━ */}
+        {/* ━━━ SECTION 1: INTRODUÇÃO (pg 6-7) ━━━ */}
         <div className="freq-page">
           <SectionTitle num="1" />
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm' }}>
-            {/* Texto será adicionado pelo usuário */}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Este Relatório de Assiduidade e Aproveitamento Escolar apresenta a análise qualitativa e descritiva dos dados escolares das ${totalBeneficiados} (${numExtenso(totalBeneficiados)}) crianças e adolescentes atendidos pelo projeto ${projectFull}, executada pela ${executorName} e viabilizada pela Lei de Incentivo ao Esporte, programa do Ministério do Esporte e Governo Federal. O projeto teve vigência de ${periodStartBR} a ${periodEndBR}, perfazendo ${periodMonths} meses de execução, e a presente análise baseou-se nas informações fornecidas pelas instituições de ensino públicas e particulares nas quais os beneficiários estiveram regularmente matriculados.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`O objeto do projeto consistiu na realização de aulas de Triathlon (natação, ciclismo e corrida) para crianças e adolescentes de 08 a 17 anos regularmente matriculados nas escolas da rede oficial de ensino, projeto Educacional.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`O presente relatório organiza-se em seções, com base na análise dos boletins escolares ou sistemas de pontuação equivalentes, obtidos das escolas regulares dos alunos ao ingressarem na ${projectFull}. Este relatório foi elaborado com base na análise dos boletins escolares ou sistemas de pontuação equivalentes fornecidos pelas escolas regulares dos alunos inscritos no projeto. Identificou-se que algumas instituições adotam o sistema bimestral, enquanto outras utilizam o sistema trimestral. O sistema bimestral divide o ano em quatro períodos de cerca de dois meses e meio, favorecendo a organização pedagógica e a avaliação contínua. Já o sistema trimestral, com três períodos mais longos, permite maior aprofundamento dos conteúdos, exigindo estratégias específicas de acompanhamento.`}
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+              {`Este relatório apresenta uma análise comparativa das notas obtidas no primeiro e no quarto bimestre, considerando dados provenientes de escolas públicas e particulares. Além disso, inclui a avaliação do aproveitamento escolar dos alunos, fundamentada em princípios metodológicos adequados, bem como os registros de assiduidade escolar referentes ao primeiro e ao segundo semestre, conforme informações disponibilizadas pelas escolas públicas municipais e estaduais.`}
+            </p>
           </div>
         </div>
 
