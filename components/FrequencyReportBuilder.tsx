@@ -395,7 +395,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                   <th style={{ background: '#fff', color: '#000', border: '1px solid #b4c6e7', writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '4px 2px', width: 30 }}>Particular</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody contentEditable={isEditing} suppressContentEditableWarning>
                 {enrolledStudents.map((row, i) => {
                   const isFem = row.nome.split(' ')[0].slice(-1).toLowerCase() === 'a';
                   return (
@@ -442,7 +442,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                   <th style={{ width: 50 }}>% Falta</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody contentEditable={isEditing} suppressContentEditableWarning>
                 {resumoGeral.map((row, i) => (
                   <tr key={i} className={i % 2 === 0 ? 'freq-row-even' : 'freq-row-odd'}>
                     <td contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontWeight: 600, color: '#000' }}>{row.num}</td>
@@ -619,7 +619,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody contentEditable={isEditing} suppressContentEditableWarning>
                   <tr>
                     <td className="freq-meta-label" style={{ fontSize: 10 }}>Nº de faltas<br/>dos alunos</td>
                     {faltasHistorico.slice(0, Math.min(9, faltasHistorico.length)).map((f, i) => (
@@ -638,7 +638,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody contentEditable={isEditing} suppressContentEditableWarning>
                     <tr>
                       <td className="freq-meta-label" style={{ fontSize: 10 }}>Nº de faltas<br/>dos alunos</td>
                       {faltasHistorico.slice(9).map((f, i) => (
@@ -666,7 +666,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody contentEditable={isEditing} suppressContentEditableWarning>
                   <tr>
                     <td className="freq-meta-label" style={{ fontSize: 10 }}>Dias de aula<br/>no mês (média)</td>
                     {mediaFaltas.slice(0, Math.min(12, mediaFaltas.length)).map((f, i) => (
@@ -691,7 +691,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody contentEditable={isEditing} suppressContentEditableWarning>
                     <tr>
                       <td className="freq-meta-label" style={{ fontSize: 10 }}>Dias de aula<br/>no mês (média)</td>
                       {mediaFaltas.slice(12).map((f, i) => (
@@ -752,7 +752,7 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody contentEditable={isEditing} suppressContentEditableWarning>
                   {md.students.map((student, sIdx) => (
                     <tr key={sIdx} className={sIdx % 2 === 0 ? 'freq-row-even' : 'freq-row-odd'}>
                       <td style={{ textAlign: 'center', fontWeight: 600, fontSize: 9, color: '#000' }}>{sIdx + 1}</td>

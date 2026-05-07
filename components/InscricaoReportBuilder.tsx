@@ -419,7 +419,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 <th style={{ padding: '4px 3px', fontWeight: 700, borderBottom: '1px solid #000' }}>Nome da Escola</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {sorted.map((s, i) => (
                 <tr key={s.id || i}>
                   <td style={{ padding: '3px', borderRight: '1px solid #000', borderBottom: '1px solid #ccc', textAlign: 'center' }}>{i + 1}</td>
@@ -648,7 +648,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                     <th style={thSub}>Particular</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody contentEditable={isEditing} suppressContentEditableWarning>
                   <tr>
                     <td style={tdS}>{g['ei']}</td>
                     <td style={tdS}>{g['1ano']}</td>
@@ -1395,7 +1395,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
                 <th style={{ padding: '2px', border: '1px solid #fff', textAlign: 'center' }}></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {sorted.map((s, i) => {
                 // Calculate age
                 let age = '';

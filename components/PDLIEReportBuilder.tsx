@@ -206,7 +206,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#111' }}>LISTA DE FIGURAS</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {allFigs.length > 0 ? allFigs.map((f, i) => (
                 <tr key={i}>
                   <td style={{ padding: '6px 0', fontSize: 12, color: '#333', borderBottom: '1px dotted #ccc', width: 70 }}>
@@ -232,7 +232,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ textAlign: 'center', fontSize: 16, fontWeight: 800, marginBottom: 30, color: '#111' }}>SUMÁRIO</h2>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {toc.map((item, i) => (
                 <tr key={i}>
                   <td style={{ width: 50, fontWeight: 700, fontSize: 13, color: '#333', paddingRight: 12 }}>{item.num}</td>

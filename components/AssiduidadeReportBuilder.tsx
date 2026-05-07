@@ -287,7 +287,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 1 — Princípios metodológicos para notas de 0 a 40</p>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6, border: '1px solid #999' }}>
             <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Princípios metodológicos para notas de 0 a 40</th></tr></thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               <tr style={{ background: '#d6e4f0', borderBottom: '2px solid #4472c4' }}><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Avaliação</td><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Média de notas (M)</td></tr>
               {[['Bom','19 ≤ M ≤ 40'],['Regular','16 ≤ M < 19'],['Insatisfatório','11 ≤ M < 15'],['Péssimo','M < 11']].map(([a,b],i)=>(
                 <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff' }}><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{a}</td><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{b}</td></tr>
@@ -308,7 +308,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
               <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>3°<br/>Trimestre<br/>(40)</td>
               <td style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Nota Final<br/>(100)</td>
             </tr></thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               <tr><td style={{ padding: '4px 8px', fontWeight: 700, border: '1px solid #ccc' }}>LÍNGUA PORTUGUESA</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>28,90</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>24,10</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>33,20</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>86,20</td></tr>
               <tr><td style={{ padding: '4px 8px', fontWeight: 700, border: '1px solid #ccc' }}>HISTÓRIA</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>30,00</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>26,25</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>37,20</td><td style={{ textAlign: 'center', padding: '4px', border: '1px solid #ccc' }}>93,45</td></tr>
             </tbody>
@@ -321,7 +321,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 12, color: '#333', marginBottom: 8 }}>Tabela 2 — Princípios metodológicos</p>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 6, border: '1px solid #999' }}>
             <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Princípios metodológicos</th></tr></thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               <tr style={{ background: '#d6e4f0', borderBottom: '2px solid #4472c4' }}><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Avaliação</td><td style={{ padding: '5px 10px', fontWeight: 700, border: '1px solid #bbb' }}>Média de notas (M)</td></tr>
               {[['Bom','6 ≤ M ≤ 9'],['Regular','5 ≤ M < 6'],['Insatisfatório','3 ≤ M < 5'],['Péssimo','M < 3']].map(([a,b],i)=>(
                 <tr key={i} style={{ background: i%2===0?'#e9f0f9':'#fff' }}><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{a}</td><td style={{ padding: '5px 10px', border: '1px solid #ccc' }}>{b}</td></tr>
@@ -361,7 +361,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
             <thead><tr style={{ background: '#4472c4', color: '#fff' }}><th colSpan={2} style={{ padding: '6px', textAlign: 'center', fontWeight: 700, border: '1px solid #3a63a8' }}>Tabela de Equivalência entre Conceitos e Notas Numéricas</th></tr>
               <tr style={{ background: '#d6e4f0' }}><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #999' }}>Conceito</th><th style={{ padding: '4px 8px', textAlign: 'center', fontWeight: 700, border: '1px solid #999' }}>Nota Numérica</th></tr>
             </thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {[
                 {concepts:['A','Excelente','Plenamente satisfatório'], note:'10,00'},
                 {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
@@ -391,7 +391,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
         {/* ━━━ PAGE 10: Continuação Tabela 3 + fechamento ━━━ */}
         <div className="freq-page">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11, marginBottom: 6, border: '1px solid #999' }}>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               {[
                 {concepts:['Conceito'], note:'Nota Numérica', isSep:true},
                 {concepts:['C- / D+','Promovido parcialmente','Aprovado com dependência'], note:'3,75'},
@@ -446,7 +446,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
                 <th style={{ padding: '6px 8px', fontWeight: 700, border: '1px solid #3a63a8', textAlign: 'center' }}>NAA em<br/>%</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               <tr style={{ background: '#e9f0f9' }}>
                 <td style={{ padding: '6px 8px', fontWeight: 700, border: '1px solid #ccc' }}>PINHEIRO</td>
                 <td style={{ textAlign: 'center', padding: '6px', border: '1px solid #ccc' }}>5 horas diárias</td>
@@ -492,7 +492,7 @@ Palavras-chave: Anexo da Meta Qualitativa 01 – Relatório de Assiduidade e Apr
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody contentEditable={isEditing} suppressContentEditableWarning>
               <tr style={{ background: '#4472c4', color: '#fff', fontWeight: 700 }}>
                 <td style={{ padding: '4px 6px', fontWeight: 700, border: '1px solid #3a63a8', background: '#4472c4', color: '#fff', textAlign: 'center', fontSize: 9 }}>Aulas<br/>semanais</td>
                 {[3,18,17,22,21,20,0,21,21,23,20,14].map((v,i) => (
