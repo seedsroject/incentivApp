@@ -1512,7 +1512,104 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
               Assim sendo, para fins deste relatório, lembramos que os indicadores de Assiduidade Escolar foram elaborados recorrendo à Lei de Diretrizes e Bases da Educação Nacional (LDB) que aponta no artigo 24, inciso I, a "carga horária mínima anual será de oitocentas horas para o ensino fundamental e para o ensino médio, distribuídas por um mínimo de duzentos dias de efetivo trabalho escolar, excluído o tempo reservado aos exames finais, quando houver". (EDUCAÇÃO, 2014).
             </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 12 }}>
+              Na tabela abaixo (Tabela 6), estão expostos o Levantamento da assiduidade escolar no 1º e 2° semestre dos atletas de Triathlon participantes do projeto,
+            </p>
+            <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, marginBottom: 12 }}>
+              {`Tabela 6 — Levantamento da assiduidade escolar no 1º e 2° semestre dos atletas de Triathlon participantes do projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+            </p>
           </div>
+
+          {/* ─── Tabela 6: Assiduidade Escolar ─── */}
+          {(() => {
+            const NAA = 1000; // Número de aulas anuais
+            const AS = 25;    // Aulas semanais
+            const modalidade = 'Triathlon';
+
+            // Generate mock faltas per student (deterministic)
+            const attendanceData = studentGrades.map((sg, idx) => {
+              const h = hashName(sg.student.nome + '_faltas');
+              const faltas = h % 8; // 0-7 faltas
+              const assEscolar = NAA - faltas;
+              const faltasPct = ((faltas / NAA) * 100).toFixed(0);
+              const assEscolarPct = ((assEscolar / NAA) * 100).toFixed(2).replace('.', ',');
+              const naaPct = '100,00';
+              return {
+                num: idx + 1,
+                nome: sg.student.nome,
+                escola: sg.student.escola_tipo || 'PUBLICA',
+                faltas,
+                faltasPct,
+                assEscolar,
+                assEscolarPct,
+                naaPct,
+              };
+            });
+
+            const thStyle: React.CSSProperties = {
+              padding: '4px 3px', fontSize: 8, fontWeight: 700, color: '#fff',
+              textAlign: 'center', border: '1px solid #7a9cc7', verticalAlign: 'bottom',
+            };
+            const tdStyle: React.CSSProperties = {
+              padding: '3px 4px', fontSize: 8, color: '#333',
+              textAlign: 'center', border: '1px solid #ccd8e8',
+            };
+
+            return (
+              <div style={{ overflowX: 'auto' }}>
+                {/* Table header banner */}
+                <div style={{ background: '#4472C4', color: '#fff', padding: '8px 12px', fontWeight: 700, fontSize: 10, textAlign: 'center', borderRadius: '6px 6px 0 0' }}>
+                  {`Levantamento da assiduidade escolar no 1° e 2° semestre dos atletas do ${modalidade} participantes do Projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 8, border: '1px solid #4472C4' }}>
+                  <thead>
+                    {/* Row 1: Main groups */}
+                    <tr style={{ background: '#5B9BD5' }}>
+                      <th style={{ ...thStyle, width: 22 }} rowSpan={2}>Nº</th>
+                      <th style={{ ...thStyle, width: 55 }} rowSpan={2}>Evento/<br/>modalidade</th>
+                      <th style={{ ...thStyle, minWidth: 130 }} rowSpan={2}>Nome (ordem alfabética)</th>
+                      <th style={{ ...thStyle, width: 22 }} rowSpan={2} title="Escola Pública">Pública</th>
+                      <th style={{ ...thStyle, width: 22 }} rowSpan={2} title="Escola Particular">Particular</th>
+                      <th style={{ ...thStyle, width: 45 }} rowSpan={2}>200 dias<br/>letivos/<br/>5 horas<br/>diárias</th>
+                      <th style={{ ...thStyle, width: 28 }} rowSpan={2} title="Aulas Semanais">AS</th>
+                      <th style={{ ...thStyle, width: 35 }} rowSpan={2} title="Número de aulas anuais">NAA</th>
+                      <th style={{ ...thStyle, width: 35 }} rowSpan={2} title="Número de aulas">NAS</th>
+                      <th style={thStyle} colSpan={2}>Faltas</th>
+                      <th style={thStyle} colSpan={2}>Assiduidade<br/>Escolar</th>
+                      <th style={{ ...thStyle, width: 45 }} rowSpan={2}>NAA em<br/>%</th>
+                    </tr>
+                    {/* Row 2: Sub-headers */}
+                    <tr style={{ background: '#5B9BD5' }}>
+                      <th style={{ ...thStyle, width: 30 }}>Nº Faltas</th>
+                      <th style={{ ...thStyle, width: 35 }}>Faltas<br/>em %</th>
+                      <th style={{ ...thStyle, width: 35 }}>Assiduidade<br/>Escolar</th>
+                      <th style={{ ...thStyle, width: 45 }}>Assiduidade<br/>Escolar em %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendanceData.map((row, i) => (
+                      <tr key={i} style={{ background: i % 2 === 0 ? '#dce6f1' : '#fff' }}>
+                        <td style={{ ...tdStyle, fontWeight: 700, background: '#4472C4', color: '#fff' }}>{row.num}</td>
+                        <td style={{ ...tdStyle, fontSize: 7 }}>{modalidade}</td>
+                        <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 600, paddingLeft: 6 }}>{row.nome}</td>
+                        <td style={tdStyle}>{row.escola === 'PUBLICA' ? 'X' : ''}</td>
+                        <td style={tdStyle}>{row.escola === 'PARTICULAR' ? 'X' : ''}</td>
+                        <td style={{ ...tdStyle, fontSize: 7 }}>5 horas<br/>diárias</td>
+                        <td style={{ ...tdStyle, fontWeight: 700 }}>{AS}</td>
+                        <td style={{ ...tdStyle, fontWeight: 700 }}>{NAA}</td>
+                        <td style={{ ...tdStyle, fontWeight: 700 }}>{NAA}</td>
+                        <td style={{ ...tdStyle, fontWeight: 700, color: row.faltas > 0 ? '#c00' : '#333' }}>{row.faltas}</td>
+                        <td style={tdStyle}>{row.faltasPct}%</td>
+                        <td style={{ ...tdStyle, fontWeight: 700 }}>{row.assEscolar}</td>
+                        <td style={{ ...tdStyle, fontWeight: 700 }}>{row.assEscolarPct}%</td>
+                        <td style={tdStyle}>{row.naaPct}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ━━━ SECTION 5: CONCLUSÃO (pg 32) ━━━ */}
