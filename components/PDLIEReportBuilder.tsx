@@ -123,11 +123,11 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         <div className={PS} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           {/* Header logos */}
           <div style={{ padding: 0 }}>
-            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} />
           </div>
           {/* LIE illustration block - bordered golden box */}
           <div style={{ margin: '16px 20mm 0', border: '2px solid #d4a017', padding: '24px 16px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 340 }}>
-            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ width: '84%', maxHeight: 320, objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/assets/lei_do_incentivo.png" alt="Lei de Incentivo ao Esporte" style={{ width: '84%', maxHeight: 320, objectFit: 'contain' }} />
           </div>
           {/* Yellow block with downward curve on top + shadow */}
           <div style={{ position: 'relative', margin: '0 20mm', overflow: 'visible' }}>
@@ -163,7 +163,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         {/* ━━━ 2. CONTRA CAPA ━━━ */}
         <div className={PS} style={{ padding: 0, display: 'flex', flexDirection: 'column', fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <div style={{ padding: 0 }}>
-            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} />
           </div>
           <p contentEditable={isEditing} suppressContentEditableWarning style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#1a1a2e', margin: '16px 25mm 0', textTransform: 'uppercase' }}>
             ESCOLINHA DE TRIATHLON
