@@ -1610,6 +1610,127 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               </div>
             );
           })()}
+          {(() => {
+            const NAA = 1000;
+            const totalAlunos = studentGrades.length || 1;
+            // Compute total faltas across all students (same logic as Tabela 6)
+            const totalFaltas = studentGrades.reduce((s, sg) => {
+              const h = hashName(sg.student.nome + '_faltas');
+              return s + (h % 8);
+            }, 0);
+            const totalAulas = NAA * totalAlunos;
+            const pctFaltas = Math.round((totalFaltas / totalAulas) * 100);
+            const pctAssiduidade = 100 - pctFaltas;
+
+            const titleUpper = `ASSIDUIDADE ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
+
+            // Pie chart data
+            const pieData = [
+              { label: 'Assiduidade Escolar', count: totalAulas - totalFaltas, pct: pctAssiduidade, color: '#4472C4' },
+              { label: 'Faltas', count: totalFaltas, pct: pctFaltas, color: '#ED7D31' },
+            ];
+
+            // Pie SVG
+            const cx = 180, cy = 160, r = 120;
+            const filtered = pieData.filter(d => d.count > 0);
+            const totalCount = filtered.reduce((s, d) => s + d.count, 0) || 1;
+
+            let pieSVG: React.ReactNode;
+            if (filtered.length === 1) {
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  <circle cx={cx} cy={cy} r={r} fill={filtered[0].color} stroke="#fff" strokeWidth="2" />
+                  <text x={cx} y={cy + 5} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">{filtered[0].label}</text>
+                  <text x={cx} y={cy + 22} textAnchor="middle" fontSize="13" fontWeight="700" fill="#fff">100%</text>
+                </svg>
+              );
+            } else {
+              let acc = -90;
+              const slices = filtered.map((d, i) => {
+                const startAngle = acc;
+                const angle = (d.count / totalCount) * 360;
+                acc += angle;
+                const s = (startAngle * Math.PI) / 180;
+                const e = ((startAngle + angle) * Math.PI) / 180;
+                const mid = ((startAngle + angle / 2) * Math.PI) / 180;
+                const x1 = cx + r * Math.cos(s), y1 = cy + r * Math.sin(s);
+                const x2 = cx + r * Math.cos(e), y2 = cy + r * Math.sin(e);
+                const large = angle > 180 ? 1 : 0;
+                const path = `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`;
+                const labelR = d.pct >= 10 ? r * 0.55 : r + 35;
+                const labelColor = d.pct >= 10 ? '#fff' : d.color;
+                const lx = cx + labelR * Math.cos(mid), ly = cy + labelR * Math.sin(mid);
+                return (
+                  <g key={i}>
+                    <path d={path} fill={d.color} stroke="#fff" strokeWidth="2.5" />
+                    {d.pct > 0 && (
+                      <>
+                        <text x={lx} y={ly - 6} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill={labelColor}>
+                          {d.label}
+                        </text>
+                        <text x={lx} y={ly + 8} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="700" fill={labelColor}>
+                          {`${d.pct}%`}
+                        </text>
+                      </>
+                    )}
+                  </g>
+                );
+              });
+              pieSVG = (
+                <svg viewBox="0 0 360 340" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+                  {slices}
+                </svg>
+              );
+            }
+
+            return (
+              <>
+                {/* ─── Texto 1: Introdução à assiduidade ─── */}
+                <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 20 }}>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`Os alunos da Educação Básica matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" apresentaram um desempenho positivo em relação à assiduidade escolar. O índice de faltas registrado foi de apenas ${pctFaltas}%, enquanto a taxa de assiduidade atingiu ${pctAssiduidade}%. Esses números evidenciam um comprometimento significativo das alunas com a frequência às aulas, o que contribui para a manutenção do bom aproveitamento escolar e fortalece a participação contínua no projeto.`}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '2.5cm', marginBottom: 8 }}>
+                    Vejamos:
+                  </p>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
+                    {`Figura 10 — Assiduidade escolar dos alunos matriculados no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                  </p>
+                </div>
+
+                {/* Figura 10 — Pie: Assiduidade vs Faltas */}
+                <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, marginBottom: 16, background: '#fff' }}>
+                  <ChartDataEditor chartId="assid_fig10_pie" title="Assiduidade Escolar" isEditing={isEditing} rows={
+                    pieData.map(d => ({ key: d.label, label: d.label, value: d.count }))
+                  } onSave={() => {}} />
+                  <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
+                    {titleUpper}
+                  </p>
+                  {pieSVG}
+                  {/* Legend */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap', marginTop: 8 }}>
+                    {pieData.map((d, i) => (
+                      <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9 }}>
+                        <span style={{ width: 12, height: 12, borderRadius: 2, background: d.color, display: 'inline-block' }} />
+                        {`${d.label} (${d.pct}%)`}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p style={{ fontSize: 10, color: '#666', textAlign: 'left', marginTop: 4, marginBottom: 16 }}>
+                  {`Fonte: ${projectFull} (${currentYear}).`}
+                </p>
+
+                {/* ─── Texto 2: Análise da assiduidade ─── */}
+                <div contentEditable={isEditing} suppressContentEditableWarning>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`A avaliação da assiduidade escolar dos alunos da Educação Básica inscritos no projeto "${projectFull}", em ${cityLabel} (${stateLabel}), evidenciou um resultado altamente positivo. Os registros mostraram que os estudantes apresentaram apenas ${pctFaltas}% de faltas ao longo do período analisado, o que correspondeu a uma assiduidade de ${pctAssiduidade}%. Esse desempenho indicou que os alunos mantiveram uma participação constante nas atividades escolares, reforçando o compromisso com a rotina escolar e demonstrando que o projeto contribuiu para fortalecer o vínculo dos beneficiados com a escola.`}
+                  </p>
+                </div>
+              </>
+            );
+          })()}
         </div>
 
         {/* ━━━ SECTION 5: CONCLUSÃO (pg 32) ━━━ */}
