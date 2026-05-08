@@ -1727,6 +1727,9 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
                     {`A avaliação da assiduidade escolar dos alunos da Educação Básica inscritos no projeto "${projectFull}", em ${cityLabel} (${stateLabel}), evidenciou um resultado altamente positivo. Os registros mostraram que os estudantes apresentaram apenas ${pctFaltas}% de faltas ao longo do período analisado, o que correspondeu a uma assiduidade de ${pctAssiduidade}%. Esse desempenho indicou que os alunos mantiveram uma participação constante nas atividades escolares, reforçando o compromisso com a rotina escolar e demonstrando que o projeto contribuiu para fortalecer o vínculo dos beneficiados com a escola.`}
                   </p>
+                  <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
+                    Os dados confirmaram o alcance da Meta Qualitativa 02, que buscou reduzir a evasão escolar e melhorar o aproveitamento no aprendizado. A presença quase integral dos alunos sinalizou que o acompanhamento escolar permanente, previsto no indicador da meta, foi efetivo e favoreceu a continuidade dos estudos. Além disso, a elaboração dos relatórios de assiduidade permitiu monitorar de forma sistemática o comportamento escolar dos participantes, garantindo evidências concretas de que o projeto impactou positivamente a permanência e o engajamento dos alunos no ambiente educacional.
+                  </p>
                 </div>
               </>
             );
