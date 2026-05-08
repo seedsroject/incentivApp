@@ -71,11 +71,17 @@ export const PDLIEReportBuilder: React.FC<Props> = ({ nucleos, evidences, onBack
 
   const resumoText = `Este relatório destaca as iniciativas da Escolinha de Triathlon, viabilizadas pela Lei de Incentivo ao Esporte, em promover o desenvolvimento e acesso ao esporte para crianças e jovens. O projeto, localizado em ${city}, ${uf === 'SC' ? 'Santa Catarina' : uf}, oferece oportunidades para alunos de 08 a 16 anos, com foco no Triathlon. A divulgação do projeto inclui o uso do selo e da Bandeira Nacional, assim como das logomarcas do Ministério do Esporte e do Governo Federal. O relatório apresenta o layout das peças de divulgação e destaca o compromisso conjunto do Ministério do Esporte e do Governo Federal em ampliar o acesso ao esporte, conforme destacado pela Diretora de Programas e Políticas de Incentivo ao Esporte, Michelle Moysés Melul Vinecky. A Lei de Incentivo ao Esporte visa fortalecer a engrenagem esportiva do Brasil e consolidar o esporte como meio de inclusão social.`;
 
-  const introText = `Antes de iniciar a discussão, é necessário colocar que a Lei nº 11.438/06 – Lei de Incentivo ao Esporte (LIE) –, como é mais conhecida, permite que recursos provenientes de renúncia fiscal sejam aplicados em projetos das diversas manifestações desportivas e paradesportivas distribuídos por todo o território nacional. Por meio de doações e patrocínios, os projetos executados via Lei de Incentivo ao Esporte atendem crianças, adolescentes, jovens, adultos, pessoas com deficiência e idosos (MINISTÉRIO DO ESPORTE, 2024).
+  const ufFullMap: Record<string, string> = {
+    'AC':'Acre','AL':'Alagoas','AP':'Amapá','AM':'Amazonas','BA':'Bahia','CE':'Ceará',
+    'DF':'Distrito Federal','ES':'Espírito Santo','GO':'Goiás','MA':'Maranhão','MT':'Mato Grosso',
+    'MS':'Mato Grosso do Sul','MG':'Minas Gerais','PA':'Pará','PB':'Paraíba','PR':'Paraná',
+    'PE':'Pernambuco','PI':'Piauí','RJ':'Rio de Janeiro','RN':'Rio Grande do Norte',
+    'RS':'Rio Grande do Sul','RO':'Rondônia','RR':'Roraima','SC':'Santa Catarina',
+    'SP':'São Paulo','SE':'Sergipe','TO':'Tocantins',
+  };
+  const ufFull = ufFullMap[uf] || uf;
 
-A partir disso, é que colocamos que o Relatório do Plano de divulgação da Lei de Incentivo ao Esporte – PDLIE da Escolinha de Triathlon ${city} que tem execução da Federação Paranaense de Triathlon e é viabilizada pela Lei de Incentivo ao Esporte, programa do Ministério do Esporte e Governo Federal, cujo objetivo é realização de aulas de Triathlon (natação, ciclismo e corrida) para crianças e adolescentes de 08 a 17 anos, devidamente matriculados em escolas públicas e particulares.
-
-Foram selecionadas fotos, media e repor utilizadas nas peças de divulgação na Escolinha de Triathlon ${city}. Buscamos, a cada apresentação, apontar o compromisso conjunto do Ministério do Esporte e do Governo Federal em ampliar o desenvolvimento e o acesso da população ao esporte.`;
+  const introText = ''; // kept for backward compat — actual rendering is inline below
 
   const conclusionText = `A conclusão deste relatório sobre o Plano de Divulgação da Lei de Incentivo ao Esporte – PDLIE na Escolinha de Triathlon ${city} destaca o compromisso conjunto do Ministério do Esporte e do Governo Federal em promover o desenvolvimento e acesso ao esporte, especialmente para crianças e jovens. Através do apoio institucional da Lei de Incentivo ao Esporte, este projeto tem conseguido oferecer oportunidades para o crescimento pessoal e social, além de contribuir para a formação de uma cultura esportiva inclusiva no Brasil.
 
@@ -252,8 +258,22 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         {/* ━━━ 7. INTRODUÇÃO ━━━ */}
         <div className={PS} style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: 13, lineHeight: 1.8, color: '#222' }}>
           <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>1 INTRODUÇÃO</h2>
-          <div contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', whiteSpace: 'pre-wrap' }}>
-            {introText}
+          <div contentEditable={isEditing} suppressContentEditableWarning>
+            <p style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', textIndent: '1.25cm', marginBottom: 8 }}>
+              {`Antes de iniciar a discussão, é necessário colocar que a Lei nº 11.438/06 – Lei de Incentivo ao Esporte (LIE) –, como é mais conhecida, permite que recursos provenientes de renúncia fiscal sejam aplicados em projetos das diversas manifestações desportivas e paradesportivas distribuídos por todo o território nacional. Por meio de doações e patrocínios, os projetos executados via Lei de Incentivo ao Esporte atendem crianças, adolescentes, jovens, adultos, pessoas com deficiência e idosos (MINISTÉRIO DO ESPORTE, 2024).`}
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', textIndent: '1.25cm', marginBottom: 8 }}>
+              {`A partir disso, é que colocamos que o Relatório do Plano de divulgação da Lei de Incentivo ao Esporte – PDLIE da Escolinha de Triathlon que tem execução da Federação de Triathlon do Estado de ${ufFull} e é viabilizada pela Lei de Incentivo ao Esporte, programa do Ministério do Esporte e Governo Federal, cujo objetivo é realização de aulas de Triathlon (natação, ciclismo e corrida) para crianças e adolescentes de 08 a 16 anos regularmente matriculados nas escolas da rede oficial de ensino. Projeto Educacional. Objetivou-se apresentar um demonstrativo do layout das peças de divulgação que são utilizados na Escolinha de Triathlon, localizada em ${city}, ${ufFull}, destacando a importância do apoio institucional da Lei de Incentivo ao Esporte, com inserção de seu selo e Bandeira Nacional, em todas as nossas atividades, bens ou serviços resultantes do projeto. O levantamento mostra semelhantemente, o uso das logomarcas do Ministério do Esporte e do Governo Federal na Escolinha de Triathlon.`}
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', textIndent: '1.25cm', marginBottom: 8 }}>
+              {`Foram selecionadas fotos, media e repor utilizadas nas peças de divulgação na Escolinha de Triathlon. Buscamos, a cada apresentação, apontar o compromisso conjunto do Ministério do Esporte e do Governo Federal em ampliar o desenvolvimento e o acesso da população ao esporte.`}
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', textIndent: '1.25cm', marginBottom: 8 }}>
+              {`O presente relatório está dividido em três partes. Na primeira parte, portanto, se apresenta as atividades da Escolinha de Triathlon; em seguida a luz do Manual da Lei de Incentivo ao Esporte (2023) aponta-se os bens ou serviços resultantes do projeto; e, por fim, destaca-se o apêndice com as media e repor.`}
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 2, textAlign: 'justify', color: '#333', textIndent: '1.25cm', marginBottom: 8 }}>
+              {`Assim, pretende contribuir com [...] o fortalecimento de toda a engrenagem esportiva do Brasil, como lembra Michelle Moysés Melul Vinecky, Diretora de Programas e Políticas de Incentivo ao Esporte, especialmente, na consolidação do paradigma do esporte como um meio de inclusão social.`}
+            </p>
           </div>
         </div>
 
