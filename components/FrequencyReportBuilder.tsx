@@ -372,6 +372,9 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
 
         {/* ━━━ PAGES 6-7: RELAÇÃO DE MATRICULADOS (matches CrossRef item 1) ━━━ */}
         <div className="freq-page">
+          <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, color: '#111', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.6 }}>
+            RELAÇÃO DO NÚMERO DE ALUNOS REGULARMENTE MATRICULADOS NO PROJETO ESCOLINHA DE TRIATHLON
+          </h2>
           <div className="freq-section-header-bar">
             RELAÇÃO DO NÚMERO DE ALUNOS REGULARMENTE MATRICULADOS NO PROJETO "{projectTitle.toUpperCase()}" EM {cityLabel.toUpperCase()}/{stateLabel}
           </div>
