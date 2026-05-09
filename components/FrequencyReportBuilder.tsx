@@ -437,15 +437,15 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
             <table className="freq-table-resumo">
               <thead>
                 <tr className="freq-table-header">
-                  <th style={{ width: 40 }}>Nº por<br/>núcleo</th>
-                  <th>Cidade/Estado</th>
-                  <th style={{ width: 80 }}>Evento/<br/>modalidade</th>
-                  <th>Nome (ordem alfabética)</th>
-                  <th style={{ width: 55 }}>Dias de<br/>aula</th>
-                  <th style={{ width: 65 }}>Frequência<br/>total</th>
-                  <th style={{ width: 65 }}>% Frequência</th>
-                  <th style={{ width: 75 }}>Total do<br/>número de<br/>faltas</th>
-                  <th style={{ width: 50 }}>% Falta</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Nº por núcleo</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Cidade/Estado</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Evento/modalidade</th>
+                  <th style={{ minWidth: 180, textAlign: 'center' }}>Nome (ordem alfabética)</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Dias de aula</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Frequência total</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>% Frequência</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>Total do número de faltas</th>
+                  <th style={{ width: 35, writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '12px 4px', whiteSpace: 'nowrap' }}>% Falta</th>
                 </tr>
               </thead>
               <tbody contentEditable={isEditing} suppressContentEditableWarning>
