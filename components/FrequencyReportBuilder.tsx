@@ -463,12 +463,40 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
           </div>
           <p style={{ fontSize: 10, color: '#888', marginTop: 8, textAlign: 'right' }}>Fonte: {projectTitle} ({new Date().getFullYear()})</p>
 
-          {/* Brief text about frequency */}
+          {/* Analytical text about frequency */}
           <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 20, fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify' }}>
             {(() => {
               const eFreq = freqPieOverrides ? freqPieOverrides.freq : totals.avgFreqPct;
               const eFalta = freqPieOverrides ? freqPieOverrides.falta : totals.avgFaltaPct;
-              return `A tabela acima apresenta o resumo geral da frequência dos alunos do projeto "${projectTitle}" no município de ${cityLabel}/${stateLabel}, referente ao período de ${period.startLabel} a ${period.endLabel}. A média geral de frequência foi de ${eFreq}%${eFreq >= 70 ? ', superando amplamente a meta estabelecida de 70%' : ''}. ${eFalta === 0 ? 'O percentual de faltas foi de 0%.' : `O total de faltas registrado foi de ${eFalta}%, evidenciando o elevado comprometimento dos beneficiados com as atividades propostas.`}`;
+              const totalAlunos = resumoGeral.length || 1;
+              const avgDiasAula = (resumoGeral.reduce((s, r) => s + r.diasAula, 0) / totalAlunos).toFixed(2).replace('.', ',');
+              const avgPresenca = (resumoGeral.reduce((s, r) => s + r.freqTotal, 0) / totalAlunos).toFixed(2).replace('.', ',');
+              const avgFaltasAluno = Math.round(resumoGeral.reduce((s, r) => s + r.totalFaltas, 0) / totalAlunos);
+
+              // Find min/max frequency range
+              const freqValues = resumoGeral.map(r => r.freqPct);
+              const minFreq = Math.min(...freqValues);
+              const maxFreq = Math.max(...freqValues);
+
+              return (
+                <>
+                  <p style={{ textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`A análise dos dados de frequência dos alunos participantes do Projeto "${projectTitle}", executado no município de ${cityLabel}, no período de ${period.startLabel} a ${period.endLabel}, demonstra elevado nível de assiduidade e participação dos beneficiados nas aulas e atividades desenvolvidas ao longo da execução do projeto. Com base na consolidação das listas de presença — considerando a lista de frequência retificada como instrumento de verificação — foi possível identificar uma média geral de frequência de ${eFreq}%, enquanto o índice médio de faltas foi de apenas ${eFalta}%.`}
+                  </p>
+                  <p style={{ textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`Os dados individuais evidenciam que a grande maioria dos alunos apresentou índices de frequência variando entre ${minFreq}% e ${maxFreq}%, indicando participação constante e regular nas atividades propostas. Em termos absolutos, a média de dias de aula no período foi de aproximadamente ${avgDiasAula} dias, enquanto a média de presença efetiva dos alunos foi de cerca de ${avgPresenca} dias, resultando em uma média aproximada de ${avgFaltasAluno} faltas por aluno ao longo de todo o ciclo de execução do projeto. ${minFreq < 95 ? `Embora existam casos pontuais com percentuais de frequência um pouco menores, como registros entre ${minFreq}% e 94%, esses valores ainda permanecem elevados e demonstram bom nível de permanência nas atividades.` : `Todos os alunos mantiveram percentuais de frequência acima de ${minFreq}%, demonstrando excelente nível de permanência nas atividades.`}`}
+                  </p>
+                  <p style={{ textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`Em relação à Meta Quantitativa 01, que previa manter assiduidade mínima de 70% dos beneficiados inscritos no projeto nas aulas e atividades propostas, observa-se que o resultado alcançado superou amplamente o percentual estabelecido. O indicador adotado — percentual de frequência nas aulas e atividades — confirma o pleno cumprimento da meta, evidenciando que os alunos mantiveram participação consistente e contínua ao longo de todo o período analisado.`}
+                  </p>
+                  <p style={{ textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`Durante a execução do projeto, houve pequena variação no número total de dias de aula em função da organização semanal das turmas e da incidência de feriados ao longo do calendário. As turmas com atividades realizadas às segundas e sextas-feiras contabilizaram aproximadamente ${totals.totalDays} dias de aula, enquanto as turmas com aulas às terças e quintas-feiras totalizaram cerca de ${totals.totalDays + 1} dias. Essa diferença é decorrente da distribuição dos feriados e da quantidade de dias úteis no período de execução.`}
+                  </p>
+                  <p style={{ textIndent: '1.25cm', marginBottom: 6 }}>
+                    {`De modo geral, os resultados demonstram forte engajamento dos alunos e elevada aderência às atividades do projeto. O alto índice de frequência reforça o interesse e a motivação dos participantes pelas modalidades que compõem o triathlon — natação, ciclismo e corrida — além de evidenciar a efetividade da proposta pedagógica adotada. Esses indicadores confirmam que o projeto alcançou resultados expressivos no estímulo à prática esportiva regular, contribuindo para o desenvolvimento físico, social e educacional das crianças e adolescentes atendidos.`}
+                  </p>
+                </>
+              );
             })()}
           </div>
         </div>
