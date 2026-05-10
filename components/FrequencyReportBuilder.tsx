@@ -742,12 +742,11 @@ Palavras-chave: Anexo da Meta Quantitativa 01 – Lista de Frequência 1. Meta Q
         </div>
 
         {/* ━━━ PAGES 17+: MONTHLY ATTENDANCE LISTS ━━━ */}
-        <div className="freq-page">
-          <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: '#111' }}>2 LISTA DE FREQUÊNCIA DO PROJETO ESCOLINHA DE TRIATHLON</h2>
-        </div>
-
         {monthlyDetails.map((md, mdIdx) => (
           <div key={mdIdx} className="freq-page freq-monthly-page">
+            {mdIdx === 0 && (
+              <h2 style={{ fontSize: 16, fontWeight: 800, marginBottom: 20, color: '#111' }}>2 LISTA DE FREQUÊNCIA DO PROJETO ESCOLINHA DE TRIATHLON</h2>
+            )}
             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: '#222' }}>
               2.{mdIdx + 1} Frequência do mês de {MONTH_NAMES[md.month].toLowerCase()} de {md.year} do projeto {projectTitle}
             </h3>
