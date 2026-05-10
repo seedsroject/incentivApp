@@ -376,7 +376,7 @@ html, body {
   line-height: 1.9;
   color: #333;
   text-align: justify;
-  white-space: pre-wrap;
+  white-space: normal;
   outline: none;
   min-height: 200px;
   padding: 8px;
