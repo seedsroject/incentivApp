@@ -307,6 +307,144 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
+  // --- SUPABASE: Carregar documentos do banco ---
+  const loadDocumentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      const { data, error } = await supabase
+        .from('documents').select('*').eq('project_id', projectUUID).order('created_at', { ascending: false });
+      if (error) { console.warn('Erro ao carregar documentos:', error); return; }
+      if (data && data.length > 0) {
+        const mapped: DocumentLog[] = data.map((d: any) => ({
+          id: d.id,
+          projectId: projectSlug,
+          timestamp: d.created_at,
+          type: d.type as DocumentType,
+          title: d.title,
+          description: d.description || '',
+          fileUrl: d.file_url || '',
+          metaData: d.metadata || {},
+          status: d.status || '',
+          nucleoId: d.nucleo_id,
+          uploadedBy: d.uploaded_by,
+        }));
+        setCollectedDocuments(mapped);
+      }
+    } catch (err) {
+      console.warn('Supabase docs fallback:', err);
+    }
+  }, []);
+
+  // --- SUPABASE: Carregar evidências do banco ---
+  const loadEvidencesFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      const { data, error } = await supabase
+        .from('evidences').select('*').eq('project_id', projectUUID).order('created_at', { ascending: false });
+      if (error) { console.warn('Erro ao carregar evidências:', error); return; }
+      if (data && data.length > 0) {
+        const mapped: EvidenceLog[] = data.map((e: any) => ({
+          id: e.id,
+          projectId: projectSlug,
+          timestamp: e.created_at,
+          date: e.evidence_date,
+          type: e.type,
+          description: e.description || '',
+          imageUrl: e.image_url || '',
+          user_id: e.uploaded_by,
+        }));
+        setCollectedEvidence(mapped);
+      }
+    } catch (err) {
+      console.warn('Supabase evidences fallback:', err);
+    }
+  }, []);
+
+  // --- SUPABASE: Carregar inventário do banco ---
+  const loadInventoryFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      const { data, error } = await supabase
+        .from('inventory_items').select('*').eq('project_id', projectUUID).order('name');
+      if (error) { console.warn('Erro ao carregar inventário:', error); return; }
+      if (data && data.length > 0) {
+        const mapped: InventoryItem[] = data.map((i: any) => ({
+          id: i.id,
+          name: i.name,
+          quantity: i.quantity,
+          initialQuantity: i.initial_quantity,
+          unit: i.unit || 'Unid.',
+          minThreshold: i.min_threshold || 0,
+          category: i.category || 'OUTROS',
+          projectId: projectSlug,
+        }));
+        setInventory(mapped);
+      }
+    } catch (err) {
+      console.warn('Supabase inventory fallback:', err);
+    }
+  }, []);
+
+  // --- SUPABASE: Carregar pré-cadastros do banco ---
+  const loadPreCadastrosFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      const { data, error } = await supabase
+        .from('pre_cadastros').select('*').eq('project_id', projectUUID).order('created_at', { ascending: false });
+      if (error) { console.warn('Erro ao carregar pré-cadastros:', error); return; }
+      if (data && data.length > 0) {
+        const mapped: PreCadastroData[] = data.map((p: any) => ({
+          id: p.id,
+          projectId: projectSlug,
+          timestamp: p.created_at,
+          nucleo_id: p.nucleo_id,
+          status: p.status || 'AGUARDANDO',
+          nome_aluno: p.nome_aluno,
+          data_nascimento: p.data_nascimento || '',
+          raca: p.raca || '',
+          pcd: p.pcd || '',
+          deficiencia_desc: p.deficiencia_desc || '',
+          laudo_url: p.laudo_url,
+          rg: p.rg || '',
+          cpf: p.cpf || '',
+          tipo_escola: p.tipo_escola || '',
+          bolsa_estudo: p.bolsa_estudo || '',
+          nome_escola: p.nome_escola || '',
+          periodo_estudo: p.periodo_estudo || '',
+          cursando: p.cursando || '',
+          frequencia_atividade: p.frequencia_atividade || '',
+          nome_responsavel: p.nome_responsavel || '',
+          telefone: p.telefone || '',
+          email: p.email || '',
+          endereco: p.endereco || '',
+          local_moradia: p.local_moradia || '',
+          tipo_imovel: p.tipo_imovel || '',
+          qtd_pessoas_casa: p.qtd_pessoas_casa || '',
+          renda_bruta: p.renda_bruta || '',
+          beneficio_gov: p.beneficio_gov || '',
+          sistema_saude: p.sistema_saude || '',
+          vacinas_dia: p.vacinas_dia || '',
+          altura: p.altura || '',
+          peso: p.peso || '',
+          sabe_nadar: p.sabe_nadar || '',
+          sabe_pedalar: p.sabe_pedalar || '',
+          intuito: p.intuito || '',
+          restricao_dias: p.restricao_dias || '',
+        }));
+        setPreCadastros(mapped);
+      }
+    } catch (err) {
+      console.warn('Supabase precadastros fallback:', err);
+    }
+  }, []);
+
+  // --- Função agregadora: carregar tudo do projeto ---
+  const loadAllProjectData = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    await Promise.all([
+      loadStudentsFromSupabase(projectUUID, projectSlug),
+      loadDocumentsFromSupabase(projectUUID, projectSlug),
+      loadEvidencesFromSupabase(projectUUID, projectSlug),
+      loadInventoryFromSupabase(projectUUID, projectSlug),
+      loadPreCadastrosFromSupabase(projectUUID, projectSlug),
+    ]);
+  }, [loadStudentsFromSupabase, loadDocumentsFromSupabase, loadEvidencesFromSupabase, loadInventoryFromSupabase, loadPreCadastrosFromSupabase]);
+
   // --- SUPABASE: Verificar sessão existente ao montar ---
   useEffect(() => {
     const checkSession = async () => {
@@ -338,7 +476,7 @@ const AppContent: React.FC = () => {
             await loadNucleosFromSupabase(projectSlug);
             if (defaultAccess.project_id) {
               setSupabaseProjectId(defaultAccess.project_id);
-              await loadStudentsFromSupabase(defaultAccess.project_id, projectSlug);
+              await loadAllProjectData(defaultAccess.project_id, projectSlug);
             }
             setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
           }
@@ -363,74 +501,8 @@ const AppContent: React.FC = () => {
   // Data State
   const [collectedEvidence, setCollectedEvidence] = useState<EvidenceLog[]>([]);
 
-  // Initialize with some mock BOLETIM data to demonstrate the history view
-  const [collectedDocuments, setCollectedDocuments] = useState<DocumentLog[]>(() => {
-    const savedDocs = localStorage.getItem('collectedDocuments');
-    if (savedDocs) return JSON.parse(savedDocs);
-    return [
-      {
-        id: 'mock_bol_1',
-        timestamp: new Date().toISOString(),
-        type: 'BOLETIM',
-        title: 'Boletim Upload Externo - João Silva (Mock)',
-        fileUrl: '#',
-        description: 'Envio via link público',
-        metaData: {
-          studentName: 'João Silva Oliveira',
-          grade1: 8.5,
-          attendance1: 95,
-          grade2: 9.0,
-          attendance2: 98,
-          periodType: 'PARCIAL',
-          status: 'MELHORA'
-        }
-      },
-      {
-        id: 'mock_bol_2',
-        timestamp: new Date().toISOString(),
-        type: 'BOLETIM',
-        title: 'Lote Interno - Ana Souza (Mock)',
-        fileUrl: '#',
-        description: 'Processamento Lote Interno',
-        metaData: {
-          reports: [{
-            id: 'rpt_1',
-            fileName: 'Lote Interno',
-            studentName: 'Ana Clara Souza',
-            grade1: 7.0,
-            attendance1: 85,
-            grade2: 6.5,
-            attendance2: 80,
-            periodType: 'FINAL',
-            status: 'PIORA'
-          }]
-        }
-      },
-      {
-        id: 'mock_ocorrencia_1',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        type: 'OCORRENCIA_DISCIPLINAR',
-        title: 'Ocorrência - Brigou na quadra',
-        fileUrl: '#',
-        description: 'Registro do Professor',
-        metaData: {
-          studentName: 'João Silva Oliveira'
-        }
-      },
-      {
-        id: 'mock_social_1',
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-        type: 'RELATORIO_SOCIAL',
-        title: 'Relatório Social',
-        fileUrl: '#',
-        description: 'Atendimento',
-        metaData: {
-          studentName: 'João Silva Oliveira',
-          reportText: 'O aluno relatou problemas em casa, estamos acompanhando. Agendada reunião com os responsáveis na próxima quarta.'
-        }
-      }
-    ];
-  });
+  // Documentos agora carregam do Supabase após login
+  const [collectedDocuments, setCollectedDocuments] = useState<DocumentLog[]>([]);
 
   // Force inject cohesive mock suite if missing from localStorage
   useEffect(() => {
@@ -542,7 +614,7 @@ const AppContent: React.FC = () => {
   // Recarregar dados ao trocar projeto (se logado)
   useEffect(() => {
     if (user && supabaseProjectId) {
-      loadStudentsFromSupabase(supabaseProjectId, activeProject);
+      loadAllProjectData(supabaseProjectId, activeProject);
     }
   }, [activeProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -651,10 +723,10 @@ const AppContent: React.FC = () => {
         return;
       }
 
-      // 3. Carregar núcleos e alunos do Supabase
+      // 3. Carregar todos os dados do Supabase
       await loadNucleosFromSupabase(activeProject);
       setSupabaseProjectId(projectData.id);
-      await loadStudentsFromSupabase(projectData.id, activeProject);
+      await loadAllProjectData(projectData.id, activeProject);
 
       // 4. Definir usuário
       const selectedNucleoObj = nucleos.find(n => n.id === nucleoId);
@@ -798,17 +870,32 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleSaveEvidence = (data: EvidenceLog) => {
+  const handleSaveEvidence = async (data: EvidenceLog) => {
     setCollectedEvidence(prev => [...prev, data]);
+    // Persistir no Supabase
+    if (supabaseProjectId) {
+      const { error } = await supabase.from('evidences').insert({
+        project_id: supabaseProjectId,
+        nucleo_id: user?.nucleo_id || null,
+        uploaded_by: user?.uid || null,
+        type: data.type,
+        description: data.description,
+        image_url: data.imageUrl || null,
+        evidence_date: data.date || null,
+      });
+      if (error) console.warn('Erro ao salvar evidência:', error);
+    }
   };
 
-  const handleSaveDocument = (data: DocumentLog) => {
+  const handleSaveDocument = async (data: DocumentLog) => {
     // LÓGICA DE BAIXA DE ESTOQUE AUTOMÁTICA
     if (data.type === 'LISTA_FREQUENCIA' && data.metaData?.inventoryDeduction) {
       const { itemId, amount } = data.metaData.inventoryDeduction;
       setInventory(prev => prev.map(item => {
         if (item.id === itemId) {
           const newQty = Math.max(0, item.quantity - amount);
+          // Atualizar no Supabase
+          supabase.from('inventory_items').update({ quantity: newQty }).eq('id', itemId);
           return { ...item, quantity: newQty };
         }
         return item;
@@ -817,14 +904,56 @@ const AppContent: React.FC = () => {
     }
 
     setCollectedDocuments(prev => [...prev, data]);
+    // Persistir no Supabase
+    if (supabaseProjectId) {
+      const { error } = await supabase.from('documents').insert({
+        project_id: supabaseProjectId,
+        nucleo_id: data.nucleoId || user?.nucleo_id || null,
+        uploaded_by: user?.uid || null,
+        type: data.type,
+        title: data.title,
+        description: data.description || null,
+        file_url: data.fileUrl || null,
+        metadata: data.metaData || null,
+        status: data.status || null,
+      });
+      if (error) console.warn('Erro ao salvar documento:', error);
+    }
   };
 
-  const handleUpdateInventory = (updatedItem: InventoryItem) => {
+  const handleUpdateInventory = async (updatedItem: InventoryItem) => {
     setInventory(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+    // Persistir no Supabase
+    const { error } = await supabase.from('inventory_items').update({
+      name: updatedItem.name,
+      quantity: updatedItem.quantity,
+      initial_quantity: updatedItem.initialQuantity,
+      unit: updatedItem.unit,
+      min_threshold: updatedItem.minThreshold,
+      category: updatedItem.category,
+    }).eq('id', updatedItem.id);
+    if (error) console.warn('Erro ao atualizar estoque:', error);
   };
 
-  const handleAddItemToInventory = (newItem: InventoryItem) => {
+  const handleAddItemToInventory = async (newItem: InventoryItem) => {
     setInventory(prev => [...prev, newItem]);
+    // Persistir no Supabase
+    if (supabaseProjectId) {
+      const { data: inserted, error } = await supabase.from('inventory_items').insert({
+        project_id: supabaseProjectId,
+        name: newItem.name,
+        quantity: newItem.quantity,
+        initial_quantity: newItem.initialQuantity,
+        unit: newItem.unit,
+        min_threshold: newItem.minThreshold,
+        category: newItem.category,
+      }).select().single();
+      if (error) {
+        console.warn('Erro ao adicionar item:', error);
+      } else if (inserted) {
+        setInventory(prev => prev.map(i => i.id === newItem.id ? { ...i, id: inserted.id } : i));
+      }
+    }
   };
 
   // --- Register State ---
@@ -992,11 +1121,11 @@ const AppContent: React.FC = () => {
         });
       }
 
-      // 4. Carregar dados e logar
+      // 4. Carregar todos os dados do projeto
       await loadNucleosFromSupabase(activeProject);
       if (projectData) {
         setSupabaseProjectId(projectData.id);
-        await loadStudentsFromSupabase(projectData.id, activeProject);
+        await loadAllProjectData(projectData.id, activeProject);
       }
 
       const selectedNucleoObj = nucleos.find(n => n.id === regNucleo);
