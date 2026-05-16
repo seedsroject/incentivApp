@@ -194,27 +194,17 @@ const FUTEBOL_NUCLEOS: Nucleo[] = [
   employees: generateMockEmployees(n.id, n.nome)
 })) as Nucleo[];
 
+// ALL_NUCLEOS mantido como fallback para modo Demo/offline
 const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS, ...FUTEBOL_NUCLEOS];
 
-const MOCK_USER: User = {
-  uid: 'usr_123456',
-  nome: 'Carlos Ferreira',
-  email: 'carlos.ed@esporte.gov.br',
-  role: 'PROFESSOR',
-  nucleo_id: null,
-};
-
-const INITIAL_INVENTORY: InventoryItem[] = [
-  { id: 'item_1', name: 'Kit Lanche Padrão', quantity: 50, initialQuantity: 50, unit: 'Kit', minThreshold: 5, category: 'ALIMENTACAO' },
-  { id: 'item_2', name: 'Camiseta Projeto', quantity: 15, initialQuantity: 20, unit: 'Unid.', minThreshold: 2, category: 'VESTUARIO' }
-];
+// Inventário vazio — dados reais vêm do Supabase
 
 const AppContent: React.FC = () => {
   // --- STATE ---
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<AppView>(AppView.LOGIN);
   const [students, setStudents] = useState<StudentDraft[]>([]);
-  const [preCadastros, setPreCadastros] = useState<PreCadastroData[]>(MOCK_PRE_CADASTRO);
+  const [preCadastros, setPreCadastros] = useState<PreCadastroData[]>([]);
   const [nucleos, setNucleos] = useState<Nucleo[]>(ALL_NUCLEOS);
   const [loading, setLoading] = useState(false);
   const [activeProject, setActiveProject] = useState<ProjectId>('FORMANDO_CAMPEOES');
@@ -504,79 +494,9 @@ const AppContent: React.FC = () => {
   // Documentos agora carregam do Supabase após login
   const [collectedDocuments, setCollectedDocuments] = useState<DocumentLog[]>([]);
 
-  // Force inject cohesive mock suite if missing from localStorage
-  useEffect(() => {
-    // 1. Inject Students
-    setStudents(prev => {
-      let needsUpdate = false;
-      const updated = [...prev];
-      const SIG = 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60"><path d="M10 40 C30 10, 50 55, 80 30 C100 15, 120 50, 160 35 C175 28, 185 38, 195 32" stroke="black" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`);
-      const SIG2 = 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60"><path d="M8 45 Q40 5 70 38 Q100 60 130 25 Q155 8 195 30" stroke="black" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`);
-      const SIG3 = 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60"><path d="M5 35 L25 15 L45 45 L65 20 L85 42 L110 18 L135 38 L160 22 L185 36" stroke="black" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
-      const mocks = [
-        { id: 'std_001', nome: 'Lucas Almeida Santos', data_nascimento: '2010-05-14', rg_cpf: '11.222.333-4', nome_responsavel: 'Maria Almeida Santos', endereco: 'Rua das Flores, 12, Joaquim Romão, Ilhéus - BA, 45600-000', telefone: '(73) 99999-1111', email_contato: 'maria.almeida@email.com', escola_nome: 'Escola Estadual Carlos Marighella', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,0,10).toISOString(), status: 'ATIVO', data_assinatura: '10/01/2024', assinatura: SIG, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Shorts', 'Touca'], assinatura: SIG, data_assinatura: '10/01/2024', nome_responsavel: 'Maria Almeida Santos', cpf_responsavel: '111.222.333-44' } as any },
-        { id: 'std_002', nome: 'Ana Beatriz Oliveira', data_nascimento: '2011-08-22', rg_cpf: '22.333.444-5', nome_responsavel: 'Fernanda Oliveira', endereco: 'Av. Soares Lopes, 350, Centro, Ilhéus - BA, 45650-000', telefone: '(73) 98888-2222', email_contato: 'fernanda.oliveira@email.com', escola_nome: 'Colégio Batista de Ilhéus', escola_tipo: 'PARTICULAR', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,0,12).toISOString(), status: 'ATIVO', data_assinatura: '12/01/2024', assinatura: SIG2, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Shorts', 'Óculos'], assinatura: SIG2, data_assinatura: '12/01/2024', nome_responsavel: 'Fernanda Oliveira', cpf_responsavel: '222.333.444-55' } as any },
-        { id: 'std_003', nome: 'Pedro Henrique Costa', data_nascimento: '2012-03-07', rg_cpf: '33.444.555-6', nome_responsavel: 'Ricardo Costa', endereco: 'Rua Jorge Amado, 88, Pontal, Ilhéus - BA, 45654-000', telefone: '(73) 97777-3333', email_contato: 'ricardo.costa@email.com', escola_nome: 'EMEF Padre Casimiro Bekx', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,0,15).toISOString(), status: 'ATIVO', data_assinatura: '15/01/2024', assinatura: SIG3, reportType: 'REPORT_7' },
-        { id: 'std_004', nome: 'Camila Ferreira Bahia', data_nascimento: '2010-11-30', rg_cpf: '44.555.666-7', nome_responsavel: 'Juliana Ferreira', endereco: 'Rua Governador Mário Pessoa, 210, São Domingos, Ilhéus - BA, 45655-000', telefone: '(73) 96666-4444', email_contato: 'juliana.ferreira@email.com', escola_nome: 'Escola Estadual Rotary', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,1,5).toISOString(), status: 'ATIVO', data_assinatura: '05/02/2024', assinatura: SIG, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Touca', 'Squeeze'], assinatura: SIG, data_assinatura: '05/02/2024', nome_responsavel: 'Juliana Ferreira', cpf_responsavel: '444.555.666-77' } as any },
-        { id: 'std_005', nome: 'Rafael Torres Neto', data_nascimento: '2013-06-18', rg_cpf: '55.666.777-8', nome_responsavel: 'Paulo Torres', endereco: 'Av. Conquistadores, 450, Salobrinho, Ilhéus - BA, 45658-000', telefone: '(73) 95555-5555', email_contato: 'paulo.torres@email.com', escola_nome: 'EMEF Urbano Portela Melo', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,1,8).toISOString(), status: 'ATIVO', data_assinatura: '08/02/2024', assinatura: SIG2, reportType: 'REPORT_7' },
-        { id: 'std_006', nome: 'Isabela Nascimento Lima', data_nascimento: '2011-12-25', rg_cpf: '66.777.888-9', nome_responsavel: 'Cláudia Nascimento', endereco: 'Rua Theodomiro Sarro, 31, Malhado, Ilhéus - BA, 45652-000', telefone: '(73) 94444-6666', email_contato: 'claudia.nasc@email.com', escola_nome: 'Colégio Maria Auxiliadora', escola_tipo: 'PARTICULAR', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,2,1).toISOString(), status: 'ATIVO', data_assinatura: '01/03/2024', assinatura: SIG3, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Shorts'], assinatura: SIG3, data_assinatura: '01/03/2024', nome_responsavel: 'Cláudia Nascimento', cpf_responsavel: '666.777.888-99' } as any },
-        { id: 'std_007', nome: 'Gabriel Souza Araujo', data_nascimento: '2012-09-04', rg_cpf: '77.888.999-0', nome_responsavel: 'Marcos Souza', endereco: 'Rua Barão do Rio Branco, 75, Unhão da Vitória, Ilhéus - BA, 45651-000', telefone: '(73) 93333-7777', email_contato: 'marcos.souza@email.com', escola_nome: 'Escola Estadual Dom Pedro II', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,2,10).toISOString(), status: 'ATIVO', data_assinatura: '10/03/2024', assinatura: SIG, reportType: 'REPORT_7' },
-        { id: 'std_008', nome: 'Larissa Pereira Matos', data_nascimento: '2010-02-14', rg_cpf: '88.999.000-1', nome_responsavel: 'Sandra Pereira', endereco: 'Rua XV de Novembro, 200, Centro, Ilhéus - BA, 45650-000', telefone: '(73) 92222-8888', email_contato: 'sandra.pereira@email.com', escola_nome: 'EMEF Glauco de Mattos Ramos', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,3,2).toISOString(), status: 'ATIVO', data_assinatura: '02/04/2024', assinatura: SIG2, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Shorts', 'Touca', 'Óculos'], assinatura: SIG2, data_assinatura: '02/04/2024', nome_responsavel: 'Sandra Pereira', cpf_responsavel: '888.999.000-11' } as any },
-        { id: 'std_009', nome: 'Diego Campos Ribeiro', data_nascimento: '2013-07-19', rg_cpf: '99.000.111-2', nome_responsavel: 'Adriana Campos', endereco: 'Av. Antônio Carlos Magalhães, 580, Ilhéus - BA, 45650-000', telefone: '(73) 91111-9999', email_contato: 'adriana.campos@email.com', escola_nome: 'Escola Estadual Luiz Régis Pacheco', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,3,15).toISOString(), status: 'ATIVO', data_assinatura: '15/04/2024', assinatura: SIG3, reportType: 'REPORT_7' },
-        { id: 'std_010', nome: 'Vitória Helena Ramos', data_nascimento: '2011-04-03', rg_cpf: '10.111.222-3', nome_responsavel: 'Roberto Ramos', endereco: 'Rua Eustáquio Bastos, 43, Banco da Vitória, Ilhéus - BA, 45653-000', telefone: '(73) 90000-0001', email_contato: 'roberto.ramos@email.com', escola_nome: 'EMEF Olímpio Rebelo Mangabeira', escola_tipo: 'PUBLICA', n_sli: '2201254', nome_projeto: 'Escolinha de Triathlon', proponente: 'Associação de Pais e Amigos da Natação Ituana', nome_responsavel_organizacao: 'Carlos Eduardo Pereira', nucleo_id: 'nuc_ilheus', timestamp: new Date(2024,4,1).toISOString(), status: 'ATIVO', data_assinatura: '01/05/2024', assinatura: SIG, reportType: 'REPORT_7', declaracao_uniformes: { itens_recebidos: ['Camiseta', 'Shorts', 'Squeeze'], assinatura: SIG, data_assinatura: '01/05/2024', nome_responsavel: 'Roberto Ramos', cpf_responsavel: '100.111.222-33' } as any },
-      ];
-      mocks.forEach(m => {
-        if (!updated.some(s => s.id === m.id)) { updated.push(m as any); needsUpdate = true; }
-      });
-      return needsUpdate ? updated : prev;
-    });
+  // (Dados mock removidos — tudo vem do Supabase agora)
 
-    // 2. Inject PreCadastros
-    setPreCadastros(prev => {
-      let needsUpdate = false;
-      const updated = [...prev];
-      MOCK_PRE_CADASTRO.forEach(m => {
-        if (!updated.some(p => p.id === m.id)) { updated.push(m); needsUpdate = true; }
-      });
-      return needsUpdate ? updated : prev;
-    });
-
-    // 3. Inject Documents (Serviço Social Alerts & History)
-    setCollectedDocuments(prev => {
-      let needsUpdate = false;
-      const updated = [...prev];
-      if (!updated.some(d => d.id === 'mock_ocorrencia_1')) {
-        updated.push({
-          id: 'mock_ocorrencia_1',
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-          type: 'OCORRENCIA_DISCIPLINAR',
-          title: 'Ocorrência - Brigou na quadra',
-          fileUrl: '#',
-          description: 'Registro do Professor',
-          metaData: { studentName: 'João Silva Oliveira' }
-        });
-        needsUpdate = true;
-      }
-      if (!updated.some(d => d.id === 'mock_social_1')) {
-        updated.push({
-          id: 'mock_social_1',
-          timestamp: new Date(Date.now() - 172800000).toISOString(),
-          type: 'RELATORIO_SOCIAL',
-          title: 'Relatório Social',
-          fileUrl: '#',
-          description: 'Atendimento',
-          metaData: {
-            studentName: 'João Silva Oliveira',
-            text: 'O aluno relatou problemas em casa, estamos acompanhando. Agendada reunião com os responsáveis na próxima quarta.'
-          }
-        });
-        needsUpdate = true;
-      }
-      return needsUpdate ? updated : prev;
-    });
-  }, []);
-
-  const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   // --- PROJECT-SCOPED DOCUMENTS / EVIDENCE / INVENTORY ---
   const projectDocuments = useMemo(() => collectedDocuments.filter(d => !d.projectId || d.projectId === activeProject), [collectedDocuments, activeProject]);
@@ -782,7 +702,7 @@ const AppContent: React.FC = () => {
     setStudents([]);
     setCollectedEvidence([]);
     setCollectedDocuments([]);
-    setInventory(INITIAL_INVENTORY);
+    setInventory([]);
     setNavParams({});
     setSupabaseProjectId(null);
     setView(AppView.LOGIN);
@@ -1071,6 +991,41 @@ const AppContent: React.FC = () => {
           }
           if (navParams.service === 'precadastro') {
             setPreCadastros(prev => [...prev, data]);
+            // Persistir no Supabase
+            if (supabaseProjectId) {
+              supabase.from('pre_cadastros').insert({
+                project_id: supabaseProjectId,
+                nucleo_id: data.nucleo_id || null,
+                status: 'AGUARDANDO',
+                nome_aluno: data.nome_aluno,
+                data_nascimento: data.data_nascimento || null,
+                raca: data.raca || null, pcd: data.pcd || null,
+                deficiencia_desc: data.deficiencia_desc || null,
+                rg: data.rg || null, cpf: data.cpf || null,
+                tipo_escola: data.tipo_escola || null,
+                bolsa_estudo: data.bolsa_estudo || null,
+                nome_escola: data.nome_escola || null,
+                periodo_estudo: data.periodo_estudo || null,
+                cursando: data.cursando || null,
+                frequencia_atividade: data.frequencia_atividade || null,
+                nome_responsavel: data.nome_responsavel || null,
+                telefone: data.telefone || null,
+                email: data.email || null,
+                endereco: data.endereco || null,
+                local_moradia: data.local_moradia || null,
+                tipo_imovel: data.tipo_imovel || null,
+                qtd_pessoas_casa: data.qtd_pessoas_casa || null,
+                renda_bruta: data.renda_bruta || null,
+                beneficio_gov: data.beneficio_gov || null,
+                sistema_saude: data.sistema_saude || null,
+                vacinas_dia: data.vacinas_dia || null,
+                altura: data.altura || null, peso: data.peso || null,
+                sabe_nadar: data.sabe_nadar || null,
+                sabe_pedalar: data.sabe_pedalar || null,
+                intuito: data.intuito || null,
+                restricao_dias: data.restricao_dias || null,
+              });
+            }
           }
         }}
       />
@@ -1392,9 +1347,56 @@ const AppContent: React.FC = () => {
             candidates={preCadastros}
             nucleos={filteredNucleos}
             students={projectStudents}
-            onAddCandidate={(data) => setPreCadastros(prev => [...prev, data])}
-            onUpdateCandidate={(id, updates) => setPreCadastros(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
-            onDeleteCandidate={(id) => setPreCadastros(prev => prev.filter(c => c.id !== id))}
+            onAddCandidate={async (data) => {
+              setPreCadastros(prev => [...prev, data]);
+              if (supabaseProjectId) {
+                const { data: inserted, error } = await supabase.from('pre_cadastros').insert({
+                  project_id: supabaseProjectId,
+                  nucleo_id: data.nucleo_id || null,
+                  status: data.status || 'AGUARDANDO',
+                  nome_aluno: data.nome_aluno,
+                  data_nascimento: data.data_nascimento || null,
+                  raca: data.raca || null,
+                  pcd: data.pcd || null,
+                  deficiencia_desc: data.deficiencia_desc || null,
+                  rg: data.rg || null,
+                  cpf: data.cpf || null,
+                  tipo_escola: data.tipo_escola || null,
+                  bolsa_estudo: data.bolsa_estudo || null,
+                  nome_escola: data.nome_escola || null,
+                  periodo_estudo: data.periodo_estudo || null,
+                  cursando: data.cursando || null,
+                  frequencia_atividade: data.frequencia_atividade || null,
+                  nome_responsavel: data.nome_responsavel || null,
+                  telefone: data.telefone || null,
+                  email: data.email || null,
+                  endereco: data.endereco || null,
+                  local_moradia: data.local_moradia || null,
+                  tipo_imovel: data.tipo_imovel || null,
+                  qtd_pessoas_casa: data.qtd_pessoas_casa || null,
+                  renda_bruta: data.renda_bruta || null,
+                  beneficio_gov: data.beneficio_gov || null,
+                  sistema_saude: data.sistema_saude || null,
+                  vacinas_dia: data.vacinas_dia || null,
+                  altura: data.altura || null,
+                  peso: data.peso || null,
+                  sabe_nadar: data.sabe_nadar || null,
+                  sabe_pedalar: data.sabe_pedalar || null,
+                  intuito: data.intuito || null,
+                  restricao_dias: data.restricao_dias || null,
+                }).select().single();
+                if (error) console.warn('Erro ao salvar pré-cadastro:', error);
+                else if (inserted) setPreCadastros(prev => prev.map(p => p.id === data.id ? { ...p, id: inserted.id } : p));
+              }
+            }}
+            onUpdateCandidate={async (id, updates) => {
+              setPreCadastros(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+              await supabase.from('pre_cadastros').update(updates).eq('id', id);
+            }}
+            onDeleteCandidate={async (id) => {
+              setPreCadastros(prev => prev.filter(c => c.id !== id));
+              await supabase.from('pre_cadastros').delete().eq('id', id);
+            }}
             onBack={() => setView(AppView.DASHBOARD)}
             onOpenPublicForm={() => {
               window.open(window.location.origin + window.location.pathname + '?service=precadastro&token=admin_preview', '_blank');
