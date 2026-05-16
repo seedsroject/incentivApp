@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { DocumentLog, DocumentType, SchoolReportItem, AttendanceReportItem, FrequencyListItem, StudentDraft, PDFItemType, InventoryItem, SubjectGrade, Nucleo } from '../types';
-import { processSchoolReport, processAttendanceReport, processFrequencyList } from '../services/geminiService';
+import { DocumentLog, DocumentType, SchoolReportItem, AttendanceReportItem, FrequencyListItem, StudentDraft, PDFItemType, InventoryItem, SubjectGrade, Nucleo, DeclaracaoMatriculaOCR } from '../types';
+import { processSchoolReport, processAttendanceReport, processFrequencyList, processDeclaracaoMatricula } from '../services/geminiService';
 import { normalizeStudentName } from '../services/dataMergeService';
 import leiDocImg from '../assets/lei_do_incentivo.png';
 import { SmartCamera } from './SmartCamera';
@@ -76,6 +76,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
     const [studentName, setStudentName] = useState('');
     const [declaracaoFilter, setDeclaracaoFilter] = useState('');
     const [selectedDoc, setSelectedDoc] = useState<DocumentLog | null>(null);
+    const [declaracaoOcrProcessing, setDeclaracaoOcrProcessing] = useState(false);
+    const [declaracaoOcrData, setDeclaracaoOcrData] = useState<DeclaracaoMatriculaOCR | null>(null);
+    const [selectedStudentId, setSelectedStudentId] = useState<string>('');
 
     // Boletim Data
     const [reportFiles, setReportFiles] = useState<File[]>([]);
@@ -1763,7 +1766,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                 >
                                     <option value="">Todos os Núcleos</option>
                                     {nucleos.map(n => (
-                                        <option key={n.id} value={n.id}>{n.nome}</option>
+                                        <option key={n.id} value={n.id}>{n.nome}{n.address ? ` — ${n.address}` : n.city ? ` — ${n.city}` : ''}</option>
                                     ))}
                                 </select>
                             )}
@@ -2101,200 +2104,147 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
         );
     }
 
-    // === 6. DECLARAÇÃO DE MATRÍCULA (NOVO MENU) ===
+    // === 6. DECLARAÇÃO DE MATRÍCULA ===
     if (mode === 'DECLARACAO_MENU') {
-        // Filter history for stored declarations
         const declaracaoHistory = history.filter(d => d.type === 'DECLARACAO_MATRICULA');
-
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative">
-                {/* Header */}
-                <div className="bg-white p-4 shadow-sm flex items-center gap-4 border-b-4 border-blue-600">
-                    <button onClick={onBack} className="text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                    <h1 className="font-bold text-lg text-gray-800">Declaração de Matrícula</h1>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 p-6 flex flex-col justify-center max-w-md mx-auto w-full">
-                    <h2 className="text-center text-lg font-bold text-gray-800 mb-2">Tipo de Declaração</h2>
-                    <p className="text-center text-gray-500 text-sm mb-6">Escolha como deseja registrar a declaração.</p>
-
-                    {/* Option 1: Digitalizar Ficha Física */}
-                    <button
-                        onClick={() => { setPreviousMode('DECLARACAO_MENU'); setMode('CAMERA'); }}
-                        className="flex flex-col items-center justify-center p-6 bg-white border-2 border-green-100 rounded-xl shadow-sm hover:border-green-500 hover:shadow-md transition-all group mb-6"
-                    >
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-green-600 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                <div className="bg-white p-4 shadow-sm flex items-center gap-4"><button onClick={onBack} className="text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg></button><h1 className="font-bold text-lg text-gray-800">Declaração de Matrícula</h1></div>
+                <div className="flex-1 p-4 max-w-4xl mx-auto w-full">
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6 text-center">
+                        <p className="text-gray-500 mb-4">Fotografe ou carregue a declaração de matrícula escolar do aluno.</p>
+                        <div className="flex flex-col gap-4">
+                            <button onClick={() => { setPreviousMode('DECLARACAO_MENU'); setMode('CAMERA'); }} className="flex flex-col items-center justify-center p-6 border-2 border-green-100 bg-white rounded-xl shadow-sm hover:border-green-500 transition-all group">
+                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-green-600 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg></div>
+                                <span className="text-gray-800 font-bold">Usar Câmera</span>
+                            </button>
+                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-300 bg-white rounded-xl shadow-sm hover:bg-blue-50 cursor-pointer">
+                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2 text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg></div>
+                                <span className="text-blue-700 font-bold">Carregar Arquivos</span>
+                                <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) {
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => { setFinalImage(ev.target?.result as string); setFile(f); setMode('DECLARACAO_VIEW'); };
+                                        reader.readAsDataURL(f);
+                                    }
+                                }} />
+                            </label>
                         </div>
-                        <span className="font-bold text-gray-800">Digitalizar Ficha Física</span>
-                        <span className="text-xs text-gray-500 mt-1">Usar Câmera Inteligente</span>
+                    </div>
+                    <button onClick={() => setMode('DECLARACAO_VIEW')} className="w-full py-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-lg shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2">
+                        Ver Histórico {declaracaoHistory.length > 0 && <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full font-bold">{declaracaoHistory.length}</span>}
                     </button>
-
-                    {/* Option 2: Visualizar Declarações Salvas */}
-                    <button
-                        onClick={() => setMode('DECLARACAO_VIEW')}
-                        className="flex items-center justify-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl shadow-sm hover:bg-white hover:border-gray-400 transition-all text-gray-700 font-bold text-sm mb-6"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                        </svg>
-                        Visualizar Declarações Salvas
-                        {declaracaoHistory.length > 0 && (
-                            <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full font-bold">{declaracaoHistory.length}</span>
-                        )}
-                    </button>
-
-                    {/* Option 3: Carregar do dispositivo */}
-                    <label className="text-center cursor-pointer">
-                        <span className="text-blue-600 font-bold text-sm hover:underline">Carregar foto do dispositivo</span>
-                        <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (ev) => {
-                                        const base64 = ev.target?.result as string;
-                                        setFinalImage(base64);
-                                        setFile(file);
-                                        setMode('DECLARACAO_VIEW');
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            }}
-                        />
-                    </label>
                 </div>
             </div>
         );
     }
 
-    // === DECLARACAO_VIEW - Visualizar e Salvar ===
+    // === DECLARACAO_VIEW ===
     if (mode === 'DECLARACAO_VIEW') {
-        // Filter history for stored declarations
         const declaracaoHistory = history.filter(d => d.type === 'DECLARACAO_MATRICULA');
-
+        const hasOcr = (v?: string) => !!v && v !== 'DESCONHECIDO';
+        const autoMatch = (name: string) => {
+            if (!name) return;
+            const n = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            const m = students.find(s => n(s.nome) === n(name));
+            if (m) { setSelectedStudentId(m.id); setStudentName(m.nome); } else { setStudentName(name); }
+        };
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative">
-                {/* Header */}
-                <div className="bg-white p-4 shadow-sm flex items-center gap-4 border-b border-gray-200">
-                    <button onClick={() => setMode('DECLARACAO_MENU')} className="text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                    </button>
-                    <h1 className="font-bold text-lg text-gray-800">
-                        {finalImage ? 'Salvar Declaração' : 'Declarações Salvas'}
-                    </h1>
-                </div>
-
+                <div className="bg-white p-4 shadow-sm flex items-center gap-4"><button onClick={() => { setMode('DECLARACAO_MENU'); setFinalImage(null); setDeclaracaoOcrData(null); setSelectedStudentId(''); setStudentName(''); }} className="text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg></button><h1 className="font-bold text-lg text-gray-800">{finalImage ? 'Processar Declaração' : 'Histórico de Declarações'}</h1></div>
                 <div className="flex-1 p-4 max-w-2xl mx-auto w-full pb-24">
-                    {/* If there's a new image to save */}
-                    {finalImage && (
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-                            <p className="text-xs font-bold text-gray-500 uppercase mb-3">Imagem Capturada</p>
-                            <div
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, 'IMAGE', { url: finalImage, studentName: studentName || 'Declaração' }, `Declaração: ${studentName || 'Sem nome'}`)}
-                                className="cursor-move hover:ring-2 ring-blue-300 transition-all rounded-lg overflow-hidden"
-                            >
-                                <img src={finalImage} alt="Declaração" className="w-full rounded-lg border border-gray-200" />
-                                <p className="text-center text-[10px] text-blue-500 font-bold mt-2 bg-blue-50 py-1">☂ Arraste para o PDF</p>
-                            </div>
-
-                            <div className="mt-4 space-y-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nome do Aluno</label>
-                                    <input
-                                        type="text"
-                                        value={studentName}
-                                        onChange={(e) => setStudentName(e.target.value)}
-                                        placeholder="Identificar aluno..."
-                                        className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-gray-800"
-                                    />
+                    {finalImage && (<>
+                        {/* Arquivo anexado */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+                            <div className="bg-gray-100 p-3 border-b border-gray-200 font-bold text-sm text-gray-700">Arquivo Anexado</div>
+                            <div className="p-3">
+                                <img src={finalImage} alt="Declaração" className="w-full max-h-48 object-contain rounded border border-gray-200 bg-gray-50" />
+                                <div className="flex items-center justify-between mt-2">
+                                    <span className="text-xs text-gray-500">{file?.name || 'Captura da câmera'}</span>
+                                    <button onClick={() => { setFinalImage(null); setDeclaracaoOcrData(null); setFile(null); }} className="text-xs text-red-500 font-bold">Remover</button>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        const docData: DocumentLog = {
-                                            id: `dec_${Date.now()}`,
-                                            timestamp: new Date().toISOString(),
-                                            type: 'DECLARACAO_MATRICULA',
-                                            title: `Declaração - ${studentName || 'Sem nome'}`,
-                                            description: studentName ? `Declaração de matrícula de ${studentName}` : 'Declaração de matrícula',
-                                            metaData: {
-                                                studentName: studentName || 'Não identificado',
-                                                imageUrl: finalImage
-                                            }
-                                        };
-                                        onSave(docData);
-                                        setFinalImage(null);
-                                        setStudentName('');
-                                        setSuccess(true);
-                                    }}
-                                    className="w-full py-3 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700 transition-colors"
-                                >
-                                    Salvar Declaração
-                                </button>
                             </div>
                         </div>
-                    )}
-
-                    {/* History List */}
-                    {!finalImage && (
-                        <>
-                            <div className="mb-4">
-                                <input
-                                    type="text"
-                                    placeholder="Filtrar por nome..."
-                                    value={declaracaoFilter}
-                                    onChange={(e) => setDeclaracaoFilter(e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm"
-                                />
+                        {/* Botão OCR */}
+                        {!declaracaoOcrData && !declaracaoOcrProcessing && (
+                            <button onClick={async () => { setDeclaracaoOcrProcessing(true); try { const r = await processDeclaracaoMatricula(finalImage, file?.type || 'image/jpeg'); setDeclaracaoOcrData(r); autoMatch(r.nomeAluno); } catch(e) { console.error(e); } setDeclaracaoOcrProcessing(false); }} className="w-full py-4 bg-gray-300 text-white font-bold rounded-lg shadow-sm hover:bg-blue-600 transition-colors mb-4">Processar com IA (OCR)</button>
+                        )}
+                        {/* Loading */}
+                        {declaracaoOcrProcessing && (
+                            <div className="bg-white rounded-lg border border-gray-200 p-6 text-center mb-4">
+                                <svg className="animate-spin h-6 w-6 text-blue-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                <p className="text-sm font-bold text-gray-700">Analisando documento com IA...</p>
                             </div>
-
-                            {declaracaoHistory.length === 0 ? (
-                                <div className="text-center py-12 text-gray-400">
-                                    <p>Nenhuma declaração salva ainda.</p>
-                                    <button
-                                        onClick={() => setMode('DECLARACAO_MENU')}
-                                        className="mt-4 text-blue-600 font-bold text-sm"
-                                    >
-                                        ← Voltar e Digitalizar
-                                    </button>
+                        )}
+                        {/* OCR Results Table */}
+                        {declaracaoOcrData && !declaracaoOcrProcessing && (
+                            <div className="bg-white rounded-lg shadow border border-gray-300 overflow-hidden mb-4">
+                                <div className="bg-blue-100 p-3 border-b border-blue-200 flex items-center justify-between">
+                                    <span className="font-bold text-sm text-blue-900 uppercase">Dados Extraídos</span>
+                                    <button onClick={async () => { setDeclaracaoOcrProcessing(true); setDeclaracaoOcrData(null); try { const r = await processDeclaracaoMatricula(finalImage, file?.type || 'image/jpeg'); setDeclaracaoOcrData(r); autoMatch(r.nomeAluno); } catch(e) { console.error(e); } setDeclaracaoOcrProcessing(false); }} className="text-xs text-blue-700 font-bold hover:underline">Reprocessar</button>
                                 </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {declaracaoHistory
-                                        .filter(d => !declaracaoFilter || (d.metaData?.studentName || '').toLowerCase().includes(declaracaoFilter.toLowerCase()))
-                                        .map((doc) => (
-                                            <div
-                                                key={doc.id}
-                                                draggable
-                                                onDragStart={(e) => handleDragStart(e, 'IMAGE', { url: doc.metaData?.imageUrl, studentName: doc.metaData?.studentName }, `Declaração: ${doc.metaData?.studentName || 'Sem nome'}`)}
-                                                className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-move hover:ring-2 ring-blue-300 transition-all"
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    {doc.metaData?.imageUrl && (
-                                                        <img src={doc.metaData.imageUrl} alt="Preview" className="w-16 h-16 object-cover rounded border border-gray-200" />
-                                                    )}
-                                                    <div className="flex-1">
-                                                        <p className="font-bold text-gray-800">{doc.metaData?.studentName || 'Sem nome'}</p>
-                                                        <p className="text-xs text-gray-500">{new Date(doc.timestamp).toLocaleString()}</p>
-                                                    </div>
-                                                    <span className="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">ARRASTE</span>
+                                <table className="w-full text-left text-sm"><tbody className="divide-y divide-gray-100">
+                                    {declaracaoOcrData.nomeAluno && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase w-32">Aluno</td><td className="px-4 py-2 font-bold text-gray-800">{declaracaoOcrData.nomeAluno}</td></tr>}
+                                    {declaracaoOcrData.nomeEscola && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Escola</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.nomeEscola}</td></tr>}
+                                    {hasOcr(declaracaoOcrData.tipoEscola) && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Tipo</td><td className="px-4 py-2"><span className={`text-xs font-bold px-2 py-0.5 rounded-full ${declaracaoOcrData.tipoEscola === 'PUBLICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{declaracaoOcrData.tipoEscola === 'PUBLICA' ? 'Pública' : 'Particular'}</span></td></tr>}
+                                    {hasOcr(declaracaoOcrData.nivelEnsino) && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Nível</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.nivelEnsino === 'FUNDAMENTAL' ? 'Ensino Fundamental' : 'Ensino Médio'}</td></tr>}
+                                    {declaracaoOcrData.anoSerie && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Ano/Série</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.anoSerie}</td></tr>}
+                                    {hasOcr(declaracaoOcrData.turno) && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Turno</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.turno === 'MATUTINO' ? 'Matutino' : declaracaoOcrData.turno === 'VESPERTINO' ? 'Vespertino' : declaracaoOcrData.turno === 'NOTURNO' ? 'Noturno' : 'Integral'}</td></tr>}
+                                    {declaracaoOcrData.turma && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Turma</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.turma}</td></tr>}
+                                    {declaracaoOcrData.anoLetivo && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Ano Letivo</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.anoLetivo}</td></tr>}
+                                    {declaracaoOcrData.dataNascimento && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Nascimento</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.dataNascimento}</td></tr>}
+                                    {declaracaoOcrData.matriculaNumero && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Matrícula</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.matriculaNumero}</td></tr>}
+                                    {declaracaoOcrData.nomeResponsavel && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Responsável</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.nomeResponsavel}</td></tr>}
+                                    {declaracaoOcrData.cidadeEstado && <tr><td className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Cidade/UF</td><td className="px-4 py-2 text-gray-800">{declaracaoOcrData.cidadeEstado}</td></tr>}
+                                </tbody></table>
+                            </div>
+                        )}
+                        {/* Vincular Aluno */}
+                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Vincular ao Aluno Cadastrado</label>
+                            <select value={selectedStudentId} onChange={(e) => { setSelectedStudentId(e.target.value); const s = students.find(x => x.id === e.target.value); if (s) setStudentName(s.nome); }} className="w-full bg-gray-50 border border-gray-200 rounded p-2.5 text-gray-800 text-sm">
+                                <option value="">Selecionar aluno...</option>
+                                {students.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                            </select>
+                            {!selectedStudentId && studentName && <p className="text-xs text-amber-600 mt-1 font-bold">Nome OCR: {studentName} (selecione o aluno acima para vincular)</p>}
+                        </div>
+                        {/* Save */}
+                        <button onClick={() => {
+                            const fn = studentName || declaracaoOcrData?.nomeAluno || 'Sem nome';
+                            const docData: DocumentLog = { id: `dec_${Date.now()}`, timestamp: new Date().toISOString(), type: 'DECLARACAO_MATRICULA', title: `Declaração - ${fn}`, description: `Declaração de matrícula de ${fn}${declaracaoOcrData?.nomeEscola ? ` — ${declaracaoOcrData.nomeEscola}` : ''}`, metaData: { studentName: fn, studentId: selectedStudentId || undefined, imageUrl: finalImage, ocrData: declaracaoOcrData || undefined, escolaNome: declaracaoOcrData?.nomeEscola || '', escolaTipo: declaracaoOcrData?.tipoEscola || '', nivelEnsino: declaracaoOcrData?.nivelEnsino || '', anoSerie: declaracaoOcrData?.anoSerie || '', turno: declaracaoOcrData?.turno || '' } };
+                            onSave(docData);
+                            setFinalImage(null); setStudentName(''); setDeclaracaoOcrData(null); setSelectedStudentId(''); setSuccess(true);
+                        }} disabled={declaracaoOcrProcessing} className={`w-full py-4 font-bold rounded-lg shadow-sm transition-colors ${declaracaoOcrProcessing ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-white hover:bg-blue-600'}`}>{selectedStudentId ? `Salvar e Vincular — ${studentName}` : 'Salvar Declaração'}</button>
+                    </>)}
+                    {/* History */}
+                    {!finalImage && (<>
+                        <div className="mb-4"><input type="text" placeholder="Filtrar por nome..." value={declaracaoFilter} onChange={(e) => setDeclaracaoFilter(e.target.value)} className="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm" /></div>
+                        {declaracaoHistory.length === 0 ? (
+                            <div className="text-center py-12 text-gray-400"><p>Nenhuma declaração salva.</p><button onClick={() => setMode('DECLARACAO_MENU')} className="mt-4 text-blue-600 font-bold text-sm">Voltar e Digitalizar</button></div>
+                        ) : (
+                            <div className="bg-white rounded-lg shadow border border-gray-300 overflow-hidden">
+                                <div className="bg-gray-100 p-3 border-b border-gray-200 font-bold text-sm text-gray-700">Declarações Salvas ({declaracaoHistory.length})</div>
+                                <div className="divide-y divide-gray-100">
+                                    {declaracaoHistory.filter(d => !declaracaoFilter || (d.metaData?.studentName || '').toLowerCase().includes(declaracaoFilter.toLowerCase())).map(doc => (
+                                        <div key={doc.id} draggable onDragStart={(e) => handleDragStart(e, 'IMAGE', { url: doc.metaData?.imageUrl, studentName: doc.metaData?.studentName }, `Declaração: ${doc.metaData?.studentName || ''}`)} className="p-3 flex items-center gap-3 hover:bg-gray-50 cursor-move">
+                                            {doc.metaData?.imageUrl && <img src={doc.metaData.imageUrl} alt="" className="w-12 h-12 object-cover rounded border border-gray-200" />}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-sm text-gray-800 truncate">{doc.metaData?.studentName || 'Sem nome'}</p>
+                                                {doc.metaData?.ocrData?.nomeEscola && <p className="text-xs text-gray-500 truncate">{doc.metaData.ocrData.nomeEscola}</p>}
+                                                <div className="flex gap-1 mt-1 flex-wrap">
+                                                    {doc.metaData?.ocrData?.tipoEscola && doc.metaData.ocrData.tipoEscola !== 'DESCONHECIDO' && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${doc.metaData.ocrData.tipoEscola === 'PUBLICA' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{doc.metaData.ocrData.tipoEscola === 'PUBLICA' ? 'Pública' : 'Particular'}</span>}
+                                                    {doc.metaData?.ocrData?.nivelEnsino && doc.metaData.ocrData.nivelEnsino !== 'DESCONHECIDO' && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">{doc.metaData.ocrData.nivelEnsino === 'FUNDAMENTAL' ? 'Fund.' : 'Médio'}</span>}
+                                                    {doc.metaData?.ocrData?.anoSerie && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">{doc.metaData.ocrData.anoSerie}</span>}
+                                                    <span className="text-[9px] text-gray-400">{new Date(doc.timestamp).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
-                        </>
-                    )}
+                            </div>
+                        )}
+                    </>)}
                 </div>
             </div>
         );
@@ -2302,3 +2252,4 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
 
     return <div className="p-8 text-center text-gray-500">Modo desconhecido: {mode}</div>;
 };
+

@@ -4,6 +4,7 @@ import { Nucleo, PDFPage, StudentDraft, DocumentLog } from '../types';
 import { PDFBuilderProvider, usePDFBuilder } from './PDFBuilderContext';
 import { PDFBuilderPreview } from './PDFBuilderSidebar';
 import { getReportTemplate } from '../utils/reportTemplates';
+import { getSavedTemplates, deleteTemplate } from './ReportBuilder';
 
 interface AmbienteDesenvolvimentoProps {
   nucleos: Nucleo[];
@@ -13,11 +14,14 @@ interface AmbienteDesenvolvimentoProps {
   onOpenFrequencyReport?: () => void;
   onOpenPDLIEReport?: () => void;
   onOpenAssiduidadeReport?: () => void;
+  onOpenPesquisaReport?: () => void;
   onOpenInscricaoReport?: () => void;
+  onOpenReportBuilder?: () => void;
   onBack?: () => void;
+  headerImage?: string;
 }
 
-export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onOpenPDLIEReport, onOpenAssiduidadeReport, onOpenInscricaoReport, onBack }: AmbienteDesenvolvimentoProps) {
+export default function AmbienteDesenvolvimento({ nucleos, students, history, onOpenBuilder, onOpenFrequencyReport, onOpenPDLIEReport, onOpenAssiduidadeReport, onOpenPesquisaReport, onOpenInscricaoReport, onOpenReportBuilder, onBack, headerImage = '/header_full.png' }: AmbienteDesenvolvimentoProps) {
   const { loadTemplate } = usePDFBuilder();
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [selectedNucleo, setSelectedNucleo] = useState<string>('');
@@ -32,7 +36,15 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
   const reports = [
     {
       id: 'assiduidade',
-      title: 'Anexo Meta Qualitativa 01 - Relatório de Assiduidade e Aproveitamento Escolar',
+      title: 'ANEXO META QUALITATIVA 01 - RELATÓRIO DE ASSIDUIDADE E APROVEITAMENTO ESCOLAR',
+      coverType: 'blue',
+      year: '2026',
+      city: 'Horizonte – CE',
+      proponente: 'ESCOLINHA DE TRIATHLON HORIZONTE'
+    },
+    {
+      id: 'pesquisa',
+      title: 'ANEXO META QUALITATIVA 01 - RELATÓRIO DE PESQUISA',
       coverType: 'blue',
       year: '2026',
       city: 'Horizonte – CE',
@@ -40,7 +52,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     },
     {
       id: 'frequencia',
-      title: 'Anexo Meta Quantitativa 01 - Lista de Frequência',
+      title: 'ANEXO META QUANTITATIVA 01 - LISTA DE FREQUÊNCIA',
       coverType: 'blue',
       year: '2026',
       city: 'Ilhéus – BA',
@@ -48,7 +60,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     },
     {
       id: 'inscricao',
-      title: 'Anexo Meta Quantitativa 02 - Ficha de Inscrição Declaração de Matrícula Escolar',
+      title: 'ANEXO META QUANTITATIVA 02 - FICHA DE INSCRIÇÃO DECLARAÇÃO DE MATRÍCULA ESCOLAR',
       coverType: 'blue',
       year: '2026',
       city: 'Joinville – SC',
@@ -56,7 +68,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     },
     {
       id: 'pdlie',
-      title: 'Relatório do Plano de divulgação da Lei de Incentivo ao Esporte - PDLIE da Escolinha de Triathlon São José dos Pinhais',
+      title: 'RELATÓRIO DO PLANO DE DIVULGAÇÃO DA LEI DE INCENTIVO AO ESPORTE - PDLIE DA ESCOLINHA DE TRIATHLON SÃO JOSÉ DOS PINHAIS',
       coverType: 'yellow',
       year: '2026',
       city: 'São José dos Pinhais – PR',
@@ -90,6 +102,12 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
     if (reportDef.id === 'assiduidade') {
       setSelectedReport(null);
       if (onOpenAssiduidadeReport) onOpenAssiduidadeReport();
+      return;
+    }
+
+    if (reportDef.id === 'pesquisa') {
+      setSelectedReport(null);
+      if (onOpenPesquisaReport) onOpenPesquisaReport();
       return;
     }
 
@@ -140,6 +158,12 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
             <h1 className="text-2xl font-bold text-gray-800">Ambiente de Desenvolvimento</h1>
           </div>
           <p className="text-gray-600 mt-2 ml-10">Geração automatizada de dossiês e prestação de contas governamental.</p>
+          {onOpenReportBuilder && (
+            <button onClick={onOpenReportBuilder} className="ml-10 mt-3 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg transition-all shadow-lg flex items-center gap-2 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Construtor de Relatório
+            </button>
+          )}
         
         {/* Filtros da Listagem */}
         <div className="mt-6 flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
@@ -153,10 +177,10 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
               <option value="">Todos os Núcleos</option>
               {nucleos.map(n => {
                 const displayName = n.nome.split('|')[0].trim();
-                // We use the city name without the state for the value so it's easier to match
+                const fullLabel = n.address ? `${n.nome} — ${n.address}` : n.city ? `${n.nome} — ${n.city}` : n.nome;
                 return (
                   <option key={n.id} value={displayName}>
-                    {n.nome}
+                    {fullLabel}
                   </option>
                 );
               })}
@@ -211,6 +235,10 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
                 onOpenAssiduidadeReport();
                 return;
               }
+              if (report.id === 'pesquisa' && onOpenPesquisaReport) {
+                onOpenPesquisaReport();
+                return;
+              }
               if (report.id === 'inscricao' && onOpenInscricaoReport) {
                 onOpenInscricaoReport();
                 return;
@@ -226,7 +254,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
             <div className="h-48 w-full p-4 flex flex-col justify-between relative bg-white border-b border-gray-100">
               {/* Fake Header Logos */}
               <div className="w-full flex justify-center mb-2 px-2">
-                <img src="/header_full.png" alt="Header" className="w-full object-contain" style={{ maxHeight: '30px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src={headerImage} alt="Header" className="w-full object-contain" style={{ maxHeight: '30px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
 
               {/* Cover Main Block */}
@@ -264,6 +292,52 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
           </div>
         ))}
       </div>
+
+      {/* Saved Custom Templates */}
+      {(() => {
+        const saved = getSavedTemplates();
+        if (saved.length === 0) return null;
+        return (
+          <>
+            <h2 className="text-lg font-bold text-gray-800 mt-10 mb-4 flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span>Modelos Personalizados</span>
+              <span className="text-xs font-normal text-gray-400">({saved.length} modelo{saved.length > 1 ? 's' : ''} salvo{saved.length > 1 ? 's' : ''})</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {saved.map(tmpl => (
+                <div key={tmpl.id} className="relative bg-white rounded-lg shadow-sm border transition-all duration-200 overflow-hidden group cursor-pointer hover:shadow-md hover:border-green-400"
+                  onClick={() => { if (onOpenReportBuilder) onOpenReportBuilder(); }}
+                >
+                  <div className="h-48 w-full p-4 flex flex-col justify-between relative bg-gradient-to-br from-green-50 to-emerald-50 border-b border-gray-100">
+                    <div className="w-full flex justify-center mb-2 px-2">
+                      <img src={headerImage} alt="Header" className="w-full object-contain" style={{ maxHeight: '30px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    </div>
+                    <div className="mt-4 flex-1 rounded-t-lg p-3 bg-gradient-to-br from-emerald-700 to-green-800 text-white">
+                      <div className="text-[8px] font-bold uppercase tracking-wider opacity-60 mb-1">Modelo Personalizado</div>
+                      <h3 className="text-[10px] font-bold leading-tight line-clamp-4 text-center mt-1">{tmpl.title}</h3>
+                    </div>
+                    <div className="absolute bottom-4 right-4 bg-emerald-700/90 text-white text-[8px] px-2 py-1 rounded">
+                      {tmpl.city}<br/>{tmpl.year}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h2 className="font-bold text-sm text-gray-800 line-clamp-2" title={tmpl.title}>{tmpl.title}</h2>
+                    <div className="mt-2 text-[10px] text-gray-400">Criado em {new Date(tmpl.createdAt).toLocaleDateString('pt-BR')}</div>
+                    <div className="mt-3 flex justify-between items-center">
+                      <span className="text-xs text-emerald-600 font-medium">Construtor de Relatório</span>
+                      <button onClick={e => { e.stopPropagation(); deleteTemplate(tmpl.id); window.location.reload(); }} className="text-red-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600 flex items-center gap-1" title="Excluir modelo">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Configuration Modal */}
       {selectedReport && (

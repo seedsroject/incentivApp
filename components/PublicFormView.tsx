@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Logo } from './Logo';
 import { CameraOCR } from './CameraOCR';
 import { MetaQualitativa } from './MetaQualitativa';
@@ -9,22 +9,25 @@ import { PublicPreCadastroForm } from './PublicPreCadastroForm';
 import { DeclaracaoUniformesForm } from './DeclaracaoUniformesForm';
 import { DeclaracaoProntidaoForm } from './DeclaracaoProntidaoForm';
 import { PublicDeclaracaoMatriculaUpload } from './PublicDeclaracaoMatriculaUpload';
-import { StudentDraft, DocumentLog, PreCadastroData, DeclaracaoUniformes, DeclaracaoProntidao } from '../types';
+import { AutorizacaoViagemForm } from './AutorizacaoViagemForm';
+import { StudentDraft, DocumentLog, PreCadastroData, DeclaracaoUniformes, DeclaracaoProntidao, AutorizacaoViagem, ProjectId } from '../types';
 
 interface PublicFormViewProps {
   serviceId: string;
   studentId?: string;
   onSave: (data: any) => void;
+  projectId?: ProjectId;
 }
 
 // ─── WIZARD STEPS ───────────────────────────────────────────────────────────
 const STEPS = [
   { id: 1, label: 'Inscrição', short: 'Inscrição' },
   { id: 2, label: 'Declaração de Matrícula', short: 'Matrícula' },
-  { id: 3, label: 'Indicadores Socioeconômicos', short: 'Socioeconômico' },
-  { id: 4, label: 'Declaração de Uniformes', short: 'Uniformes' },
-  { id: 5, label: 'Questionário de Prontidão (PAR-Q)', short: 'PAR-Q' },
-  { id: 6, label: 'Meta Qualitativa (Parcial)', short: 'Meta Qualit.' },
+  { id: 3, label: 'Autorização de Viagem', short: 'Viagem' },
+  { id: 4, label: 'Indicadores Socioeconômicos', short: 'Socioeconômico' },
+  { id: 5, label: 'Declaração de Uniformes', short: 'Uniformes' },
+  { id: 6, label: 'Questionário de Prontidão (PAR-Q)', short: 'PAR-Q' },
+  { id: 7, label: 'Meta Qualitativa (Parcial)', short: 'Meta Qualit.' },
 ];
 
 // ─── PROGRESS BAR ────────────────────────────────────────────────────────────
@@ -98,7 +101,7 @@ const SkipButton: React.FC<{ onSkip: () => void; label?: string }> = ({ onSkip, 
 );
 
 // ─── SUCCESS SCREEN ───────────────────────────────────────────────────────────
-const SuccessScreen: React.FC<{ skipped: number[] }> = ({ skipped }) => (
+const SuccessScreen: React.FC<{ skipped: number[]; logoSrc?: string }> = ({ skipped, logoSrc = '/logo.png' }) => (
   <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center animate-fade-in">
     <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-8 border border-green-100">
       <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -125,19 +128,31 @@ const SuccessScreen: React.FC<{ skipped: number[] }> = ({ skipped }) => (
     )}
     <p className="text-xs text-gray-300 mt-4">Você já pode fechar esta página.</p>
     <div className="mt-12 pt-8 border-t border-gray-100 w-full max-w-xs opacity-30 grayscale">
-      <Logo className="h-8 mx-auto" />
+      <img src={logoSrc} alt="Logo" className="h-8 mx-auto object-contain" />
     </div>
   </div>
 );
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave }) => {
+export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [skippedSteps, setSkippedSteps] = useState<number[]>([]);
   const [wizardStudentName, setWizardStudentName] = useState('');
   const [wizardStudentId, setWizardStudentId] = useState(studentId || '');
+
+  // Project-aware logo & name
+  const projectLogo = useMemo(() => {
+    if (projectId === 'DANIEL_DIAS') return '/logo_Daniel_Dias.png';
+    if (projectId === 'FUTEBOL') return '/logo_futebol.png';
+    return '/logo.png';
+  }, [projectId]);
+  const projectName = useMemo(() => {
+    if (projectId === 'DANIEL_DIAS') return 'Nadando com Daniel Dias';
+    if (projectId === 'FUTEBOL') return 'Escolinha de Futebol';
+    return 'Escolinha de Triathlon';
+  }, [projectId]);
 
   // For non-wizard services: fetch student from localStorage
   const student: StudentDraft | undefined = React.useMemo(() => {
@@ -194,13 +209,13 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <header className="bg-white border-b border-gray-100 p-4 sticky top-0 z-50 flex flex-col items-center gap-1">
-          <Logo className="h-10" />
+          <img src={projectLogo} alt={projectName} className="h-10 object-contain" />
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Portal do Aluno</p>
         </header>
         <main className="flex-1 overflow-auto bg-white pb-10">
           <div className="max-w-3xl mx-auto px-1">
             {isSuccess ? (
-              <SuccessScreen skipped={[]} />
+              <SuccessScreen skipped={[]} logoSrc={projectLogo} />
             ) : serviceId === 'meta' ? (
               <MetaQualitativa key="public-meta" onBack={() => { }} initialMode="DIGITAL_FORM"
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
@@ -244,7 +259,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
   }
 
   // ── WIZARD MODE (serviceId === 'ficha') ───────────────────────────────────
-  if (isSuccess) return <SuccessScreen skipped={skippedSteps} />;
+  if (isSuccess) return <SuccessScreen skipped={skippedSteps} logoSrc={projectLogo} />;
 
   // Fetch student object from localStorage using wizardStudentId (populated after step 1)
   const wizardStudent: StudentDraft | undefined = (() => {
@@ -261,7 +276,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Wizard Header with progress */}
       <header className="bg-white border-b border-gray-100 p-3 flex flex-col items-center gap-1">
-        <Logo className="h-8" />
+        <img src={projectLogo} alt={projectName} className="h-8 object-contain" />
         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Portal do Aluno · Inscrição</p>
       </header>
 
@@ -306,8 +321,31 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
             </div>
           )}
 
-          {/* ── STEP 3: Indicadores Socioeconômicos ── */}
+          {/* ── STEP 3: Autorização de Viagem Nacional ── */}
           {wizardStep === 3 && (
+            <div>
+              <div className="bg-amber-50 border border-amber-200 mx-4 mt-4 mb-2 rounded-xl p-3 text-center">
+                <p className="text-xs font-bold text-amber-700">
+                  Preencha a autorização de viagem desacompanhado(a) e assine abaixo.
+                </p>
+              </div>
+              <AutorizacaoViagemForm
+                key="wizard-viagem"
+                studentName={wizardStudentName || wizardStudent?.nome}
+                studentData={wizardStudent}
+                isPublic={true}
+                onSave={(autorizacao: AutorizacaoViagem) => {
+                  saveStudentToLocalStorage({ autorizacao_viagem: autorizacao }, wizardStudentId);
+                  onSave({ type: 'autorizacao_viagem', studentId: wizardStudentId, autorizacao });
+                  advance(3);
+                }}
+              />
+              <SkipButton onSkip={() => skip(3)} label="Pular autorização de viagem — entregar depois" />
+            </div>
+          )}
+
+          {/* ── STEP 4: Indicadores Socioeconômicos ── */}
+          {wizardStep === 4 && (
             <div>
               <div className="bg-blue-50 border border-blue-100 mx-4 mt-4 mb-2 rounded-xl p-3 text-center">
                 <p className="text-xs font-bold text-blue-700">
@@ -320,15 +358,15 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 initialMode="DIGITAL_FORM"
                 onSave={(data: DocumentLog) => {
                   onSave(data);
-                  advance(3);
+                  advance(4);
                 }}
               />
-              <SkipButton onSkip={() => skip(3)} label="Pular questionário socioeconômico" />
+              <SkipButton onSkip={() => skip(4)} label="Pular questionário socioeconômico" />
             </div>
           )}
 
-          {/* ── STEP 4: Declaração de Uniformes ── */}
-          {wizardStep === 4 && (
+          {/* ── STEP 5: Declaração de Uniformes ── */}
+          {wizardStep === 5 && (
             <div>
               <div className="bg-blue-50 border border-blue-100 mx-4 mt-4 mb-2 rounded-xl p-3 text-center">
                 <p className="text-xs font-bold text-blue-700">
@@ -345,7 +383,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   onSave={(declaracao: DeclaracaoUniformes) => {
                     saveStudentToLocalStorage({ declaracao_uniformes: declaracao }, wizardStudentId);
                     onSave({ type: 'declaracao_uniformes', studentId: wizardStudentId, declaracao });
-                    advance(4);
+                    advance(5);
                   }}
                 />
               ) : (
@@ -354,12 +392,12 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   desc="Esta etapa requer os dados do aluno. Se pulou o passo de inscrição, preencha diretamente com o coordenador do núcleo."
                 />
               )}
-              <SkipButton onSkip={() => skip(4)} label="Uniformes ainda não foram entregues — pular" />
+              <SkipButton onSkip={() => skip(5)} label="Uniformes ainda não foram entregues — pular" />
             </div>
           )}
 
-          {/* ── STEP 5: PAR-Q ── */}
-          {wizardStep === 5 && (
+          {/* ── STEP 6: PAR-Q ── */}
+          {wizardStep === 6 && (
             <div>
               <div className="bg-blue-50 border border-blue-100 mx-4 mt-4 mb-2 rounded-xl p-3 text-center">
                 <p className="text-xs font-bold text-blue-700">
@@ -375,7 +413,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   onSave={(declaracao: DeclaracaoProntidao) => {
                     saveStudentToLocalStorage({ declaracao_prontidao: declaracao }, wizardStudentId);
                     onSave({ type: 'declaracao_prontidao', studentId: wizardStudentId, declaracao });
-                    advance(5);
+                    advance(6);
                   }}
                 />
               ) : (
@@ -384,12 +422,12 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   desc="Esta etapa requer os dados do aluno. Se pulou o passo de inscrição, preencha diretamente com o coordenador do núcleo."
                 />
               )}
-              <SkipButton onSkip={() => skip(5)} label="Pular questionário de saúde — entregar depois" />
+              <SkipButton onSkip={() => skip(6)} label="Pular questionário de saúde — entregar depois" />
             </div>
           )}
 
-          {/* ── STEP 6: Meta Qualitativa (Parcial) ── */}
-          {wizardStep === 6 && (
+          {/* ── STEP 7: Meta Qualitativa (Parcial) ── */}
+          {wizardStep === 7 && (
             <div>
               <div className="bg-blue-50 border border-blue-100 mx-4 mt-4 mb-2 rounded-xl p-3 text-center">
                 <p className="text-xs font-bold text-blue-700">
@@ -402,10 +440,10 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 initialMode="DIGITAL_FORM"
                 onSave={(data: DocumentLog) => {
                   onSave(data);
-                  advance(6);
+                  advance(7);
                 }}
               />
-              <SkipButton onSkip={() => skip(6)} label="Pular meta qualitativa parcial" />
+              <SkipButton onSkip={() => skip(7)} label="Pular meta qualitativa parcial" />
             </div>
           )}
 

@@ -22,7 +22,9 @@ import { CrossReferenceView } from './components/CrossReferenceView';
 import { FrequencyReportBuilder } from './components/FrequencyReportBuilder';
 import { PDLIEReportBuilder } from './components/PDLIEReportBuilder';
 import { AssiduidadeReportBuilder } from './components/AssiduidadeReportBuilder';
+import { PesquisaReportBuilder } from './components/PesquisaReportBuilder';
 import { InscricaoReportBuilder } from './components/InscricaoReportBuilder';
+import { ReportBuilder } from './components/ReportBuilder';
 import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
@@ -142,29 +144,30 @@ const MOCK_NUCLEOS: Nucleo[] = [
 
 // --- NÚCLEOS DANIEL DIAS ---
 const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
-  { id: 'dd_cic', nome: 'CEL Bairro CIC – Rua Pedro Gusso, 2447, Cidade Industrial, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4925, -49.3450], stockStatus: 'HIGH' },
-  { id: 'dd_boa_vista', nome: 'CEL Boa Vista – Rua Lodovico Geronazzo, 1910, Boa Vista, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.3850, -49.2319], stockStatus: 'MEDIUM' },
-  { id: 'dd_boqueirao', nome: 'CEL Boqueirão – Rua Dr. Luiz Losso Filho, s/n, Boqueirão, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5008, -49.2392], stockStatus: 'HIGH' },
-  { id: 'dd_osvaldo_cruz', nome: 'CEL Osvaldo Cruz – Rua Cel. Dulcídio, 950, Centro, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4386, -49.2783], stockStatus: 'MEDIUM' },
-  { id: 'dd_cajuru', nome: 'CEL Cajuru – Rua Benedito Herculano de Oliveira, s/n, Cajuru, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4611, -49.2133], stockStatus: 'HIGH' },
-  { id: 'dd_santa_felicidade', nome: 'CEL Santa Felicidade – Via Vêneto, 1431, Santa Felicidade, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4053, -49.3283], stockStatus: 'MEDIUM' },
-  { id: 'dd_gente_bairro_novo', nome: 'Clube da Gente Bairro Novo – Rua Marcolina Caetano Chaves, 150, Sítio Cercado, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5532, -49.2743], stockStatus: 'LOW' },
-  { id: 'dd_gente_cic', nome: 'Clube da Gente CIC – Rua Emílio Romani, s/n, CIC, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5100, -49.3500], stockStatus: 'HIGH' },
-  { id: 'dd_valinhos_juventude', nome: 'Praça da Juventude – Rua Geraldo de Gasperi, s/n, Cecap, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9708, -46.9958], stockStatus: 'MEDIUM' },
-  { id: 'dd_valinhos_nardini', nome: 'Parque Monsenhor Nardini – Rua Dom João VI, s/n, Jardim Planalto, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9650, -47.0050], stockStatus: 'HIGH' },
-  { id: 'dd_atibaia_ciem2', nome: 'CIEM 2 – Av. Industrial Walter Kloth, 1135, Jd. Imperial, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5530], stockStatus: 'MEDIUM' },
-  { id: 'dd_atibaia_ciem3', nome: 'CIEM 3 – Av. Jerônimo de Camargo, 421, Caetetuba, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1250, -46.5650], stockStatus: 'LOW' },
-  { id: 'dd_atibaia_elefantao', nome: 'Piscina do Elefantão – Alameda Lucas Nogueira Garcez, s/n, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5500], stockStatus: 'HIGH' },
-  { id: 'dd_ponta_grossa_arena', nome: 'Arena Multiuso – Av. Visconde de Taunay, 950, Ronda, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0950, -50.1619], stockStatus: 'MEDIUM' },
-  { id: 'dd_ponta_grossa_cecon', nome: 'CECON (Idoso) – Rua João Cecy Filho, s/n, Nova Rússia, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0900, -50.1700], stockStatus: 'LOW' },
-  { id: 'dd_hortolandia', nome: 'Complexo Nelson Cancian – Rua João Mendes, 203, Jd. Nova Hortolândia, Hortolândia - SP', project: 'DANIEL_DIAS', coordinates: [-22.8600, -47.2200], stockStatus: 'HIGH' },
-  { id: 'dd_jundiai', nome: 'CECE Nicolino de Luca (Bolão) – Rua Rodrigo Soares de Oliveira, s/n, Jundiaí - SP', project: 'DANIEL_DIAS', coordinates: [-23.1864, -46.8842], stockStatus: 'MEDIUM' },
-  { id: 'dd_limeira', nome: 'Piscina Alberto Savoi – Rua Dr. Roberto Mange, s/n, Jd. Mercedes, Limeira - SP', project: 'DANIEL_DIAS', coordinates: [-22.5650, -47.4017], stockStatus: 'LOW' },
-  { id: 'dd_extrema', nome: 'Parque de Eventos – Av. Delegado Waldemar Gomes Pinto, s/n, Extrema - MG', project: 'DANIEL_DIAS', coordinates: [-22.8550, -46.3178], stockStatus: 'HIGH' },
-  { id: 'dd_pindoretama', nome: 'Ginásio Poliesportivo – Centro da Cidade, Pindoretama - CE', project: 'DANIEL_DIAS', coordinates: [-4.0142, -38.3050], stockStatus: 'MEDIUM' },
-  { id: 'dd_pacajus', nome: 'Estádio/Ginásio Municipal – Rua Tabelião José de Lima, s/n, Pacajus - CE', project: 'DANIEL_DIAS', coordinates: [-4.1722, -38.4617], stockStatus: 'LOW' },
-  { id: 'dd_canaa', nome: 'Polo de Natação Municipal – Av. Weyne Cavalcante, s/n, Canaã dos Carajás - PA', project: 'DANIEL_DIAS', coordinates: [-6.4967, -49.8783], stockStatus: 'HIGH' },
-  { id: 'dd_belo_jardim', nome: 'SESC Belo Jardim (Parceria) – Rua Pedro Rocha, s/n, Centro, Belo Jardim - PE', project: 'DANIEL_DIAS', coordinates: [-8.3361, -36.4244], stockStatus: 'MEDIUM' },
+  { id: 'dd_cic', nome: 'CIC | PR - CEL Bairro CIC – Rua Pedro Gusso, 2447, Cidade Industrial, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4925, -49.3450], stockStatus: 'HIGH' },
+  { id: 'dd_boa_vista', nome: 'Boa Vista | PR - CEL Boa Vista – Rua Lodovico Geronazzo, 1910, Boa Vista, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.3850, -49.2319], stockStatus: 'MEDIUM' },
+  { id: 'dd_boqueirao', nome: 'Boqueirão | PR - CEL Boqueirão – Rua Dr. Luiz Losso Filho, s/n, Boqueirão, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5008, -49.2392], stockStatus: 'HIGH' },
+  { id: 'dd_osvaldo_cruz', nome: 'Centro | PR - CEL Osvaldo Cruz – Rua Cel. Dulcídio, 950, Centro, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4386, -49.2783], stockStatus: 'MEDIUM' },
+  { id: 'dd_cajuru', nome: 'Cajuru | PR - CEL Cajuru – Rua Benedito Herculano de Oliveira, s/n, Cajuru, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4611, -49.2133], stockStatus: 'HIGH' },
+  { id: 'dd_santa_felicidade', nome: 'Santa Felicidade | PR - CEL Santa Felicidade – Via Vêneto, 1431, Santa Felicidade, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.4053, -49.3283], stockStatus: 'MEDIUM' },
+  { id: 'dd_gente_bairro_novo', nome: 'Sítio Cercado | PR - Clube da Gente Bairro Novo – Rua Marcolina Caetano Chaves, 150, Sítio Cercado, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5532, -49.2743], stockStatus: 'LOW' },
+  { id: 'dd_gente_cic', nome: 'CIC Gente | PR - Clube da Gente CIC – Rua Emílio Romani, s/n, CIC, Curitiba - PR', project: 'DANIEL_DIAS', coordinates: [-25.5100, -49.3500], stockStatus: 'HIGH' },
+  { id: 'dd_valinhos_juventude', nome: 'Valinhos | SP - Praça da Juventude – Rua Geraldo de Gasperi, s/n, Cecap, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9708, -46.9958], stockStatus: 'MEDIUM' },
+  { id: 'dd_valinhos_nardini', nome: 'Valinhos Nardini | SP - Parque Monsenhor Nardini – Rua Dom João VI, s/n, Jardim Planalto, Valinhos - SP', project: 'DANIEL_DIAS', coordinates: [-22.9650, -47.0050], stockStatus: 'HIGH' },
+  { id: 'dd_atibaia_ciem2', nome: 'Atibaia CIEM2 | SP - CIEM 2 – Av. Industrial Walter Kloth, 1135, Jd. Imperial, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5530], stockStatus: 'MEDIUM' },
+  { id: 'dd_atibaia_ciem3', nome: 'Atibaia CIEM3 | SP - CIEM 3 – Av. Jerônimo de Camargo, 421, Caetetuba, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1250, -46.5650], stockStatus: 'LOW' },
+  { id: 'dd_atibaia_elefantao', nome: 'Atibaia Elefantão | SP - Piscina do Elefantão – Alameda Lucas Nogueira Garcez, s/n, Atibaia - SP', project: 'DANIEL_DIAS', coordinates: [-23.1170, -46.5500], stockStatus: 'HIGH' },
+  { id: 'dd_ponta_grossa_arena', nome: 'Ponta Grossa | PR - Arena Multiuso – Av. Visconde de Taunay, 950, Ronda, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0950, -50.1619], stockStatus: 'MEDIUM' },
+  { id: 'dd_ponta_grossa_cecon', nome: 'Ponta Grossa CECON | PR - CECON (Idoso) – Rua João Cecy Filho, s/n, Nova Rússia, Ponta Grossa - PR', project: 'DANIEL_DIAS', coordinates: [-25.0900, -50.1700], stockStatus: 'LOW' },
+  { id: 'dd_hortolandia', nome: 'Hortolândia | SP - Complexo Nelson Cancian – Rua João Mendes, 203, Jd. Nova Hortolândia, Hortolândia - SP', project: 'DANIEL_DIAS', coordinates: [-22.8600, -47.2200], stockStatus: 'HIGH' },
+  { id: 'dd_jundiai', nome: 'Jundiaí | SP - CECE Nicolino de Luca (Bolão) – Rua Rodrigo Soares de Oliveira, s/n, Jundiaí - SP', project: 'DANIEL_DIAS', coordinates: [-23.1864, -46.8842], stockStatus: 'MEDIUM' },
+  { id: 'dd_limeira', nome: 'Limeira | SP - Piscina Alberto Savoi – Rua Dr. Roberto Mange, s/n, Jd. Mercedes, Limeira - SP', project: 'DANIEL_DIAS', coordinates: [-22.5650, -47.4017], stockStatus: 'LOW' },
+  { id: 'dd_extrema', nome: 'Extrema | MG - Parque de Eventos – Av. Delegado Waldemar Gomes Pinto, s/n, Extrema - MG', project: 'DANIEL_DIAS', coordinates: [-22.8550, -46.3178], stockStatus: 'HIGH' },
+  { id: 'dd_pindoretama', nome: 'Pindoretama | CE - Ginásio Poliesportivo – Centro da Cidade, Pindoretama - CE', project: 'DANIEL_DIAS', coordinates: [-4.0142, -38.3050], stockStatus: 'MEDIUM' },
+  { id: 'dd_pacajus', nome: 'Pacajus | CE - Estádio/Ginásio Municipal – Rua Tabelião José de Lima, s/n, Pacajus - CE', project: 'DANIEL_DIAS', coordinates: [-4.1722, -38.4617], stockStatus: 'LOW' },
+  { id: 'dd_canaa', nome: 'Canaã dos Carajás | PA - Polo de Natação Municipal – Av. Weyne Cavalcante, s/n, Canaã dos Carajás - PA', project: 'DANIEL_DIAS', coordinates: [-6.4967, -49.8783], stockStatus: 'HIGH' },
+  { id: 'dd_belo_jardim', nome: 'Belo Jardim | PE - SESC Belo Jardim (Parceria) – Rua Pedro Rocha, s/n, Centro, Belo Jardim - PE', project: 'DANIEL_DIAS', coordinates: [-8.3361, -36.4244], stockStatus: 'MEDIUM' },
+
 ].map(n => ({
   ...n,
   stockDetails: generateStockDetails(n.stockStatus as any),
@@ -174,7 +177,23 @@ const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
   employees: generateMockEmployees(n.id, n.nome)
 })) as Nucleo[];
 
-const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS];
+// --- NÚCLEOS FUTEBOL ---
+const FUTEBOL_NUCLEOS: Nucleo[] = [
+  { id: 'fut_maracanau', nome: 'Maracanaú | CE - Sede Maracanaú, Maracanaú - CE', project: 'FUTEBOL', coordinates: [-3.8744, -38.6256], stockStatus: 'HIGH' },
+  { id: 'fut_caucaia', nome: 'Caucaia | CE - Sede Caucaia, Caucaia - CE', project: 'FUTEBOL', coordinates: [-3.7375, -38.6533], stockStatus: 'MEDIUM' },
+  { id: 'fut_pacajus', nome: 'Pacajus | CE - Sede Pacajus, Pacajus - CE', project: 'FUTEBOL', coordinates: [-4.1722, -38.4617], stockStatus: 'HIGH' },
+  { id: 'fut_itaitinga', nome: 'Itaitinga | CE - Sede Itaitinga, Itaitinga - CE', project: 'FUTEBOL', coordinates: [-3.9667, -38.5278], stockStatus: 'MEDIUM' },
+  { id: 'fut_maranguape', nome: 'Maranguape | CE - Sede Maranguape, Maranguape - CE', project: 'FUTEBOL', coordinates: [-3.8914, -38.6836], stockStatus: 'HIGH' },
+].map(n => ({
+  ...n,
+  stockDetails: generateStockDetails(n.stockStatus as any),
+  address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+  phone: '(00) 3333-4444',
+  email: `contato.${n.id}@futebol.org.br`,
+  employees: generateMockEmployees(n.id, n.nome)
+})) as Nucleo[];
+
+const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS, ...FUTEBOL_NUCLEOS];
 
 const MOCK_USER: User = {
   uid: 'usr_123456',
@@ -429,11 +448,28 @@ const AppContent: React.FC = () => {
   const projectEvidence = useMemo(() => collectedEvidence.filter(e => !e.projectId || e.projectId === activeProject), [collectedEvidence, activeProject]);
 
   // --- PROJECT ASSETS HELPER ---
-  const projectAssets = useMemo(() => ({
-    logo: activeProject === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png',
-    header: activeProject === 'DANIEL_DIAS' ? '/Banner_Relatorio_Daniel.png' : '/header_full.png',
-    name: activeProject === 'DANIEL_DIAS' ? 'Nadando com Daniel Dias' : 'Formando Campeões',
-  }), [activeProject]);
+  const PROJECT_LIST: ProjectId[] = ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'];
+  const projectAssets = useMemo(() => {
+    if (activeProject === 'DANIEL_DIAS') return { logo: '/logo_Daniel_Dias.png', header: '/Banner_Relatorio_Daniel.png', name: 'Nadando com Daniel Dias' };
+    if (activeProject === 'FUTEBOL') return { logo: '/logo_futebol.png', header: '/Banner_relatorio_futebol.png', name: 'Escolinha de Futebol' };
+    return { logo: '/logo.png', header: '/header_full.png', name: 'Escolinha de Triathlon' };
+  }, [activeProject]);
+
+  // --- DYNAMIC FAVICON & TITLE ---
+  useEffect(() => {
+    // Update favicon
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = projectAssets.logo;
+    link.type = 'image/png';
+
+    // Update page title
+    document.title = `${projectAssets.name} — Gestão Esportiva`;
+  }, [projectAssets]);
 
   const [loginNucleoId, setLoginNucleoId] = useState<string>('');
   const [loginEmail, setLoginEmail] = useState<string>('professor@teste.com');
@@ -484,11 +520,15 @@ const AppContent: React.FC = () => {
       const token = searchParams.get('token') || hashParams.get('token');
       const service = searchParams.get('service') || hashParams.get('service');
       const studentId = searchParams.get('studentId') || hashParams.get('studentId');
+      const project = searchParams.get('project') || hashParams.get('project');
 
       if (token && service) {
-        console.log("Rota pública detectada:", { token, service, studentId });
+        console.log("Rota pública detectada:", { token, service, studentId, project });
+        if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'].includes(project)) {
+          setActiveProject(project as ProjectId);
+        }
         setView(AppView.PUBLIC_FORM);
-        setNavParams({ token, service, studentId });
+        setNavParams({ token, service, studentId, project });
       }
     };
 
@@ -735,6 +775,7 @@ const AppContent: React.FC = () => {
       <PublicFormView
         serviceId={navParams.service}
         studentId={navParams.studentId}
+        projectId={navParams.project as ProjectId | undefined}
         onSave={(data) => {
           if (navParams.service === 'ficha') handleSaveStudent(data);
           if (navParams.service === 'meta') handleSaveDocument(data);
@@ -797,9 +838,9 @@ const AppContent: React.FC = () => {
               <div className="w-full flex items-center justify-center gap-1 mb-2 group relative">
                 {/* Seta Esquerda — invisível até hover */}
                 <button
-                  onClick={() => { setActiveProject('FORMANDO_CAMPEOES'); setLoginNucleoId(''); setRegNucleo(''); }}
-                  className={`p-2 rounded-full transition-all duration-300 ${activeProject === 'FORMANDO_CAMPEOES' ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
-                  disabled={activeProject === 'FORMANDO_CAMPEOES'}
+                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx > 0) { setActiveProject(PROJECT_LIST[idx - 1]); setLoginNucleoId(''); setRegNucleo(''); } }}
+                  className={`p-2 rounded-full transition-all duration-300 ${PROJECT_LIST.indexOf(activeProject) === 0 ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
+                  disabled={PROJECT_LIST.indexOf(activeProject) === 0}
                   title="Projeto anterior"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
@@ -809,7 +850,7 @@ const AppContent: React.FC = () => {
                   {/* Glow / sombra de fundo */}
                   <div
                     className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-all duration-700 scale-75"
-                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #0ea5e9 0%, #64748b 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
+                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #0ea5e9 0%, #64748b 40%, transparent 70%)' : activeProject === 'FUTEBOL' ? 'radial-gradient(circle, #22c55e 0%, #15803d 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
                   />
                   <img
                     key={activeProject}
@@ -821,9 +862,9 @@ const AppContent: React.FC = () => {
                 </div>
                 {/* Seta Direita — invisível até hover */}
                 <button
-                  onClick={() => { setActiveProject('DANIEL_DIAS'); setLoginNucleoId(''); setRegNucleo(''); }}
-                  className={`p-2 rounded-full transition-all duration-300 ${activeProject === 'DANIEL_DIAS' ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
-                  disabled={activeProject === 'DANIEL_DIAS'}
+                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx < PROJECT_LIST.length - 1) { setActiveProject(PROJECT_LIST[idx + 1]); setLoginNucleoId(''); setRegNucleo(''); } }}
+                  className={`p-2 rounded-full transition-all duration-300 ${PROJECT_LIST.indexOf(activeProject) === PROJECT_LIST.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
+                  disabled={PROJECT_LIST.indexOf(activeProject) === PROJECT_LIST.length - 1}
                   title="Próximo projeto"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
@@ -831,11 +872,12 @@ const AppContent: React.FC = () => {
               </div>
               {/* Indicadores com cor por projeto */}
               <div className="flex gap-2 mb-2">
-                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300'}`} />
-                <span className={`w-2 h-2 rounded-full transition-all duration-500 ${activeProject === 'DANIEL_DIAS' ? 'bg-sky-500 scale-125' : 'bg-gray-300'}`} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('FORMANDO_CAMPEOES'); setLoginNucleoId(''); setRegNucleo(''); }} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'DANIEL_DIAS' ? 'bg-sky-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('DANIEL_DIAS'); setLoginNucleoId(''); setRegNucleo(''); }} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'FUTEBOL' ? 'bg-green-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('FUTEBOL'); setLoginNucleoId(''); setRegNucleo(''); }} />
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : 'Gestão de Núcleo'}</h2>
-              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-sky-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
+              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : activeProject === 'FUTEBOL' ? 'Escolinha de Futebol' : 'Escolinha de Triathlon'}</h2>
+              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-sky-600' : activeProject === 'FUTEBOL' ? 'text-green-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
             </div>
 
             {/* Toggle Login/Cadastro — cores adaptam ao projeto */}
@@ -843,7 +885,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(false)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${!isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Entrar
@@ -851,7 +893,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(true)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Cadastrar
@@ -899,7 +941,7 @@ const AppContent: React.FC = () => {
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Acessando...' : 'Entrar no Sistema'}
                   </button>
                 </form>
@@ -961,7 +1003,7 @@ const AppContent: React.FC = () => {
                     />
                   </div>
 
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Cadastrando...' : 'Criar Conta'}
                   </button>
                 </form>
@@ -988,9 +1030,9 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && view !== AppView.ASSIDUIDADE_REPORT && view !== AppView.PESQUISA_REPORT && (view as string) !== 'REPORT_BUILDER' && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'} />}
 
-      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT || view === AppView.INSCRICAO_REPORT) ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
+      <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT || view === AppView.INSCRICAO_REPORT || view === AppView.ASSIDUIDADE_REPORT || view === AppView.PESQUISA_REPORT || (view as string) === 'REPORT_BUILDER') ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (
           <PDFBuilderSidebar onOpenPreview={() => setView(AppView.PDF_BUILDER_VIEW)} />
         )}
@@ -1005,7 +1047,8 @@ const AppContent: React.FC = () => {
             documents={projectDocuments}
             onAddNucleo={(newNucleo) => setNucleos([...nucleos, { ...newNucleo, project: activeProject }])}
             onDischargeStudent={handleDischargeStudent}
-            projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : '/logo.png'}
+            projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'}
+            projectId={activeProject}
           />
         )}
 
@@ -1014,14 +1057,15 @@ const AppContent: React.FC = () => {
             onNavigate={navigateTo}
             itemsCount={students.length + collectedEvidence.length + collectedDocuments.length}
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
+            projectId={activeProject}
           />
         )}
 
         {view === AppView.FEATURE_PRE_CADASTRO && (
           <PreCadastroDashboard
             candidates={preCadastros}
-            nucleos={nucleos}
-            students={students}
+            nucleos={filteredNucleos}
+            students={projectStudents}
             onAddCandidate={(data) => setPreCadastros(prev => [...prev, data])}
             onUpdateCandidate={(id, updates) => setPreCadastros(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))}
             onDeleteCandidate={(id) => setPreCadastros(prev => prev.filter(c => c.id !== id))}
@@ -1055,11 +1099,26 @@ const AppContent: React.FC = () => {
             students={students.filter(s => s.status !== 'INATIVO')}
             history={collectedDocuments}
             inventory={inventory}
-            nucleos={nucleos}
+            nucleos={filteredNucleos}
             currentNucleoId={user?.nucleo_id || undefined}
             onBack={() => setView(AppView.DASHBOARD)}
             onSave={(data) => {
               handleSaveDocument(data);
+              // Auto-attach OCR data to student when linked
+              if (data.type === 'DECLARACAO_MATRICULA' && data.metaData?.studentId && data.metaData?.ocrData) {
+                const sid = data.metaData.studentId;
+                const ocr = data.metaData.ocrData;
+                setStudents(prev => prev.map(s =>
+                  s.id === sid ? {
+                    ...s,
+                    declaracao_matricula: {
+                      ...ocr,
+                      imageUrl: data.metaData?.imageUrl || '',
+                      dataRegistro: data.timestamp,
+                    }
+                  } : s
+                ));
+              }
               setView(AppView.DASHBOARD);
             }}
             onUpdateHistory={setCollectedDocuments}
@@ -1070,7 +1129,7 @@ const AppContent: React.FC = () => {
           <ServicoSocialDashboard
             students={students}
             history={collectedDocuments}
-            nucleos={nucleos}
+            nucleos={filteredNucleos}
             onBack={() => setView(AppView.DASHBOARD)}
             onUpdateHistory={setCollectedDocuments}
           />
@@ -1080,7 +1139,7 @@ const AppContent: React.FC = () => {
           <CrossReferenceView
             students={students}
             history={collectedDocuments}
-            nucleos={nucleos}
+            nucleos={filteredNucleos}
             currentNucleoId={user?.nucleo_id || undefined}
             onBack={() => setView(AppView.DASHBOARD)}
           />
@@ -1130,9 +1189,9 @@ const AppContent: React.FC = () => {
           <ReportPreview
              user={user}
              students={students}
-             nucleos={nucleos}
-             evidences={collectedEvidence}
-             documents={collectedDocuments}
+             nucleos={filteredNucleos}
+             evidences={projectEvidence}
+             documents={projectDocuments}
              onUpdateStudent={handleSaveStudent}
              onBack={() => setView(AppView.DASHBOARD)}
           />
@@ -1141,15 +1200,18 @@ const AppContent: React.FC = () => {
         {view === AppView.DEV_ENVIRONMENT && user && (
           <div className="pt-20"> {/* Add padding to prevent going under header */}
             <AmbienteDesenvolvimento 
-              nucleos={nucleos}
-              students={students}
-              history={collectedDocuments}
+              nucleos={filteredNucleos}
+              students={projectStudents}
+              history={projectDocuments}
               onOpenBuilder={() => setView(AppView.PDF_BUILDER_VIEW)}
               onOpenFrequencyReport={() => setView(AppView.FREQUENCY_REPORT)}
               onOpenPDLIEReport={() => setView(AppView.PDLIE_REPORT)}
               onOpenAssiduidadeReport={() => setView(AppView.ASSIDUIDADE_REPORT)}
+              onOpenPesquisaReport={() => setView(AppView.PESQUISA_REPORT)}
               onOpenInscricaoReport={() => setView(AppView.INSCRICAO_REPORT)}
+              onOpenReportBuilder={() => setView('REPORT_BUILDER' as any)}
               onBack={() => setView(AppView.DASHBOARD)}
+              headerImage={projectAssets.header}
             />
           </div>
         )}
@@ -1183,6 +1245,16 @@ const AppContent: React.FC = () => {
           />
         )}
 
+        {view === AppView.PESQUISA_REPORT && user && (
+          <PesquisaReportBuilder
+            nucleos={filteredNucleos}
+            students={projectStudents}
+            onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            headerImage={projectAssets.header}
+            projectName={projectAssets.name}
+          />
+        )}
+
         {view === AppView.INSCRICAO_REPORT && user && (
           <InscricaoReportBuilder
             students={projectStudents}
@@ -1191,6 +1263,18 @@ const AppContent: React.FC = () => {
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
             history={collectedDocuments}
+          />
+        )}
+
+        {(view as string) === 'REPORT_BUILDER' && user && (
+          <ReportBuilder
+            onBack={() => setView(AppView.DEV_ENVIRONMENT)}
+            projectName={projectAssets.name}
+            students={projectStudents}
+            history={projectDocuments}
+            evidences={projectEvidence}
+            nucleos={filteredNucleos}
+            headerImage={projectAssets.header}
           />
         )}
       </main>

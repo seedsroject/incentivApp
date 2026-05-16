@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Nucleo, PDFItemType, StudentDraft, DocumentLog } from '../types';
+import React, { useState, useMemo } from 'react';
+import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId } from '../types';
 import { usePDFBuilder } from './PDFBuilderContext';
 import { AdminMap } from './AdminMap';
 import { Logo } from './Logo';
@@ -17,6 +17,7 @@ interface AdminDashboardProps {
     onAddNucleo: (nucleo: Nucleo) => void;
     onDischargeStudent?: (studentId: string, nucleoId: string) => void;
     projectLogo?: string;
+    projectId?: ProjectId;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -28,8 +29,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     documents,
     onAddNucleo,
     onDischargeStudent,
-    projectLogo = '/logo.png'
+    projectLogo = '/logo.png',
+    projectId = 'FORMANDO_CAMPEOES'
 }) => {
+    // --- THEME BY PROJECT ---
+    const theme = useMemo(() => {
+        if (projectId === 'FUTEBOL') return {
+            gradient: 'from-green-500 to-emerald-600',
+            gradientHover: 'hover:from-green-600 hover:to-emerald-700',
+            shadow: 'shadow-green-200',
+            shadowHover: 'hover:shadow-emerald-300',
+            bgLight: 'bg-green-50',
+            bgMedium: 'bg-green-100',
+            ring: 'ring-green-500',
+            text: 'text-green-600',
+            textLight: 'text-green-400',
+            textSubtle: 'text-green-100',
+            border: 'border-green-200',
+            borderHover: 'hover:border-green-300',
+            hoverBg: 'hover:bg-green-50/30',
+            badgeBg: 'bg-green-100',
+            badgeText: 'text-green-600',
+            hoverText: 'hover:text-green-700',
+            overlayBg: 'group-hover:bg-green-500/5',
+            overlayBtn: 'bg-green-600',
+        };
+        if (projectId === 'DANIEL_DIAS') return {
+            gradient: 'from-sky-500 to-slate-500',
+            gradientHover: 'hover:from-sky-600 hover:to-slate-600',
+            shadow: 'shadow-sky-200',
+            shadowHover: 'hover:shadow-slate-300',
+            bgLight: 'bg-sky-50',
+            bgMedium: 'bg-sky-100',
+            ring: 'ring-sky-500',
+            text: 'text-sky-600',
+            textLight: 'text-sky-400',
+            textSubtle: 'text-sky-100',
+            border: 'border-sky-200',
+            borderHover: 'hover:border-sky-300',
+            hoverBg: 'hover:bg-sky-50/30',
+            badgeBg: 'bg-sky-100',
+            badgeText: 'text-sky-600',
+            hoverText: 'hover:text-sky-700',
+            overlayBg: 'group-hover:bg-sky-500/5',
+            overlayBtn: 'bg-sky-600',
+        };
+        return {
+            gradient: 'from-blue-600 to-teal-500',
+            gradientHover: 'hover:from-blue-700 hover:to-teal-600',
+            shadow: 'shadow-blue-200',
+            shadowHover: 'hover:shadow-teal-300',
+            bgLight: 'bg-blue-50',
+            bgMedium: 'bg-blue-100',
+            ring: 'ring-blue-500',
+            text: 'text-blue-600',
+            textLight: 'text-blue-400',
+            textSubtle: 'text-blue-100',
+            border: 'border-blue-200',
+            borderHover: 'hover:border-blue-200',
+            hoverBg: 'hover:bg-blue-50/30',
+            badgeBg: 'bg-blue-100',
+            badgeText: 'text-blue-600',
+            hoverText: 'hover:text-blue-700',
+            overlayBg: 'group-hover:bg-blue-500/5',
+            overlayBtn: 'bg-blue-600',
+        };
+    }, [projectId]);
     const [selectedNucleoId, setSelectedNucleoId] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState<'LOW' | 'MEDIUM' | 'HIGH' | null>(null);
     const [reportItems, setReportItems] = useState<Nucleo[]>([]);
@@ -207,7 +272,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <h3 className="text-sm font-bold text-gray-500 uppercase mb-4 tracking-wider">Acesso Rápido</h3>
                         <button
                             onClick={onNavigateToServices}
-                            className="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-lg shadow-blue-200 hover:shadow-teal-300 transform hover:-translate-y-0.5 transition-all group"
+                            className={`w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r ${theme.gradient} text-white shadow-lg ${theme.shadow} ${theme.shadowHover} transform hover:-translate-y-0.5 transition-all group`}
                         >
                             <div className="flex items-center gap-3">
                                 <div className="bg-white/20 p-2 rounded-lg text-white">
@@ -217,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 </div>
                                 <div className="text-left">
                                     <span className="block font-bold">Acessar Serviços</span>
-                                    <span className="text-xs text-blue-100">Gerenciar Alunos, Docs...</span>
+                                    <span className={`text-xs ${theme.textSubtle}`}>Gerenciar Alunos, Docs...</span>
                                 </div>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-white/70 group-hover:translate-x-1 transition-transform">
@@ -232,19 +297,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="flex p-1 bg-gray-100 rounded-xl mb-4">
                             <button
                                 onClick={() => setActiveTab('estoque')}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'estoque' ? 'bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'estoque' ? `bg-gradient-to-r ${theme.gradient} text-white shadow-sm` : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Estoque
                             </button>
                             <button
                                 onClick={() => setActiveTab('alunos')}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'alunos' ? 'bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'alunos' ? `bg-gradient-to-r ${theme.gradient} text-white shadow-sm` : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Alunos
                             </button>
                             <button
                                 onClick={() => setActiveTab('nucleos')}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'nucleos' ? 'bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'nucleos' ? `bg-gradient-to-r ${theme.gradient} text-white shadow-sm` : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Núcleos
                             </button>
@@ -264,10 +329,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <div className="grid grid-cols-3 gap-2 mb-6">
                                     <button
                                         onClick={() => setFilterStatus(null)}
-                                        className={`p-3 rounded-xl text-center transition-all ${filterStatus === null ? 'bg-blue-100 ring-2 ring-blue-500' : 'bg-blue-50 hover:bg-blue-100'}`}
+                                        className={`p-3 rounded-xl text-center transition-all ${filterStatus === null ? `${theme.bgMedium} ring-2 ${theme.ring}` : `${theme.bgLight} hover:${theme.bgMedium}`}`}
                                     >
-                                        <span className="block text-2xl font-black text-blue-600">{totalNucleos}</span>
-                                        <span className="text-[10px] font-bold text-blue-400 uppercase">Núcleos</span>
+                                        <span className={`block text-2xl font-black ${theme.text}`}>{totalNucleos}</span>
+                                        <span className={`text-[10px] font-bold ${theme.textLight} uppercase`}>Núcleos</span>
                                     </button>
                                     <button
                                         onClick={() => setFilterStatus('HIGH')}
@@ -324,7 +389,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                     onDragStart={(e) => handleDragStart(e, n)}
                                                     onDragEnd={handleDragEnd}
                                                     onClick={() => setSelectedNucleoId(n.id)}
-                                                    className={`p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-grab active:cursor-grabbing flex flex-col gap-1 shadow-sm transition-all group ${selectedNucleoId === n.id ? 'bg-blue-50 border-blue-200' : ''}`}
+                                                    className={`p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-grab active:cursor-grabbing flex flex-col gap-1 shadow-sm transition-all group ${selectedNucleoId === n.id ? `${theme.bgLight} ${theme.border}` : ''}`}
                                                 >
                                                     <div className="flex justify-between items-center w-full">
                                                         <span className="text-xs font-medium text-gray-700 truncate max-w-[150px]">{n.nome.split(' - ')[0]}</span>
@@ -367,7 +432,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     >
                                         <h4 className="text-xs font-bold text-gray-400 uppercase mb-2 flex items-center gap-2">
                                             Núcleo Selecionado
-                                            <span className="bg-blue-100 text-blue-600 text-[9px] px-1.5 py-0.5 rounded ml-auto">Arraste para Relatório</span>
+                                            <span className={`${theme.badgeBg} ${theme.badgeText} text-[9px] px-1.5 py-0.5 rounded ml-auto`}>Arraste para Relatório</span>
                                         </h4>
                                         <p className="font-bold text-gray-800 text-sm leading-tight mb-1">{selectedNucleo.nome.split(' - ')[0]}</p>
                                         <p className="text-xs text-gray-500 mb-3">{selectedNucleo.nome.split(' - ')[1]}</p>
@@ -414,14 +479,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Alunos por Núcleo</h3>
-                                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-md font-bold">{students.length} Total</span>
+                                    <span className={`text-xs ${theme.badgeBg} ${theme.badgeText} px-2 py-1 rounded-md font-bold`}>{students.length} Total</span>
                                 </div>
 
                                 {/* Summary Stats */}
                                 <div className="grid grid-cols-2 gap-2 mb-4">
-                                    <div className="p-3 rounded-xl bg-blue-50 text-center">
-                                        <span className="block text-2xl font-black text-blue-600">{students.length}</span>
-                                        <span className="text-[10px] font-bold text-blue-400 uppercase">Alunos Cadastrados</span>
+                                    <div className={`p-3 rounded-xl ${theme.bgLight} text-center`}>
+                                        <span className={`block text-2xl font-black ${theme.text}`}>{students.length}</span>
+                                        <span className={`text-[10px] font-bold ${theme.textLight} uppercase`}>Alunos Cadastrados</span>
                                     </div>
                                     <div className="p-3 rounded-xl bg-green-50 text-center">
                                         <span className="block text-2xl font-black text-green-600">
@@ -434,7 +499,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 {/* Botão Cruzar Dados */}
                                 <button
                                     onClick={() => setIsCrossRefModalOpen(true)}
-                                    className="w-full p-3 rounded-xl bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold text-sm shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-teal-600 hover:shadow-teal-300 transition-all flex items-center justify-center gap-2 mb-4"
+                                    className={`w-full p-3 rounded-xl bg-gradient-to-r ${theme.gradient} text-white font-bold text-sm shadow-lg ${theme.shadow} ${theme.gradientHover} ${theme.shadowHover} transition-all flex items-center justify-center gap-2 mb-4`}
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -453,13 +518,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 draggable
                                                 onDragStart={(e) => handleStudentsDragStart(e, nucleo, nucleoStudents)}
                                                 onClick={() => setSelectedNucleoId(nucleo.id)}
-                                                className={`p-3 rounded-lg border cursor-grab transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-100 hover:bg-gray-50 hover:border-green-300'}`}
+                                                className={`p-3 rounded-lg border cursor-grab transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : 'blue'}-300` : `bg-white border-gray-100 hover:bg-gray-50 ${theme.borderHover}`}`}
                                                 title="Arraste para criar relatório de alunos"
                                             >
                                                 <div className="flex justify-between items-center mb-2">
                                                     <span className="text-xs font-bold text-gray-700 truncate max-w-[140px]">{nucleo.nome.split(' - ')[0]}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">{nucleoStudents.length}</span>
+                                                        <span className={`text-xs ${theme.badgeBg} ${theme.badgeText} px-2 py-0.5 rounded-full font-bold`}>{nucleoStudents.length}</span>
                                                         {/* Drag Indicator */}
                                                         <span className="opacity-0 group-hover:opacity-100 transition-opacity text-green-500" title="Arraste para PDF">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -548,21 +613,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             /* Nucleos Tab Content */
                             /* Nucleos Tab Content */
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-blue-50 p-3 rounded-xl border border-blue-100">
+                                <div className={`flex justify-between items-center ${theme.bgLight} p-3 rounded-xl border ${theme.border}`}>
                                     <div className="flex items-center gap-3">
-                                        <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                        <div className={`${theme.bgMedium} p-2 rounded-lg ${theme.text}`}>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                             </svg>
                                         </div>
                                         <div>
                                             <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Gestão de Núcleos</h3>
-                                            <span className="text-xs text-blue-600 font-bold">{nucleos.length} Unidades Ativas</span>
+                                            <span className={`text-xs ${theme.text} font-bold`}>{nucleos.length} Unidades Ativas</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setIsAddNucleoOpen(true)}
-                                        className="bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 text-white p-2 rounded-lg shadow-lg shadow-blue-200 hover:shadow-teal-300 transition-all"
+                                        className={`bg-gradient-to-r ${theme.gradient} ${theme.gradientHover} text-white p-2 rounded-lg shadow-lg ${theme.shadow} ${theme.shadowHover} transition-all`}
                                         title="Criar Novo Núcleo"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -576,14 +641,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         <div
                                             key={nucleo.id}
                                             onClick={() => { setSelectedNucleoId(nucleo.id); setIsNucleoDetailOpen(true); }}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-100 hover:border-blue-200'}`}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : 'blue'}-300` : `bg-white border-gray-100 ${theme.borderHover}`}`}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
                                                     <h4 className="font-bold text-gray-800 text-sm leading-tight">{nucleo.nome.split(' - ')[0]}</h4>
                                                     <p className="text-[10px] text-gray-400 mt-0.5">{nucleo.nome.split(' - ')[1] || 'Unidade'}</p>
+                                                    {nucleo.sliNumber && (
+                                                        <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
+                                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>
+                                                            SLI: {nucleo.sliNumber}
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <button className="text-gray-300 hover:text-blue-600 transition-colors">
+                                                <button className={`text-gray-300 ${theme.hoverText} transition-colors`}>
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
@@ -592,7 +663,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                                             <div className="flex items-center gap-4 text-xs text-gray-500 mt-3 border-t border-gray-100 pt-2">
                                                 <div className="flex items-center gap-1.5">
-                                                    <svg className="w-3 h-3 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                                    <svg className={`w-3 h-3 ${theme.textLight}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                                     <span className="font-semibold">{nucleo.employees?.length || 0}</span> Funcionários
                                                 </div>
                                                 {nucleo.dataInicio && (
@@ -655,7 +726,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onDragEnter={handleSidebarDragEnter}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className="w-16 bg-white border-l border-gray-100 flex flex-col items-center py-6 gap-6 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-20 rounded-l-2xl lg:rounded-l-none lg:rounded-r-none relative transition-colors hover:bg-blue-50/30"
+                    className={`w-16 bg-white border-l border-gray-100 flex flex-col items-center py-6 gap-6 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-20 rounded-l-2xl lg:rounded-l-none lg:rounded-r-none relative transition-colors ${theme.hoverBg}`}
                 >
                     <div className="text-gray-300 text-[10px] font-bold -rotate-90 whitespace-nowrap mt-4 mb-4 tracking-widest">
                         EDITOR PDF
@@ -675,7 +746,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     <button
                         onClick={onNavigateToServices} // Assuming this goes to dashboard? Better: maybe open PDF view?
-                        className="-rotate-90 text-[10px] font-bold text-blue-500 hover:text-blue-700 transition-colors mt-auto flex items-center gap-1"
+                        className={`-rotate-90 text-[10px] font-bold ${theme.text} ${theme.hoverText} transition-colors mt-auto flex items-center gap-1`}
                     >
                         <span>ABRIR</span>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 rotate-90">
@@ -728,8 +799,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                     }}>
                                                 </div>
                                             ))}
-                                            <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 flex items-center justify-center transition-colors">
-                                                <span className="opacity-0 group-hover:opacity-100 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg transform scale-90 group-hover:scale-100 transition-all">
+                                            <div className={`absolute inset-0 bg-transparent ${theme.overlayBg} flex items-center justify-center transition-colors`}>
+                                                <span className={`opacity-0 group-hover:opacity-100 ${theme.overlayBtn} text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg transform scale-90 group-hover:scale-100 transition-all`}>
                                                     Adicionar Aqui
                                                 </span>
                                             </div>
@@ -768,6 +839,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onClose={() => setIsNucleoDetailOpen(false)}
                     nucleo={selectedNucleo}
                     onSave={(updated) => onAddNucleo(updated)}
+                    projectId={projectId}
                 />
             )}
 
@@ -776,6 +848,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 isOpen={isAddNucleoOpen}
                 onClose={() => setIsAddNucleoOpen(false)}
                 onSave={(newNucleo) => { onAddNucleo(newNucleo); setIsAddNucleoOpen(false); }}
+                projectId={projectId}
             />
         </div>
     );

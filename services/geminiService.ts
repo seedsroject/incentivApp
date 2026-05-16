@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { StudentDraft, SchoolReportItem, AttendanceReportItem, FrequencyListItem } from "../types";
+import { StudentDraft, SchoolReportItem, AttendanceReportItem, FrequencyListItem, DeclaracaoMatriculaOCR } from "../types";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
@@ -593,3 +593,165 @@ RETORNE APENAS O TEXTO, sem aspas nem explicações adicionais.`;
     throw error;
   }
 };
+
+// ─── REPORT BUILDER: AI WIDGET ANALYSIS ───
+export const analyzeWidgetData = async (
+  widgetLabel: string,
+  widgetType: 'CHART_PIE' | 'CHART_BAR' | 'TABLE' | string,
+  serializedData: string,
+  projectName: string,
+  availableVars?: string[],
+  context?: string
+): Promise<string> => {
+  try {
+    const model = "gemini-3-flash-preview";
+
+    const typeLabel = widgetType === 'TABLE' ? 'Tabela de dados' :
+                      widgetType === 'CHART_PIE' ? 'Gráfico de Pizza' :
+                      widgetType === 'CHART_BAR' ? 'Gráfico de Barras' : 'Widget';
+
+    const varsBlock = availableVars?.length ? `
+
+VARIÁVEIS DINÂMICAS DISPONÍVEIS (use estas no texto em vez de números fixos):
+${availableVars.join('\n')}
+
+IMPORTANTE: Sempre que citar um valor numérico que corresponda a uma das variáveis acima, substitua o número pela variável entre chaves duplas.
+Exemplo correto: "Dos {{totalAlunos}} alunos inscritos, {{pctPublica}}% são da rede pública ({{qtdPublica}} alunos)."
+Exemplo ERRADO: "Dos 10 alunos inscritos, 80% são da rede pública (8 alunos)."` : '';
+
+    const prompt = `Você é um analista técnico especializado em projetos esportivos sociais do governo brasileiro (Lei de Incentivo ao Esporte).
+
+Widget: "${widgetLabel}"
+Tipo: ${typeLabel}
+Projeto: "${projectName}"
+${context ? `Contexto adicional: ${context}` : ''}
+
+DADOS DO WIDGET (valores atuais para referência):
+${serializedData}
+${varsBlock}
+
+Sua tarefa:
+1. Escreva uma análise formal dos dados apresentados
+2. Identifique padrões, tendências e destaques
+3. USE AS VARIÁVEIS {{nome_da_variavel}} em vez de números fixos sempre que possível
+4. Contextualize no âmbito de projeto esportivo social
+5. Conclua com uma avaliação geral
+
+REGRAS:
+- Escreva 2-3 parágrafos formais em português brasileiro
+- Tom técnico, objetivo e analítico, adequado para relatórios oficiais
+- NÃO use markdown, bullets, listas ou formatação especial
+- Use variáveis {{nome}} para TODOS os valores numéricos que tenham variável correspondente
+- Retorne APENAS o texto da análise, sem aspas nem explicações adicionais`;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: prompt
+    });
+
+    return response.text || 'Não foi possível gerar a análise. Tente novamente.';
+  } catch (error) {
+    console.error("Erro ao gerar análise IA do widget:", error);
+    throw error;
+  }
+};
+
+// ═══════════════════════════════════════════════
+// OCR — DECLARAÇÃO DE MATRÍCULA ESCOLAR
+// ═══════════════════════════════════════════════
+export const processDeclaracaoMatricula = async (fileBase64: string, mimeType: string): Promise<DeclaracaoMatriculaOCR> => {
+  try {
+    const model = "gemini-2.5-flash";
+    const data = cleanBase64(fileBase64);
+
+    const prompt = `
+      Analise esta Declaração de Matrícula Escolar.
+      Seu objetivo é extrair TODOS os dados relevantes do aluno presentes neste documento.
+      
+      DADOS OBRIGATÓRIOS (extraia com máxima precisão):
+      1. Nome completo do aluno (nomeAluno)
+      2. Nome da escola onde está matriculado (nomeEscola)
+      3. Tipo de escola (tipoEscola): classifique como "PUBLICA" ou "PARTICULAR"
+         - Dicas: Escolas com "Municipal", "Estadual", "Federal", "CEEP", "COLEGIO ESTADUAL", "E.M.", "E.E." são PUBLICA
+         - Escolas com "Colégio" seguido de nome próprio, ou "Centro Educacional" privado são PARTICULAR
+         - Se não conseguir identificar, retorne "DESCONHECIDO"
+      4. Nível de ensino (nivelEnsino): classifique como "FUNDAMENTAL" ou "MEDIO"
+         - 1º ao 9º Ano = FUNDAMENTAL
+         - 1ª a 3ª Série do Ensino Médio = MEDIO
+         - EJA Fundamental = FUNDAMENTAL, EJA Médio = MEDIO
+         - Se não identificar, retorne "DESCONHECIDO"
+      5. Ano/Série atual do aluno (anoSerie) (ex: "6º Ano", "2ª Série", "9º Ano")
+      6. Turno escolar (turno): classifique como "MATUTINO", "VESPERTINO", "NOTURNO" ou "INTEGRAL"
+         - Se não identificar, retorne "DESCONHECIDO"
+      
+      DADOS OPCIONAIS (extraia se disponível, retorne string vazia se não encontrar):
+      - Data de nascimento do aluno (formato DD/MM/AAAA)
+      - RG ou CPF do aluno
+      - Turma (ex: "A", "B", "C")
+      - Ano letivo (ex: "2026")
+      - Nome do responsável
+      - Cidade e Estado (ex: "Ilhéus - BA")
+      - Data de emissão do documento
+      - Número da matrícula escolar
+      - Situação do aluno (situacaoAluno): "MATRICULADO", "TRANSFERIDO" ou "FREQUENTANDO". Se não identificar, retorne "DESCONHECIDO"
+      - Observações ou informações adicionais relevantes
+      
+      ATENÇÃO: Analise todo o documento cuidadosamente, incluindo cabeçalhos, rodapés, carimbos e selos.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: {
+        parts: [
+          { inlineData: { mimeType: mimeType, data: data } },
+          { text: prompt }
+        ]
+      },
+      config: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 4000,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            nomeAluno: { type: Type.STRING },
+            dataNascimento: { type: Type.STRING },
+            rgCpf: { type: Type.STRING },
+            nomeEscola: { type: Type.STRING },
+            tipoEscola: { type: Type.STRING, enum: ["PUBLICA", "PARTICULAR", "DESCONHECIDO"] },
+            nivelEnsino: { type: Type.STRING, enum: ["FUNDAMENTAL", "MEDIO", "DESCONHECIDO"] },
+            anoSerie: { type: Type.STRING },
+            turno: { type: Type.STRING, enum: ["MATUTINO", "VESPERTINO", "NOTURNO", "INTEGRAL", "DESCONHECIDO"] },
+            turma: { type: Type.STRING },
+            anoLetivo: { type: Type.STRING },
+            nomeResponsavel: { type: Type.STRING },
+            cidadeEstado: { type: Type.STRING },
+            dataEmissao: { type: Type.STRING },
+            matriculaNumero: { type: Type.STRING },
+            situacaoAluno: { type: Type.STRING, enum: ["MATRICULADO", "TRANSFERIDO", "FREQUENTANDO", "DESCONHECIDO"] },
+            observacoes: { type: Type.STRING }
+          },
+          required: ["nomeAluno", "nomeEscola"]
+        }
+      }
+    });
+
+    const text = cleanJsonText(response.text || "");
+    if (!text || text === "{}") throw new Error("Não foi possível extrair dados da declaração.");
+
+    const result = JSON.parse(text) as DeclaracaoMatriculaOCR;
+    console.log("OCR Declaração Matrícula resultado:", result);
+    return result;
+
+  } catch (error) {
+    console.error("Erro OCR Declaração Matrícula:", error);
+    return {
+      nomeAluno: '',
+      nomeEscola: '',
+      tipoEscola: '',
+      nivelEnsino: '',
+      anoSerie: '',
+      turno: '',
+    };
+  }
+};
+

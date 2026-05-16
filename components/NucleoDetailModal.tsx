@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Nucleo, Employee, Contract } from '../types';
+import { Nucleo, Employee, Contract, ProjectId } from '../types';
 import { extractContractData } from '../services/geminiService';
 import { ContractGenerationModal } from './ContractGenerationModal';
 
@@ -8,21 +8,31 @@ interface NucleoDetailModalProps {
     onClose: () => void;
     nucleo: Nucleo;
     onSave?: (updatedNucleo: Nucleo) => void;
+    projectId?: ProjectId;
 }
 
 const ROLES = ['COORDENADOR', 'PROFESSOR', 'MONITOR', 'ADMINISTRATIVO', 'PSICOLOGO', 'ASSISTENTE_SOCIAL', 'OUTROS'];
 const CONTRACT_TYPES = ['PJ'];
 const DIAS_SEMANA = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
+const getModalTheme = (projectId: ProjectId) => {
+    if (projectId === 'FUTEBOL') return { gradient: 'from-green-500 to-emerald-600', shadow: 'shadow-green-200', tabActive: 'text-emerald-600', tabBar: 'from-green-500 to-emerald-600', addBtn: 'text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 border-green-200', dayOn: 'bg-green-600 text-white border-green-600', durBg: 'bg-green-50 border-green-100', durIcon: 'text-green-500', durText: 'text-green-700', avatar: 'bg-green-50 text-green-600', badge: 'bg-green-100 text-green-700 border-green-200', editBtn: 'text-green-500 hover:text-green-700', link: 'text-green-600 hover:text-green-800 bg-green-50', inputAlt: 'border-green-200 bg-green-50', actionHover: 'hover:border-green-300', ring: 'focus:ring-green-300' };
+    if (projectId === 'DANIEL_DIAS') return { gradient: 'from-sky-500 to-slate-500', shadow: 'shadow-sky-200', tabActive: 'text-sky-600', tabBar: 'from-sky-500 to-slate-500', addBtn: 'text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 border-sky-200', dayOn: 'bg-sky-600 text-white border-sky-600', durBg: 'bg-sky-50 border-sky-100', durIcon: 'text-sky-500', durText: 'text-sky-700', avatar: 'bg-sky-50 text-sky-600', badge: 'bg-sky-100 text-sky-700 border-sky-200', editBtn: 'text-sky-500 hover:text-sky-700', link: 'text-sky-600 hover:text-sky-800 bg-sky-50', inputAlt: 'border-sky-200 bg-sky-50', actionHover: 'hover:border-sky-300', ring: 'focus:ring-sky-300' };
+    return { gradient: 'from-blue-600 to-teal-500', shadow: 'shadow-blue-200', tabActive: 'text-teal-600', tabBar: 'from-blue-600 to-teal-500', addBtn: 'text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border-blue-200', dayOn: 'bg-blue-600 text-white border-blue-600', durBg: 'bg-blue-50 border-blue-100', durIcon: 'text-blue-500', durText: 'text-blue-700', avatar: 'bg-blue-50 text-blue-600', badge: 'bg-blue-100 text-blue-700 border-blue-200', editBtn: 'text-blue-500 hover:text-blue-700', link: 'text-blue-600 hover:text-blue-800 bg-blue-50', inputAlt: 'border-blue-200 bg-blue-50', actionHover: 'hover:border-blue-300', ring: 'focus:ring-blue-300' };
+};
+
 interface NucleoGeralFormProps {
     nucleo: import('../types').Nucleo;
     employees: import('../types').Employee[];
     onSave?: (updated: import('../types').Nucleo) => void;
+    projectId?: ProjectId;
 }
 
-const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, onSave }) => {
+const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, onSave, projectId = 'FORMANDO_CAMPEOES' }) => {
+    const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [geralData, setGeralData] = useState({
         cnpj: nucleo.cnpj || '',
+        sliNumber: nucleo.sliNumber || '',
         address: nucleo.address || '',
         city: nucleo.city || '',
         dias_aulas: nucleo.dias_aulas || [] as string[],
@@ -81,6 +91,12 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                             className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                     </div>
                     <div>
+                        <label className="text-xs font-bold text-gray-500 block mb-1">N° SLI</label>
+                        <input value={geralData.sliNumber} onChange={e => setGeralData(p => ({ ...p, sliNumber: e.target.value }))}
+                            placeholder="Número de inscrição do projeto"
+                            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                    </div>
+                    <div>
                         <label className="text-xs font-bold text-gray-500 block mb-1">Cidade / Estado</label>
                         <input value={geralData.city} onChange={e => setGeralData(p => ({ ...p, city: e.target.value }))}
                             placeholder="Ex: Ilhéus | BA"
@@ -104,7 +120,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                         <div className="flex flex-wrap gap-2">
                             {DIAS_SEMANA.map(dia => (
                                 <button key={dia} type="button" onClick={() => toggleDia(dia)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${geralData.dias_aulas.includes(dia) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-blue-300'}`}>
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${geralData.dias_aulas.includes(dia) ? tc.dayOn : `bg-gray-50 text-gray-500 border-gray-200 ${tc.actionHover}`}`}>
                                     {dia.substring(0, 3)}
                                 </button>
                             ))}
@@ -151,9 +167,9 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                         </div>
                     </div>
                     {geralData.durabilidade && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <span className="text-xs font-bold text-blue-700">Durabilidade: {geralData.durabilidade}</span>
+                        <div className={`${tc.durBg} border rounded-lg px-3 py-2 flex items-center gap-2`}>
+                            <svg className={`w-4 h-4 ${tc.durIcon}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className={`text-xs font-bold ${tc.durText}`}>Durabilidade: {geralData.durabilidade}</span>
                         </div>
                     )}
                 </div>
@@ -200,7 +216,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                 <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Turmas</h4>
                     <button type="button" onClick={addTurma}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors flex items-center gap-1">
+                        className={`text-xs font-bold ${tc.addBtn} px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
@@ -258,7 +274,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
 
             {/* Save */}
             <button onClick={handleSaveGeral}
-                className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-blue-600 to-teal-500 text-white hover:from-blue-700 hover:to-teal-600 shadow-blue-200'}`}>
+                className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${saved ? 'bg-green-500 text-white' : `bg-gradient-to-r ${tc.gradient} text-white hover:opacity-90 ${tc.shadow}`}`}>
                 {saved ? '✓ Salvo com sucesso!' : 'Salvar Informações Gerais'}
             </button>
         </div>
@@ -268,9 +284,11 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
 interface NucleoInventarioFormProps {
     nucleo: import('../types').Nucleo;
     onSave?: (updated: import('../types').Nucleo) => void;
+    projectId?: ProjectId;
 }
 
-const NucleoInventarioForm: React.FC<NucleoInventarioFormProps> = ({ nucleo, onSave }) => {
+const NucleoInventarioForm: React.FC<NucleoInventarioFormProps> = ({ nucleo, onSave, projectId = 'FORMANDO_CAMPEOES' }) => {
+    const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [bens, setBens] = useState<import('../types').NucleoBem[]>(nucleo.bens || []);
     const [saved, setSaved] = useState(false);
 
@@ -298,7 +316,7 @@ const NucleoInventarioForm: React.FC<NucleoInventarioFormProps> = ({ nucleo, onS
                 <div className="flex items-center justify-between mb-4">
                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bens e Materiais do Núcleo</h4>
                     <button type="button" onClick={handleAdd}
-                        className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors flex items-center gap-1">
+                        className={`text-xs font-bold ${tc.addBtn} px-3 py-1.5 rounded-lg border transition-colors flex items-center gap-1`}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
@@ -353,7 +371,7 @@ const NucleoInventarioForm: React.FC<NucleoInventarioFormProps> = ({ nucleo, onS
                 <div className="flex justify-end mt-6 border-t border-gray-100 pt-4">
                     <button
                         onClick={handleSave}
-                        className="px-6 py-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold rounded-lg shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-teal-600 transition-all flex items-center gap-2"
+                        className={`px-6 py-2 bg-gradient-to-r ${tc.gradient} text-white font-bold rounded-lg shadow-lg ${tc.shadow} hover:opacity-90 transition-all flex items-center gap-2`}
                     >
                         {saved ? (
                             <>
@@ -372,8 +390,10 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
     isOpen,
     onClose,
     nucleo,
-    onSave
+    onSave,
+    projectId = 'FORMANDO_CAMPEOES'
 }) => {
+    const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [activeTab, setActiveTab] = useState<'rh' | 'geral' | 'inventario'>('geral');
     const [employees, setEmployees] = useState<Employee[]>(nucleo.employees || []);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -502,27 +522,27 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                     <div className="flex border-b border-gray-100 px-6 pt-2 space-x-6">
                         <button
                             onClick={() => setActiveTab('rh')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'rh' ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'rh' ? tc.tabActive : 'text-gray-400 hover:text-gray-600'
                                 }`}
                         >
                             Recursos Humanos
-                            {activeTab === 'rh' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-teal-500 rounded-t-full"></span>}
+                            {activeTab === 'rh' && <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r ${tc.tabBar} rounded-t-full`}></span>}
                         </button>
                         <button
                             onClick={() => setActiveTab('geral')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'geral' ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'geral' ? tc.tabActive : 'text-gray-400 hover:text-gray-600'
                                 }`}
                         >
                             Informações Gerais
-                            {activeTab === 'geral' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-teal-500 rounded-t-full"></span>}
+                            {activeTab === 'geral' && <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r ${tc.tabBar} rounded-t-full`}></span>}
                         </button>
                         <button
                             onClick={() => setActiveTab('inventario')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'inventario' ? 'text-teal-600' : 'text-gray-400 hover:text-gray-600'
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors relative ${activeTab === 'inventario' ? tc.tabActive : 'text-gray-400 hover:text-gray-600'
                                 }`}
                         >
                             Inventário
-                            {activeTab === 'inventario' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-teal-500 rounded-t-full"></span>}
+                            {activeTab === 'inventario' && <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r ${tc.tabBar} rounded-t-full`}></span>}
                         </button>
                     </div>
                 )}
@@ -537,7 +557,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg shadow-blue-200 transition-all"
+                                        className={`text-sm font-bold text-white bg-gradient-to-r ${tc.gradient} hover:opacity-90 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg ${tc.shadow} transition-all`}
                                     >
                                         {isReadingContract ? (
                                             <span className="animate-pulse">Lendo Contrato...</span>
@@ -592,7 +612,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                             value={formData.role}
                                             onChange={e => setFormData({ ...formData, role: e.target.value })}
                                             placeholder="Digite a função..."
-                                            className="w-full p-2 mt-2 rounded-lg border border-blue-200 bg-blue-50 focus:ring-2 focus:ring-blue-100 outline-none animate-fade-in"
+                                            className={`w-full p-2 mt-2 rounded-lg border ${tc.inputAlt} focus:ring-2 focus:ring-blue-100 outline-none animate-fade-in`}
                                         />
                                     )}
                                 </div>
@@ -633,7 +653,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                         href={formData.contract.documentUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs font-bold bg-blue-50 px-2 py-1 rounded"
+                                        className={`${tc.link} flex items-center gap-1 text-xs font-bold px-2 py-1 rounded`}
                                         title="Ver Contrato Anexado"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
@@ -648,7 +668,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                         Tipo de Contrato
                                         <button
                                             onClick={() => setShowCustomContractInput(!showCustomContractInput)}
-                                            className="text-blue-600 hover:underline text-[10px]"
+                                            className={`${tc.editBtn.split(' ')[0]} hover:underline text-[10px]`}
                                         >
                                             {showCustomContractInput ? 'Selecionar Lista' : '+ Outro'}
                                         </button>
@@ -671,7 +691,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                             onChange={e => setFormData({ ...formData, contract: { ...formData.contract!, type: e.target.value } })}
                                             placeholder="Digite o tipo..."
                                             autoFocus
-                                            className="w-full p-2 rounded-lg border border-blue-200 bg-blue-50 focus:ring-2 focus:ring-blue-100 outline-none animate-fade-in"
+                                            className={`w-full p-2 rounded-lg border ${tc.inputAlt} focus:ring-2 focus:ring-blue-100 outline-none animate-fade-in`}
                                         />
                                     )}
                                 </div>
@@ -710,7 +730,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                             <div className="flex justify-start">
                                 <button
                                     onClick={() => setShowGenerationModal(true)}
-                                    className="text-white bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-700 hover:to-teal-600 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-200 transition-all"
+                                    className={`text-white bg-gradient-to-r ${tc.gradient} hover:opacity-90 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg ${tc.shadow} transition-all`}
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                     Gerar Minuta com IA
@@ -719,7 +739,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
 
                             <div className="flex justify-end pt-4 gap-2 border-t border-gray-100 mt-4">
                                 <button onClick={() => setIsFormOpen(false)} className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button onClick={handleSaveForm} className="px-6 py-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold rounded-lg shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-teal-600 transition-all">
+                                <button onClick={handleSaveForm} className={`px-6 py-2 bg-gradient-to-r ${tc.gradient} text-white font-bold rounded-lg shadow-lg ${tc.shadow} hover:opacity-90 transition-all`}>
                                     Salvar Funcionário
                                 </button>
                             </div>
@@ -730,7 +750,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-lg font-bold text-gray-700">Equipe Cadastrada</h3>
-                                        <button onClick={handleAddNew} className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-teal-600 transition-all flex items-center gap-2">
+                                        <button onClick={handleAddNew} className={`bg-gradient-to-r ${tc.gradient} text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg ${tc.shadow} hover:opacity-90 transition-all flex items-center gap-2`}>
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                             </svg>
@@ -743,7 +763,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                             <div key={emp.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 items-start md:items-center group">
 
                                                 {/* Avatar / Role Icon */}
-                                                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0 text-blue-600">
+                                                <div className={`h-12 w-12 rounded-full ${tc.avatar} flex items-center justify-center shrink-0`}>
                                                     {emp.role === 'PROFESSOR' && (
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -759,7 +779,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex flex-wrap gap-2 items-center mb-1">
                                                         <h4 className="font-bold text-gray-800 text-base">{emp.name}</h4>
-                                                        <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wide border border-blue-200">{emp.role}</span>
+                                                        <span className={`px-2 py-0.5 rounded-md ${tc.badge} text-[10px] font-bold uppercase tracking-wide border`}>{emp.role}</span>
                                                     </div>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-500">
                                                         <p className="flex items-center gap-1.5 overflow-hidden">
@@ -784,7 +804,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2 mt-2">
-                                                        <button onClick={() => handleEdit(emp)} className="text-blue-500 hover:text-blue-700 font-bold flex items-center gap-1">
+                                                        <button onClick={() => handleEdit(emp)} className={`${tc.editBtn} font-bold flex items-center gap-1`}>
                                                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                             Editar
                                                         </button>
@@ -808,6 +828,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                     nucleo={nucleo}
                                     employees={employees}
                                     onSave={onSave}
+                                    projectId={projectId}
                                 />
                             )}
 
@@ -815,6 +836,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                 <NucleoInventarioForm
                                     nucleo={nucleo}
                                     onSave={onSave}
+                                    projectId={projectId}
                                 />
                             )}
 
@@ -829,7 +851,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                         Fechar
                     </button>
                     {isFormOpen && (
-                        <button onClick={handleSaveForm} className="px-6 py-2 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-teal-600 transition-all">
+                        <button onClick={handleSaveForm} className={`px-6 py-2 bg-gradient-to-r ${tc.gradient} text-white font-bold rounded-xl shadow-lg ${tc.shadow} hover:opacity-90 transition-all`}>
                             Salvar
                         </button>
                     )}

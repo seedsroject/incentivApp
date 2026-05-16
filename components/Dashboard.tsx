@@ -1,15 +1,31 @@
 
-import React, { useState } from 'react';
-import { AppView } from '../types';
+import React, { useState, useMemo } from 'react';
+import { AppView, ProjectId } from '../types';
 import { ExternalLinkModal } from './ExternalLinkModal';
 
 interface DashboardProps {
   onNavigate: (view: AppView, params?: any) => void;
   itemsCount: number;
   onBack?: () => void;
+  projectId?: ProjectId;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES' }) => {
+  const iconColor = useMemo(() => {
+    if (projectId === 'FUTEBOL') return 'text-green-600';
+    if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
+    return 'text-blue-600';
+  }, [projectId]);
+  const btnBg = useMemo(() => {
+    if (projectId === 'FUTEBOL') return 'bg-green-600 hover:bg-green-700';
+    if (projectId === 'DANIEL_DIAS') return 'bg-sky-600 hover:bg-sky-700';
+    return 'bg-blue-600 hover:bg-blue-700';
+  }, [projectId]);
+  const hoverCard = useMemo(() => {
+    if (projectId === 'FUTEBOL') return 'hover:border-green-300 hover:bg-green-50';
+    if (projectId === 'DANIEL_DIAS') return 'hover:border-sky-300 hover:bg-sky-50';
+    return 'hover:border-blue-300 hover:bg-blue-50';
+  }, [projectId]);
   const [sharingService, setSharingService] = useState<{ id: string, title: string } | null>(null);
 
   const menuItems = [
@@ -17,7 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'precadastro',
       title: '0. Pré-cadastro e Fila',
       subtitle: 'Serviço Social',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
       action: () => onNavigate(AppView.FEATURE_PRE_CADASTRO),
       canShare: true
     },
@@ -25,7 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'ficha',
       title: '1. Ficha de Inscrição',
       subtitle: '+ Dados Cadastrais',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>,
       action: () => onNavigate(AppView.FEATURE_OCR),
       canShare: true
     },
@@ -33,7 +49,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'declaracao',
       title: '2. Declaração de Matrícula',
       subtitle: 'Upload de Comprovante',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>,
       action: () => onNavigate(AppView.FEATURE_DOC_UPLOAD, { type: 'DECLARACAO_MATRICULA', title: '2. Declaração de Matrícula' }),
       canShare: false
     },
@@ -41,7 +57,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'boletim',
       title: '3. Boletins Escolares',
       subtitle: 'Início e Final do Ciclo',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>,
       action: () => onNavigate(AppView.FEATURE_DOC_UPLOAD, { type: 'BOLETIM', title: '3. Boletins Escolares' }),
       canShare: true
     },
@@ -49,7 +65,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'assiduidade',
       title: '4. Relatório Assiduidade',
       subtitle: 'Upload de Planilha',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" /></svg>,
       action: () => onNavigate(AppView.FEATURE_DOC_UPLOAD, { type: 'RELATORIO_ASSIDUIDADE', title: '4. Relatório Assiduidade e Aproveitamento' }),
       canShare: false
     },
@@ -57,15 +73,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'frequencia',
       title: '5. Listas de Frequência',
       subtitle: 'Digitalização ou Chamada',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>,
       action: () => onNavigate(AppView.FEATURE_DOC_UPLOAD, { type: 'LISTA_FREQUENCIA', title: '5. Listas de Frequência' }),
       canShare: false
     },
     {
       id: 'meta',
-      title: '6. Pesquisa Meta Continua',
+      title: '6. Pesqueisa Meta Qualitativa',
       subtitle: 'Questionário Qualitativo',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>,
       action: () => onNavigate(AppView.FEATURE_META_QUALITATIVA),
       canShare: true
     },
@@ -73,7 +89,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'socio',
       title: 'Indicadores de Saúde',
       subtitle: 'Pesquisa Socioeconômica',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /><path d="M12 3v18" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /><path d="M12 3v18" /></svg>,
       action: () => onNavigate(AppView.FEATURE_SOCIOECONOMIC),
       canShare: true
     },
@@ -81,7 +97,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'estoque',
       title: 'Controle de Estoque',
       subtitle: 'Bens de Consumo (Lanches)',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
       action: () => onNavigate(AppView.FEATURE_INVENTORY),
       canShare: false
     },
@@ -105,7 +121,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'evidencias',
       title: 'Evidências',
       subtitle: 'Fotos: Acessibilidade, Divulgação e Materiais',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>,
       action: () => onNavigate(AppView.FEATURE_EVIDENCE),
       canShare: false
     },
@@ -113,7 +129,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'servico_social',
       title: 'Acompanhamento',
       subtitle: 'Serviço Social',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
       action: () => onNavigate(AppView.FEATURE_SERVICO_SOCIAL),
       canShare: false
     },
@@ -121,7 +137,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       id: 'cruzamento',
       title: 'Cruzamento de Dados',
       subtitle: 'Gráficos e Relatórios',
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>,
       action: () => onNavigate(AppView.FEATURE_CROSS_REFERENCE),
       canShare: false
     },
@@ -139,7 +155,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
             {onBack && (
               <button
                 onClick={onBack}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-1"
+                className={`${btnBg} text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -158,12 +174,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
             <div key={index} className="relative group">
               <button
                 onClick={item.action}
-                className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 hover:bg-blue-50 transition-all active:scale-95 group w-full min-h-[110px]"
+                className={`flex flex-col items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md ${hoverCard} transition-all active:scale-95 group w-full min-h-[110px]`}
               >
                 <div className="mb-2 bg-gray-50 p-2 rounded-full group-hover:bg-white transition-colors">
                   {item.icon}
                 </div>
-                <span className="font-bold text-gray-800 text-center leading-tight mb-1 text-xs sm:text-sm line-clamp-2">
+                <span className={`font-bold text-gray-800 text-center leading-tight mb-1 ${item.title.length > 26 ? 'text-[11px] sm:text-xs tracking-tighter' : 'text-xs sm:text-sm'} line-clamp-2`}>
                   {item.title}
                 </span>
                 <span className="text-[10px] text-gray-500 font-medium text-center line-clamp-1">
@@ -194,7 +210,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           </div>
           <button
             onClick={() => onNavigate(AppView.DEV_ENVIRONMENT)}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg font-bold shadow transition-colors text-sm bg-blue-600 text-white hover:bg-blue-700"
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg font-bold shadow transition-colors text-sm ${btnBg} text-white`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01 2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -210,6 +226,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           serviceId={sharingService.id}
           serviceTitle={sharingService.title}
           onClose={() => setSharingService(null)}
+          projectId={projectId}
         />
       )}
     </div>

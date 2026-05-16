@@ -3,7 +3,7 @@
  * FIRESTORE DATA MODELING (SCHEMA)
  */
 
-export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS';
+export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS' | 'FUTEBOL';
 
 export interface User {
   uid: string;
@@ -35,6 +35,9 @@ export interface Nucleo {
   phone?: string;
   email?: string;
   employees?: Employee[];
+
+  // N° SLI - Número de inscrição do projeto aprovado
+  sliNumber?: string;
 
   // Campos para Contratos
   cnpj?: string;
@@ -150,11 +153,37 @@ export interface StudentDraft {
   // Questionário de Prontidão para Atividade Física (ANEXO I)
   declaracao_prontidao?: DeclaracaoProntidao;
 
+  // Formulário de Autorização de Viagem Nacional (Res. Nº 295/2019 – CNJ)
+  autorizacao_viagem?: AutorizacaoViagem;
+
   // Documentos Escolares e Formulários Adicionais
   questionario_quantitativo?: { url: string; timestamp: string };   // Questionário Quantitativo (arquivo)
   pesquisa_socioeconomica?: { url: string; timestamp: string };      // Pesquisa Socioeconômica (arquivo)
   boletim_escolar?: { url: string; timestamp: string; parcial?: boolean }; // Boletim Escolar (parcial = só 1 bimestre)
-  declaracao_matricula?: { url: string; timestamp: string }; // Declaração de Matrícula Escolar (imagem ou PDF)
+  declaracao_matricula?: { url: string; timestamp: string; ocrData?: DeclaracaoMatriculaOCR }; // Declaração de Matrícula Escolar (imagem ou PDF)
+}
+
+// Dados extraídos via OCR da Declaração de Matrícula Escolar
+export interface DeclaracaoMatriculaOCR {
+  // Dados do Aluno
+  nomeAluno: string;
+  dataNascimento?: string;
+  rgCpf?: string;
+  // Dados Escolares
+  nomeEscola: string;
+  tipoEscola: 'PUBLICA' | 'PARTICULAR' | '';     // Pública ou Particular
+  nivelEnsino: 'FUNDAMENTAL' | 'MEDIO' | '';       // Fundamental ou Médio
+  anoSerie: string;                                 // Ex: "6º Ano", "2ª Série"
+  turno: 'MATUTINO' | 'VESPERTINO' | 'NOTURNO' | 'INTEGRAL' | '';
+  turma?: string;                                   // Ex: "A", "B"
+  // Dados complementares
+  anoLetivo?: string;                               // Ex: "2026"
+  nomeResponsavel?: string;
+  cidadeEstado?: string;                            // Ex: "Ilhéus - BA"
+  dataEmissao?: string;                             // Data de emissão do documento
+  matriculaNumero?: string;                         // Nº da matrícula escolar
+  situacaoAluno?: 'MATRICULADO' | 'TRANSFERIDO' | 'FREQUENTANDO' | '';
+  observacoes?: string;                             // Informações adicionais extraídas
 }
 
 export type EvidenceType = 'ACESSIBILIDADE' | 'DIVULGACAO' | 'MATERIAIS' | 'MATERIAIS_CONSUMO' | 'UNIFORMES' | 'HOSPEDAGEM' | 'OUTROS';
@@ -172,6 +201,52 @@ export interface DeclaracaoProntidao {
   data_assinatura: string;
   // Respostas: chave = número da pergunta, valor = 'SIM' | 'NAO'
   respostas: Record<number, 'SIM' | 'NAO'>;
+  timestamp: string;
+}
+
+// Formulário de Autorização de Viagem Nacional (Res. Nº 295/2019 – CNJ)
+export interface AutorizacaoViagem {
+  // Responsável 1
+  resp1_nome: string;
+  resp1_identidade: string;
+  resp1_orgao_expedidor: string;
+  resp1_data_expedicao: string;
+  resp1_cpf: string;
+  resp1_endereco: string;
+  resp1_cidade: string;
+  resp1_uf: string;
+  resp1_pais: string;
+  resp1_telefone: string;
+  resp1_qualidade: 'MAE' | 'PAI' | 'TUTOR' | 'GUARDIAO';
+  resp1_assinatura: string; // base64 da assinatura touch
+  // Responsável 2 (opcional)
+  resp2_nome?: string;
+  resp2_identidade?: string;
+  resp2_orgao_expedidor?: string;
+  resp2_data_expedicao?: string;
+  resp2_cpf?: string;
+  resp2_endereco?: string;
+  resp2_cidade?: string;
+  resp2_uf?: string;
+  resp2_pais?: string;
+  resp2_telefone?: string;
+  resp2_qualidade?: 'MAE' | 'PAI' | 'TUTOR' | 'GUARDIAO';
+  resp2_assinatura?: string;
+  // Criança/Adolescente autorizado
+  crianca_nome: string;
+  crianca_nascimento: string;
+  crianca_naturalidade: string;
+  crianca_identidade: string;
+  crianca_orgao_expedidor: string;
+  crianca_data_expedicao: string;
+  crianca_cpf: string;
+  crianca_endereco: string;
+  crianca_cidade: string;
+  crianca_uf: string;
+  crianca_pais: string;
+  // Validade
+  validade_data: string;
+  // Metadados
   timestamp: string;
 }
 
@@ -357,6 +432,7 @@ export enum AppView {
   PDLIE_REPORT = 'PDLIE_REPORT', // Relatório PDLIE (Plano de Divulgação da Lei de Incentivo ao Esporte)
   ASSIDUIDADE_REPORT = 'ASSIDUIDADE_REPORT', // Relatório de Assiduidade e Aproveitamento Escolar (Meta Qualitativa 01)
   INSCRICAO_REPORT = 'INSCRICAO_REPORT', // Anexo Meta Quantitativa 02 - Ficha de Inscrição e Declaração de Matrícula
+  PESQUISA_REPORT = 'PESQUISA_REPORT', // Anexo Meta Qualitativa 01 - Pesquisa
 
   // Visualização Externa (Pai)
   PUBLIC_FORM = 'PUBLIC_FORM'
