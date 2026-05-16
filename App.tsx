@@ -235,7 +235,7 @@ const AppContent: React.FC = () => {
         if (nucleosData && nucleosData.length > 0) {
           const mapped: Nucleo[] = nucleosData.map((n: any) => ({
             id: n.id,
-            nome: n.nome + (n.address ? ` - ${n.address}` : ''),
+            nome: n.nome,
             project: projectSlug,
             coordinates: n.coordinates ? [parseFloat(n.coordinates.split(',')[1]?.replace(')','') || '0'), parseFloat(n.coordinates.split('(')[1]?.split(',')[0] || '0')] as [number, number] : undefined,
             address: n.address || '',
@@ -721,27 +721,81 @@ const AppContent: React.FC = () => {
     setView(view);
   };
 
-  // --- Data Handlers ---
-  const handleSaveStudent = (data: StudentDraft) => {
-    setStudents(prev => {
-      const existingIndex = prev.findIndex(s => s.id === data.id);
-      if (existingIndex >= 0) {
-        const updatedStudents = [...prev];
-        updatedStudents[existingIndex] = {
-          ...data,
-          timestamp: new Date().toISOString()
-        };
-        return updatedStudents;
+  // --- Data Handlers (Supabase-Integrated) ---
+  const handleSaveStudent = async (data: StudentDraft) => {
+    const timestamp = new Date().toISOString();
+    const existingIndex = students.findIndex(s => s.id === data.id);
+
+    if (existingIndex >= 0) {
+      // UPDATE existente
+      const updated = { ...data, timestamp };
+      setStudents(prev => {
+        const copy = [...prev];
+        copy[existingIndex] = updated;
+        return copy;
+      });
+      // Persistir no Supabase
+      if (supabaseProjectId) {
+        const { error } = await supabase.from('students').update({
+          nome: data.nome,
+          data_nascimento: data.data_nascimento || null,
+          rg_cpf: data.rg_cpf || null,
+          nome_responsavel: data.nome_responsavel || null,
+          endereco: data.endereco || null,
+          telefone: data.telefone || null,
+          email_contato: data.email_contato || null,
+          escola_nome: data.escola_nome || null,
+          escola_tipo: data.escola_tipo || null,
+          n_sli: data.n_sli || null,
+          nucleo_id: data.nucleo_id || null,
+          status: data.status || 'ATIVO',
+          materiais_pendentes: data.materiais_pendentes || false,
+          portador_necessidade_especial: data.portador_necessidade_especial || false,
+          assinatura: data.assinatura || null,
+          data_assinatura: data.data_assinatura || null,
+        }).eq('id', data.id);
+        if (error) console.warn('Erro ao atualizar aluno no Supabase:', error);
       }
-      
+    } else {
+      // INSERT novo
       const newStudent: StudentDraft = {
         ...data,
-        id: data.id || `std_${Math.random().toString(36).substr(2, 9)}`,
+        id: data.id || crypto.randomUUID(),
         status: data.status || 'ATIVO',
-        timestamp: new Date().toISOString()
+        projectId: activeProject,
+        timestamp,
       };
-      return [...prev, newStudent];
-    });
+      setStudents(prev => [...prev, newStudent]);
+      // Persistir no Supabase
+      if (supabaseProjectId) {
+        const { data: inserted, error } = await supabase.from('students').insert({
+          project_id: supabaseProjectId,
+          nucleo_id: data.nucleo_id || null,
+          nome: data.nome,
+          data_nascimento: data.data_nascimento || null,
+          rg_cpf: data.rg_cpf || null,
+          nome_responsavel: data.nome_responsavel || null,
+          endereco: data.endereco || null,
+          telefone: data.telefone || null,
+          email_contato: data.email_contato || null,
+          escola_nome: data.escola_nome || null,
+          escola_tipo: data.escola_tipo || null,
+          n_sli: data.n_sli || null,
+          nome_projeto: data.nome_projeto || null,
+          proponente: data.proponente || null,
+          nome_responsavel_organizacao: data.nome_responsavel_organizacao || null,
+          status: 'ATIVO',
+          materiais_pendentes: data.materiais_pendentes || false,
+          portador_necessidade_especial: data.portador_necessidade_especial || false,
+        }).select().single();
+        if (error) {
+          console.warn('Erro ao inserir aluno no Supabase:', error);
+        } else if (inserted) {
+          // Atualizar o id local com o UUID real do banco
+          setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
+        }
+      }
+    }
   };
 
   const handleSaveEvidence = (data: EvidenceLog) => {
@@ -781,9 +835,11 @@ const AppContent: React.FC = () => {
   const [regRole, setRegRole] = useState<'PROFESSOR' | 'ADMIN'>('PROFESSOR');
   const [regNucleo, setRegNucleo] = useState('');
 
-  const handleDischargeStudent = (studentId: string, nucleoId: string) => {
-    // 1. Remove student
+  const handleDischargeStudent = async (studentId: string, nucleoId: string) => {
+    // 1. Remove student do state
     setStudents(prev => prev.filter(s => s.id !== studentId));
+    // 1b. Deletar do Supabase
+    await supabase.from('students').delete().eq('id', studentId);
 
     // 2. Auto-notification for waiting list
     const candidate = preCadastros.find(c => c.nucleo_id === nucleoId && c.status === 'AGUARDANDO');
@@ -795,64 +851,50 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleInactivateStudent = (studentIdOrNome: string, checklist: { id: string; name: string; returned: boolean }[], replacementCandidateId?: string, replacementName?: string) => {
+  const handleInactivateStudent = async (studentIdOrNome: string, checklist: { id: string; name: string; returned: boolean }[], replacementCandidateId?: string, replacementName?: string) => {
     const hasPending = checklist.some(c => !c.returned);
+    const targetStudent = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
 
-    // Find the old student's name to use for renaming attendance records
-    let oldStudentName: string | undefined;
-    setStudents(prev => {
-      const updated = prev.map(s => {
-        if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
-          oldStudentName = s.nome;
-          return {
-            ...s,
-            status: 'INATIVO' as const,
-            materiais_pendentes: hasPending,
-            materiais_checklist: checklist
-          };
-        }
-        return s;
-      });
-      return updated;
-    });
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
+        return { ...s, status: 'INATIVO' as const, materiais_pendentes: hasPending, materiais_checklist: checklist };
+      }
+      return s;
+    }));
+
+    // Persistir no Supabase
+    if (targetStudent?.id) {
+      await supabase.from('students').update({ status: 'INATIVO', materiais_pendentes: hasPending }).eq('id', targetStudent.id);
+    }
 
     // Transfer attendance records to the replacement student
     if (replacementCandidateId && replacementName) {
-      // Wait for the students state update to resolve the oldStudentName
-      // We find the name directly from the current list
-      const targetStudent = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
       const nameToReplace = targetStudent?.nome || studentIdOrNome;
-
       setCollectedDocuments(prev => prev.map(doc => {
         if (doc.type === 'LISTA_FREQUENCIA' && doc.metaData?.present && Array.isArray(doc.metaData.present)) {
-          const updatedPresent = doc.metaData.present.map((name: string) =>
-            name === nameToReplace ? replacementName : name
-          );
+          const updatedPresent = doc.metaData.present.map((name: string) => name === nameToReplace ? replacementName : name);
           return { ...doc, metaData: { ...doc.metaData, present: updatedPresent } };
         }
         return doc;
       }));
-
-      // Mark replacement candidate as APPROVED in the waiting list
-      setPreCadastros(prev => prev.map(c =>
-        c.id === replacementCandidateId ? { ...c, status: 'APROVADO' } : c
-      ));
-
-      alert(`✅ BAIXA REALIZADA\n\n🔄 TRANSFER\u00caNCIA DE FREQU\u00caNCIA:\nTodas as presen\u00e7as de "${nameToReplace}" foram transferidas para "${replacementName}".\n\n🔔 O candidato foi notificado da vaga.`);
+      setPreCadastros(prev => prev.map(c => c.id === replacementCandidateId ? { ...c, status: 'APROVADO' } : c));
+      alert(`✅ BAIXA REALIZADA\n\n🔄 TRANSFERÊNCIA DE FREQUÊNCIA:\nTodas as presenças de "${nameToReplace}" foram transferidas para "${replacementName}".\n\n🔔 O candidato foi notificado da vaga.`);
     }
   };
 
 
-  const handleReactivateStudent = (studentIdOrNome: string) => {
+  const handleReactivateStudent = async (studentIdOrNome: string) => {
+    const targetStudent = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
     setStudents(prev => prev.map(s => {
       if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
-        return {
-          ...s,
-          status: 'ATIVO'
-        };
+        return { ...s, status: 'ATIVO' };
       }
       return s;
     }));
+    // Persistir no Supabase
+    if (targetStudent?.id) {
+      await supabase.from('students').update({ status: 'ATIVO', materiais_pendentes: false }).eq('id', targetStudent.id);
+    }
   };
 
   const handleSaveDeclaracao = (studentIdOrNome: string, declaracao: import('./types').DeclaracaoUniformes) => {
