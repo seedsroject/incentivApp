@@ -81,6 +81,8 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
 
     // Editor State
     const [contractHtml, setContractHtml] = useState('');
+    const [pageContents, setPageContents] = useState<string[]>([]);
+    const measureRef = React.useRef<HTMLDivElement>(null);
 
     // Editor Ref
     const editorRef = React.useRef<HTMLDivElement>(null);
@@ -184,11 +186,44 @@ ${d.contratadaRepName ? `<p>Por ${d.contratadaRepName}${d.contratadaRepCPF ? ` C
 `;
     };
 
+    // Split contract HTML into A4 pages based on element heights
+    const splitIntoPages = (html: string) => {
+        const measure = document.createElement('div');
+        measure.style.cssText = `
+            width: 160mm; position: absolute; left: -9999px; top: 0;
+            font-family: ${fontFamily}; font-size: ${fontSize}pt; line-height: 1.6;
+            text-align: justify; visibility: hidden;
+        `;
+        measure.innerHTML = html;
+        document.body.appendChild(measure);
+
+        const PAGE_CONTENT_PX = 257 * 3.7795; // 297mm - 20mm top - 20mm bottom = 257mm
+        const children = Array.from(measure.children) as HTMLElement[];
+        const pages: string[][] = [[]];
+        let currentH = 0;
+
+        children.forEach(child => {
+            const h = child.getBoundingClientRect().height;
+            if (currentH + h > PAGE_CONTENT_PX && pages[pages.length - 1].length > 0) {
+                pages.push([]);
+                currentH = 0;
+            }
+            pages[pages.length - 1].push(child.outerHTML);
+            currentH += h;
+        });
+
+        document.body.removeChild(measure);
+        setPageContents(pages.map(p => p.join('')));
+    };
+
     // Regenerate contract when data changes
     useEffect(() => {
         if (isOpen) {
-            setContractHtml(buildContractHtml());
-            setContractText(buildContractHtml());
+            const html = buildContractHtml();
+            setContractHtml(html);
+            setContractText(html);
+            // Delay splitting to next frame so DOM is ready
+            requestAnimationFrame(() => splitIntoPages(html));
         }
     }, [isOpen]);
 
@@ -196,39 +231,41 @@ ${d.contratadaRepName ? `<p>Por ${d.contratadaRepName}${d.contratadaRepCPF ? ` C
         const html = buildContractHtml();
         setContractHtml(html);
         setContractText(html);
+        requestAnimationFrame(() => splitIntoPages(html));
     };
 
     if (!isOpen) return null;
 
     const generateHTML = () => {
-        const content = editorRef.current?.innerHTML || contractHtml;
+        const content = contractHtml;
         return `
             <html>
             <head>
                 <meta charset="UTF-8">
                 <title>Contrato - ${employee.name}</title>
                 <style>
-                    @page { size: A4; margin: 20mm 30mm 20mm 20mm; }
-                    body { font-family: '${fontFamily}', sans-serif; line-height: 1.6; font-size: ${fontSize}pt; text-align: justify; color: #000; margin: 0; }
-                    .content { text-align: justify; }
+                    @page { size: A4; margin: 20mm 25mm 20mm 20mm; }
+                    body { font-family: '${fontFamily}', sans-serif; line-height: 1.6; font-size: ${fontSize}pt; text-align: justify; color: #000; margin: 0; padding: 0; }
+                    .content { text-align: justify; word-wrap: break-word; overflow-wrap: break-word; }
                     strong, b { font-weight: 900 !important; }
                     ul { margin-left: 20px; }
+                    .header-img { text-align: center; margin-bottom: 20px; }
+                    .header-img img { width: 100%; max-height: 80px; object-fit: contain; }
                     @media screen {
-                        body { background-color: #f3f4f6; display: flex; justify-content: center; padding: 40px; }
+                        body { background-color: #f3f4f6; display: flex; flex-direction: column; align-items: center; padding: 40px; gap: 30px; }
                         .page-container {
-                            background-color: white; width: 210mm; min-height: 297mm; padding: 20mm 30mm 20mm 20mm;
-                            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 0 auto;
+                            background-color: white; width: 210mm; min-height: 297mm;
+                            padding: 20mm 25mm 20mm 20mm;
+                            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); margin: 0 auto;
                             word-wrap: break-word; overflow-wrap: break-word;
-                            background-image: linear-gradient(to bottom, transparent calc(297mm - 1px), #e5e7eb calc(297mm - 1px), #e5e7eb 297mm);
-                            background-size: 100% 297mm;
                         }
                     }
                 </style>
             </head>
             <body>
                 <div class="page-container">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="${projectAssets.header}" alt="Header" style="width: 100%; max-height: 80px; object-fit: contain;" onerror="this.style.display='none'" />
+                    <div class="header-img">
+                        <img src="${projectAssets.header}" alt="Header" onerror="this.style.display='none'" />
                     </div>
                     <div class="content">${content}</div>
                 </div>
@@ -416,31 +453,38 @@ ${d.contratadaRepName ? `<p>Por ${d.contratadaRepName}${d.contratadaRepCPF ? ` C
                             </div>
                         </div>
 
-                        {/* Single A4 Editor - auto-growing with CSS page break lines */}
-                        <div
-                            ref={editorRef}
-                            contentEditable
-                            className="bg-white shadow-2xl relative outline-none p-0 leading-relaxed text-justify text-gray-900 [&_strong]:font-black [&_b]:font-black"
-                            style={{
-                                width: '210mm',
-                                minHeight: '297mm',
-                                height: 'auto',
-                                padding: '20mm 25mm 40mm 20mm',
-                                fontFamily: fontFamily,
-                                fontSize: `${fontSize}pt`,
-                                lineHeight: '1.6',
-                                wordWrap: 'break-word' as const,
-                                overflowWrap: 'break-word' as const,
-                                whiteSpace: 'normal' as const,
-                                // Visual A4 page break lines every 297mm
-                                backgroundImage: 'linear-gradient(to bottom, transparent calc(297mm - 1px), #d1d5db calc(297mm - 1px), #d1d5db 297mm)',
-                                backgroundSize: '100% 297mm',
-                            }}
-                            dangerouslySetInnerHTML={{ __html: contractHtml }}
-                            onInput={(e) => {
-                                setContractHtml(e.currentTarget.innerHTML);
-                            }}
-                        />
+                        {/* Multi-page A4 Document Preview */}
+                        <div ref={editorRef} className="flex flex-col items-center gap-8 pb-8">
+                            {pageContents.map((pageHtml, i) => (
+                                <div
+                                    key={i}
+                                    className="bg-white shadow-2xl relative outline-none leading-relaxed text-justify text-gray-900 [&_strong]:font-black [&_b]:font-black"
+                                    style={{
+                                        width: '210mm',
+                                        height: '297mm',
+                                        padding: '20mm 25mm 20mm 20mm',
+                                        fontFamily: fontFamily,
+                                        fontSize: `${fontSize}pt`,
+                                        lineHeight: '1.6',
+                                        overflow: 'hidden',
+                                        boxSizing: 'border-box',
+                                        position: 'relative',
+                                    }}
+                                >
+                                    <div dangerouslySetInnerHTML={{ __html: pageHtml }} />
+                                    {/* Page number */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '10mm',
+                                        right: '15mm',
+                                        fontSize: '8pt',
+                                        color: '#999',
+                                    }}>
+                                        Página {i + 1} de {pageContents.length}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
                         {/* Floating Signature Action INSIDE the Document Awareness */}
                         <div className="absolute bottom-8 right-8 flex flex-col gap-2">
