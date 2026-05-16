@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { User, Nucleo, AppView, StudentDraft, EvidenceLog, DocumentLog, DocumentType, EvidenceType, InventoryItem, ProjectId } from './types';
+import { supabase } from './services/supabaseClient';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { Onboarding } from './components/Onboarding';
@@ -212,82 +213,144 @@ const AppContent: React.FC = () => {
   // --- STATE ---
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<AppView>(AppView.LOGIN);
-  const [students, setStudents] = useState<StudentDraft[]>(() => {
-    const saved = localStorage.getItem('students_v2');
-    if (saved) {
-      const parsed = JSON.parse(saved) as StudentDraft[];
-      // Garante que todos os alunos tenham um id e um status padrão
-      return parsed.map(s => ({
-        ...s,
-        id: s.id || `std_${Math.random().toString(36).substr(2, 9)}`,
-        status: s.status || 'ATIVO'
-      }));
-    }
-    return [
-      {
-        id: 'std_001',
-        nome: 'João Silva Oliveira',
-        data_nascimento: '2010-05-15',
-        rg_cpf: '123.456.789-00',
-        nome_responsavel: 'Maria Silva',
-        endereco: 'Rua das Flores, 123, Bairro Centro, São Paulo - SP',
-        telefone: '(11) 98765-4321',
-        email_contato: 'maria.silva@email.com',
-        escola_nome: 'Escola Estadual Monteiro Lobato',
-        escola_tipo: 'PUBLICA',
-        n_sli: 'SLI-2023-0001',
-        nome_projeto: 'Formando Campeões',
-        proponente: 'Instituto Vida Ativa',
-        nome_responsavel_organizacao: 'Carlos Eduardo',
-        nucleo_id: 'nuc_ilheus',
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'std_002',
-        nome: 'Ana Clara Souza',
-        data_nascimento: '2011-08-22',
-        rg_cpf: '987.654.321-11',
-        nome_responsavel: 'Fernanda Souza',
-        endereco: 'Av. Brasil, 456, Bairro Novo, Rio de Janeiro - RJ',
-        telefone: '(21) 99999-8888',
-        email_contato: 'fernanda.souza@email.com',
-        escola_nome: 'Colégio Santa Cruz',
-        escola_tipo: 'PARTICULAR',
-        n_sli: 'SLI-2023-0002',
-        nome_projeto: 'Formando Campeões',
-        proponente: 'Instituto Vida Ativa',
-        nome_responsavel_organizacao: 'Carlos Eduardo',
-        nucleo_id: 'nuc_ilheus', // Same logic
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 'std_003',
-        nome: 'Pedro Henrique Martins',
-        data_nascimento: '2012-01-10',
-        rg_cpf: '456.789.123-22',
-        nome_responsavel: 'Ricardo Martins',
-        endereco: 'Praça da Matriz, S/N, Centro, Fortaleza - CE',
-        telefone: '(85) 97777-6666',
-        email_contato: 'ricardo.martins@email.com',
-        escola_nome: 'EMEF Paulo Freire',
-        escola_tipo: 'PUBLICA',
-        n_sli: 'SLI-2023-0003',
-        nome_projeto: 'Formando Campeões',
-        proponente: 'Instituto Vida Ativa',
-        nome_responsavel_organizacao: 'Carlos Eduardo',
-        nucleo_id: 'nuc_joinville',
-        timestamp: new Date().toISOString()
-      }
-    ];
-  });
-  const [preCadastros, setPreCadastros] = useState<PreCadastroData[]>(() => {
-    const saved = localStorage.getItem('preCadastros');
-    if (saved) return JSON.parse(saved);
-    return MOCK_PRE_CADASTRO;
-  }); // Fila de espera
+  const [students, setStudents] = useState<StudentDraft[]>([]);
+  const [preCadastros, setPreCadastros] = useState<PreCadastroData[]>(MOCK_PRE_CADASTRO);
   const [nucleos, setNucleos] = useState<Nucleo[]>(ALL_NUCLEOS);
   const [loading, setLoading] = useState(false);
   const [activeProject, setActiveProject] = useState<ProjectId>('FORMANDO_CAMPEOES');
+  const [supabaseProjectId, setSupabaseProjectId] = useState<string | null>(null); // UUID do projeto no Supabase
+  const [authChecked, setAuthChecked] = useState(false); // Controla se já verificou sessão existente
+
+  // --- SUPABASE: Carregar núcleos do banco ---
+  const loadNucleosFromSupabase = useCallback(async (projectSlug: ProjectId) => {
+    try {
+      // Buscar project UUID pelo slug
+      const { data: projectData } = await supabase
+        .from('projects').select('id').eq('slug', projectSlug).single();
+      if (projectData) {
+        setSupabaseProjectId(projectData.id);
+        // Buscar núcleos do projeto
+        const { data: nucleosData } = await supabase
+          .from('nucleos').select('*').eq('project_id', projectData.id).order('nome');
+        if (nucleosData && nucleosData.length > 0) {
+          const mapped: Nucleo[] = nucleosData.map((n: any) => ({
+            id: n.id,
+            nome: n.nome + (n.address ? ` - ${n.address}` : ''),
+            project: projectSlug,
+            coordinates: n.coordinates ? [parseFloat(n.coordinates.split(',')[1]?.replace(')','') || '0'), parseFloat(n.coordinates.split('(')[1]?.split(',')[0] || '0')] as [number, number] : undefined,
+            address: n.address || '',
+            phone: n.phone || '(00) 0000-0000',
+            email: n.email || `contato@${projectSlug.toLowerCase()}.org.br`,
+            cnpj: n.cnpj,
+            razaoSocial: n.razao_social,
+            city: n.city,
+            sliNumber: n.sli_number,
+            dias_aulas: n.dias_aulas,
+            horario_aulas: n.horario_aulas,
+            durabilidade: n.durabilidade,
+            dataInicio: n.data_inicio,
+            dataTermino: n.data_termino,
+            stockStatus: (n.stock_status || 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH',
+            stockDetails: generateStockDetails((n.stock_status || 'MEDIUM') as any),
+            employees: [],
+          }));
+          // Mescla: núcleos do Supabase para este projeto + fallback de outros projetos
+          setNucleos(prev => {
+            const otherProjects = prev.filter(n => n.project !== projectSlug);
+            return [...mapped, ...otherProjects];
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase núcleos fallback para mock:', err);
+    }
+  }, []);
+
+  // --- SUPABASE: Carregar alunos do banco ---
+  const loadStudentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      const { data, error } = await supabase
+        .from('students').select('*').eq('project_id', projectUUID).order('nome');
+      if (error) { console.warn('Erro ao carregar alunos:', error); return; }
+      if (data && data.length > 0) {
+        const mapped: StudentDraft[] = data.map((s: any) => ({
+          id: s.id,
+          projectId: projectSlug,
+          nucleo_id: s.nucleo_id,
+          turma_id: s.turma_id,
+          nome: s.nome,
+          data_nascimento: s.data_nascimento || '',
+          rg_cpf: s.rg_cpf || '',
+          nome_responsavel: s.nome_responsavel || '',
+          endereco: s.endereco || '',
+          telefone: s.telefone || '',
+          email_contato: s.email_contato || '',
+          escola_nome: s.escola_nome || '',
+          escola_tipo: s.escola_tipo || '',
+          n_sli: s.n_sli || '',
+          nome_projeto: s.nome_projeto || '',
+          proponente: s.proponente || '',
+          nome_responsavel_organizacao: s.nome_responsavel_organizacao || '',
+          status: s.status || 'ATIVO',
+          materiais_pendentes: s.materiais_pendentes || false,
+          portador_necessidade_especial: s.portador_necessidade_especial || false,
+          laudo_url: s.laudo_url,
+          ficha_url: s.ficha_url,
+          assinatura: s.assinatura,
+          data_assinatura: s.data_assinatura,
+          timestamp: s.created_at,
+        }));
+        setStudents(mapped);
+      }
+    } catch (err) {
+      console.warn('Supabase alunos fallback:', err);
+    }
+  }, []);
+
+  // --- SUPABASE: Verificar sessão existente ao montar ---
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          // Buscar acesso do usuário
+          const { data: accessData } = await supabase
+            .from('user_project_access')
+            .select('*, projects(slug, nome)')
+            .eq('user_id', session.user.id);
+          
+          if (accessData && accessData.length > 0) {
+            const defaultAccess = accessData.find((a: any) => a.is_default) || accessData[0];
+            const projectSlug = (defaultAccess as any).projects?.slug as ProjectId;
+            if (projectSlug) setActiveProject(projectSlug);
+            
+            const selectedNucleo = nucleos.find(n => n.id === defaultAccess.nucleo_id);
+            setUser({
+              uid: session.user.id,
+              nome: session.user.user_metadata?.nome || session.user.email?.split('@')[0] || 'Usuário',
+              email: session.user.email || '',
+              role: defaultAccess.role as any,
+              nucleo_id: defaultAccess.nucleo_id,
+              nucleo_nome: selectedNucleo?.nome,
+              projectId: projectSlug,
+            });
+            // Carregar dados do projeto
+            await loadNucleosFromSupabase(projectSlug);
+            if (defaultAccess.project_id) {
+              setSupabaseProjectId(defaultAccess.project_id);
+              await loadStudentsFromSupabase(defaultAccess.project_id, projectSlug);
+            }
+            setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao verificar sessão:', err);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    checkSession();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- PROJECT-SCOPED DATA ---
   const filteredNucleos = useMemo(() => nucleos.filter(n => n.project === activeProject), [nucleos, activeProject]);
@@ -472,41 +535,16 @@ const AppContent: React.FC = () => {
   }, [projectAssets]);
 
   const [loginNucleoId, setLoginNucleoId] = useState<string>('');
-  const [loginEmail, setLoginEmail] = useState<string>('professor@teste.com');
-  const [loginPassword, setLoginPassword] = useState<string>('123456');
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  const [loginError, setLoginError] = useState<string>('');
 
-  // Persist and Sync Students
+  // Recarregar dados ao trocar projeto (se logado)
   useEffect(() => {
-    localStorage.setItem('students_v2', JSON.stringify(students));
-  }, [students]);
-
-  // Persist and Sync PreCadastros across tabs
-  useEffect(() => {
-    localStorage.setItem('preCadastros', JSON.stringify(preCadastros));
-  }, [preCadastros]);
-
-  // Persist and Sync Documents across tabs (Crucial for external uploads)
-  useEffect(() => {
-    const savedDocs = localStorage.getItem('collectedDocuments');
-    if (savedDocs && collectedDocuments.length === 0) {
-      setCollectedDocuments(JSON.parse(savedDocs));
-    } else if (collectedDocuments.length > 0) {
-      localStorage.setItem('collectedDocuments', JSON.stringify(collectedDocuments));
+    if (user && supabaseProjectId) {
+      loadStudentsFromSupabase(supabaseProjectId, activeProject);
     }
-  }, [collectedDocuments]);
-
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'preCadastros' && e.newValue) {
-        setPreCadastros(JSON.parse(e.newValue));
-      }
-      if (e.key === 'collectedDocuments' && e.newValue) {
-        setCollectedDocuments(JSON.parse(e.newValue));
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [activeProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Efeito para tratar Link Externo (Pai) - Captura de Hash e Query de forma robusta
   useEffect(() => {
@@ -541,49 +579,107 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginNucleoId) {
-      alert("Por favor, identifique o seu Núcleo de atuação.");
-      return;
-    }
+    setLoginError('');
     if (!loginEmail || !loginPassword) {
-      alert("Por favor, preencha o e-mail e senha.");
-      return;
-    }
-
-    let role = 'PROFESSOR';
-    if (loginEmail === 'admin@teste.com' && loginPassword === '123456') {
-      role = 'ADMIN';
-    } else if (loginEmail === 'professor@teste.com' && loginPassword === '123456') {
-      role = 'PROFESSOR';
-    } else {
-      alert("Credenciais inválidas. Use professor@teste.com ou admin@teste.com com a senha 123456 para testar.");
+      setLoginError('Por favor, preencha e-mail e senha.');
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const selectedNucleoObj = nucleos.find(n => n.id === loginNucleoId);
-      setUser({
-        ...MOCK_USER,
+    try {
+      // 1. Autenticar com Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        role: role as any,
-        nucleo_id: loginNucleoId,
-        nucleo_nome: selectedNucleoObj?.nome,
-        projectId: activeProject
+        password: loginPassword,
       });
 
-      // REDIRECT LOGIC BASED ON ROLE
-      if (selectedNucleoObj && loginNucleoId) {
-        if (role === 'ADMIN') {
-          setView(AppView.ADMIN_DASHBOARD);
-        } else {
-          setView(AppView.DASHBOARD);
-        }
+      if (authError) {
+        setLoginError(authError.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos.'
+          : authError.message);
+        setLoading(false);
+        return;
       }
+
+      if (!authData.user) {
+        setLoginError('Erro ao autenticar. Tente novamente.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Buscar acesso do usuário ao projeto selecionado
+      const { data: projectData } = await supabase
+        .from('projects').select('id').eq('slug', activeProject).single();
+
+      if (!projectData) {
+        setLoginError('Projeto não encontrado.');
+        setLoading(false);
+        return;
+      }
+
+      const { data: accessData } = await supabase
+        .from('user_project_access')
+        .select('*')
+        .eq('user_id', authData.user.id)
+        .eq('project_id', projectData.id)
+        .single();
+
+      let role: string = 'PROFESSOR';
+      let nucleoId: string | null = loginNucleoId || null;
+
+      if (accessData) {
+        role = accessData.role;
+        if (accessData.nucleo_id) nucleoId = accessData.nucleo_id;
+      } else {
+        // Verifica se tem acesso a QUALQUER projeto
+        const { data: anyAccess } = await supabase
+          .from('user_project_access')
+          .select('*, projects(slug)')
+          .eq('user_id', authData.user.id);
+        
+        if (!anyAccess || anyAccess.length === 0) {
+          setLoginError('Você não tem acesso a nenhum projeto. Contate o administrador.');
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
+        // Tem acesso a outro projeto mas não a este
+        setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
+        setLoading(false);
+        return;
+      }
+
+      // 3. Carregar núcleos e alunos do Supabase
+      await loadNucleosFromSupabase(activeProject);
+      setSupabaseProjectId(projectData.id);
+      await loadStudentsFromSupabase(projectData.id, activeProject);
+
+      // 4. Definir usuário
+      const selectedNucleoObj = nucleos.find(n => n.id === nucleoId);
+      setUser({
+        uid: authData.user.id,
+        nome: authData.user.user_metadata?.nome || authData.user.email?.split('@')[0] || 'Usuário',
+        email: authData.user.email || loginEmail,
+        role: role as any,
+        nucleo_id: nucleoId,
+        nucleo_nome: selectedNucleoObj?.nome,
+        projectId: activeProject,
+      });
+
+      // 5. Redirecionar
+      if (role === 'ADMIN') {
+        setView(AppView.ADMIN_DASHBOARD);
+      } else {
+        setView(AppView.DASHBOARD);
+      }
+    } catch (err: any) {
+      console.error('Erro no login:', err);
+      setLoginError('Erro de conexão. Verifique sua internet.');
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleDemoAccess = () => {
@@ -600,14 +696,23 @@ const AppContent: React.FC = () => {
     setView(AppView.ADMIN_DASHBOARD); // Direct to Admin Dashboard
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Erro ao fazer logout:', err);
+    }
     setUser(null);
     setLoginNucleoId('');
+    setLoginEmail('');
+    setLoginPassword('');
+    setLoginError('');
     setStudents([]);
     setCollectedEvidence([]);
     setCollectedDocuments([]);
     setInventory(INITIAL_INVENTORY);
     setNavParams({});
+    setSupabaseProjectId(null);
     setView(AppView.LOGIN);
   };
 
@@ -801,30 +906,75 @@ const AppContent: React.FC = () => {
     );
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName || !regEmail || !regPassword || !regNucleo) {
-      alert("Por favor, preencha todos os campos.");
+      setLoginError('Por favor, preencha todos os campos.');
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      // Simulação de Cadastro
+    setLoginError('');
+    try {
+      // 1. Cadastrar no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: regEmail,
+        password: regPassword,
+        options: { data: { nome: regName } },
+      });
+
+      if (authError) {
+        setLoginError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setLoginError('Erro ao criar conta. Tente novamente.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Buscar project UUID
+      const { data: projectData } = await supabase
+        .from('projects').select('id').eq('slug', activeProject).single();
+
+      if (projectData) {
+        // 3. Criar acesso ao projeto (AGUARDANDO aprovação de admin)
+        await supabase.from('user_project_access').insert({
+          user_id: authData.user.id,
+          project_id: projectData.id,
+          nucleo_id: regNucleo,
+          role: regRole,
+          is_default: true,
+        });
+      }
+
+      // 4. Carregar dados e logar
+      await loadNucleosFromSupabase(activeProject);
+      if (projectData) {
+        setSupabaseProjectId(projectData.id);
+        await loadStudentsFromSupabase(projectData.id, activeProject);
+      }
+
       const selectedNucleoObj = nucleos.find(n => n.id === regNucleo);
       setUser({
-        uid: `usr_${Date.now()}`,
+        uid: authData.user.id,
         nome: regName,
         email: regEmail,
         role: regRole,
         nucleo_id: regNucleo,
         nucleo_nome: selectedNucleoObj?.nome,
-        projectId: activeProject
+        projectId: activeProject,
       });
-      setView(AppView.DASHBOARD);
-      setLoading(false);
+      setView(regRole === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
       alert(`Cadastro realizado com sucesso! Bem-vindo(a), ${regName}.`);
-    }, 1500);
+    } catch (err: any) {
+      console.error('Erro no cadastro:', err);
+      setLoginError('Erro ao cadastrar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (view === AppView.LOGIN) {
@@ -838,7 +988,7 @@ const AppContent: React.FC = () => {
               <div className="w-full flex items-center justify-center gap-1 mb-2 group relative">
                 {/* Seta Esquerda — invisível até hover */}
                 <button
-                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx > 0) { setActiveProject(PROJECT_LIST[idx - 1]); setLoginNucleoId(''); setRegNucleo(''); } }}
+                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx > 0) { setActiveProject(PROJECT_LIST[idx - 1]); setLoginNucleoId(''); setRegNucleo(''); setLoginError(''); } }}
                   className={`p-2 rounded-full transition-all duration-300 ${PROJECT_LIST.indexOf(activeProject) === 0 ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
                   disabled={PROJECT_LIST.indexOf(activeProject) === 0}
                   title="Projeto anterior"
@@ -862,7 +1012,7 @@ const AppContent: React.FC = () => {
                 </div>
                 {/* Seta Direita — invisível até hover */}
                 <button
-                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx < PROJECT_LIST.length - 1) { setActiveProject(PROJECT_LIST[idx + 1]); setLoginNucleoId(''); setRegNucleo(''); } }}
+                  onClick={() => { const idx = PROJECT_LIST.indexOf(activeProject); if (idx < PROJECT_LIST.length - 1) { setActiveProject(PROJECT_LIST[idx + 1]); setLoginNucleoId(''); setRegNucleo(''); setLoginError(''); } }}
                   className={`p-2 rounded-full transition-all duration-300 ${PROJECT_LIST.indexOf(activeProject) === PROJECT_LIST.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-100 text-gray-400 hover:text-gray-700 hover:scale-110'}`}
                   disabled={PROJECT_LIST.indexOf(activeProject) === PROJECT_LIST.length - 1}
                   title="Próximo projeto"
@@ -927,7 +1077,7 @@ const AppContent: React.FC = () => {
                       type="email"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="professor@teste.com"
+                      placeholder="seu.email@exemplo.com"
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
@@ -937,13 +1087,18 @@ const AppContent: React.FC = () => {
                       type="password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="123456"
+                      placeholder="••••••••"
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
                   <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Acessando...' : 'Entrar no Sistema'}
                   </button>
+                  {loginError && (
+                    <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium text-center animate-fade-in">
+                      ⚠️ {loginError}
+                    </div>
+                  )}
                 </form>
               ) : (
                 // --- REGISTER FORM ---
