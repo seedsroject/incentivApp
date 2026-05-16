@@ -946,22 +946,46 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleSaveDeclaracao = (studentIdOrNome: string, declaracao: import('./types').DeclaracaoUniformes) => {
+  const handleSaveDeclaracao = async (studentIdOrNome: string, declaracao: import('./types').DeclaracaoUniformes) => {
+    const student = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
     setStudents(prev => prev.map(s => {
       if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
         return { ...s, declaracao_uniformes: declaracao };
       }
       return s;
     }));
+    // Persistir no Supabase (delete + insert para evitar duplicatas)
+    if (student?.id) {
+      await supabase.from('student_declarations').delete().eq('student_id', student.id).eq('type', 'UNIFORMES');
+      await supabase.from('student_declarations').insert({
+        student_id: student.id,
+        type: 'UNIFORMES',
+        data: declaracao,
+        assinatura: declaracao.assinatura || null,
+        data_assinatura: declaracao.data_assinatura || null,
+      });
+    }
   };
 
-  const handleSaveDeclaracaoProntidao = (studentIdOrNome: string, declaracao: import('./types').DeclaracaoProntidao) => {
+  const handleSaveDeclaracaoProntidao = async (studentIdOrNome: string, declaracao: import('./types').DeclaracaoProntidao) => {
+    const student = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
     setStudents(prev => prev.map(s => {
       if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
         return { ...s, declaracao_prontidao: declaracao };
       }
       return s;
     }));
+    // Persistir no Supabase (delete + insert para evitar duplicatas)
+    if (student?.id) {
+      await supabase.from('student_declarations').delete().eq('student_id', student.id).eq('type', 'PRONTIDAO');
+      await supabase.from('student_declarations').insert({
+        student_id: student.id,
+        type: 'PRONTIDAO',
+        data: declaracao,
+        assinatura: (declaracao as any).assinatura || null,
+        data_assinatura: (declaracao as any).data_assinatura || null,
+      });
+    }
   };
 
   // --- RENDER LOGIC ---
