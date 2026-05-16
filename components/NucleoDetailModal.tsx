@@ -865,6 +865,7 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                         employee={formData}
                         nucleo={nucleo}
                         onSave={handleContractSave}
+                        projectId={projectId}
                     />
                 )}
 

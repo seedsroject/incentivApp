@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { generateContractText } from '../services/geminiService';
-import { Employee, Nucleo } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Employee, Nucleo, ProjectId } from '../types';
 
 interface ContractGenerationModalProps {
     isOpen: boolean;
@@ -8,60 +7,68 @@ interface ContractGenerationModalProps {
     employee: Partial<Employee>;
     nucleo: Nucleo;
     onSave?: (contractUrl: string) => void;
+    projectId?: ProjectId;
 }
 
-export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({ isOpen, onClose, employee, nucleo, onSave }) => {
-    // Contract Text State
+export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = ({ isOpen, onClose, employee, nucleo, onSave, projectId }) => {
+    // Project-aware assets
+    const projectAssets = useMemo(() => {
+        if (projectId === 'DANIEL_DIAS') return { name: 'Instituto Daniel Dias', header: '/Banner_Relatorio_Daniel.png' };
+        if (projectId === 'FUTEBOL') return { name: 'Instituto Escolinha de Futebol', header: '/Banner_relatorio_futebol.png' };
+        return { name: 'Instituto Escolinha de Triathlon', header: '/header_full.png' };
+    }, [projectId]);
+    // Contract State
     const [contractText, setContractText] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
 
     // Missing/Editable Data State
     const [additionalData, setAdditionalData] = useState({
-        // Nucleo Data
-        nucleoRazaoSocial: nucleo.razaoSocial || nucleo.nome,
-        nucleoCnpj: nucleo.cnpj || '',
-        nucleoAddress: nucleo.address || '',
-        nucleoCity: (() => {
+        // Contratante (Instituto)
+        contratanteRazaoSocial: nucleo.razaoSocial || 'Instituto Escolinha de Triathlon',
+        contratanteCnpj: nucleo.cnpj || '41.332.163/0001-59',
+        contratanteAddress: nucleo.address || 'Rua Al. Doutor Carlos de Carvalho, nº 68, sala 102, CEP: 80.410-180, Centro, Curitiba-PR',
+        contratanteCity: (() => {
             if (nucleo.city) return nucleo.city;
-            // Parse from nome: "Aquiraz | CE - Sec. de Esporte..."
             const parts = nucleo.nome.split('|');
             if (parts.length >= 2) {
                 const city = parts[0].trim();
                 const state = parts[1].trim().split(/[\s-]/)[0].trim();
                 return `${city}/${state}`;
             }
-            return nucleo.nome.split(' - ')[0] || 'Cidade/UF';
+            return nucleo.nome.split(' - ')[0] || 'Curitiba-PR';
         })(),
 
-        // Nucleo Representative
-        nucleoResponsavelName: '',
-        nucleoResponsavelCargo: 'Diretor(a)',
-        nucleoResponsavelNacionalidade: 'Brasileiro(a)',
-        nucleoResponsavelEstCivil: 'Casado(a)',
-        nucleoResponsavelProfissao: 'Empresário(a)',
-        nucleoResponsavelCPF: '',
-        nucleoResponsavelRG: '',
+        // Contratada (Empresa prestadora)
+        contratadaRazaoSocial: '',
+        contratadaCnpj: '',
+        contratadaAddress: '',
+        contratadaRepName: '',
+        contratadaRepCPF: '',
 
-        // Employee Data (Extras)
-        employeeNacionalidade: employee.nationality || 'Brasileiro(a)',
-        employeeEstadoCivil: employee.civilStatus || 'Solteiro(a)',
-        employeeRG: employee.rg || '',
-        employeeProfissao: employee.profession || employee.role || '',
-        employeeAddress: employee.address || '',
+        // Objeto do Contrato
+        cargoFuncao: employee.role || 'ASSISTENTE SOCIAL',
+        termoCompromisso: '',
+        processo: '',
+        sli: '',
+        nomeProjetoContrato: '',
 
-        // Contract Financials
+        // Vigência
+        startDate: employee.contract?.startDate ? new Date(employee.contract.startDate).toLocaleDateString('pt-BR') : '',
+        endDate: employee.contract?.endDate ? new Date(employee.contract.endDate).toLocaleDateString('pt-BR') : '',
+
+        // Valor
         contractValue: '',
-        paymentDay: '05',
+        contractValueExtenso: '',
 
-        // Witnesses
-        witness1Name: '',
-        witness1CPF: '',
-        witness1Signature: '',
-        witness2Name: '',
-        witness2CPF: '',
-        witness2Signature: '',
+        // Carga Horária
+        cargaHoraria: '10 horas semanais de segunda a sexta-feira',
 
-        digitalSignature: '', // Contractor Signature
+        // Foro
+        foro: 'Curitiba-PR',
+        dataAssinatura: new Date().toLocaleDateString('pt-BR'),
+
+        // Signatures
+        digitalSignature: '',
         signatureType: null as 'GOV' | 'MANUAL' | null
     });
 
@@ -75,217 +82,143 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
     // Editor State
     const [contractHtml, setContractHtml] = useState('');
 
-    // Editor Ref (Legacy support/Global)
-    const editorRef = React.useRef<HTMLDivElement>(null); // Optional now, or used for container
+    // Editor Ref
+    const editorRef = React.useRef<HTMLDivElement>(null);
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-    // Helper to parse Markdown to HTML
-    const parseMarkdown = (text: string) => {
-        if (!text) return '';
-        let html = text
-            // Headers
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-            // Bold
-            .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-            // Italic
-            .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-            // Line Breaks (handle double newlines as paragraphs, single as br)
-            .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br />');
-
-        // Wrap in p if not already
-        return `<p>${html}</p>`;
-    };
 
     // Editor State
     const [fontSize, setFontSize] = useState(10);
     const [fontFamily, setFontFamily] = useState('Arial');
-    const [isTyping, setIsTyping] = useState(false);
-    const [fullText, setFullText] = useState('');
-    const [lastUsage, setLastUsage] = useState<any>(null); // Store token usage
 
-    const [isDataReady, setIsDataReady] = useState(false);
+    const [isDataReady, setIsDataReady] = useState(true);
 
-    useEffect(() => {
-        if (isOpen) {
-            if (!nucleo.cnpj || !nucleo.address) {
-                setIsDataReady(false);
-            } else {
-                setIsDataReady(true);
-                handleGenerate();
-            }
-        }
-    }, [isOpen, nucleo]);
+    const d = additionalData;
+    const inst = projectAssets.name;
 
-    const handleGenerate = async () => {
-        setIsLoading(true);
-        const data = {
-            // Nucleo
-            nucleoMatrixName: additionalData.nucleoRazaoSocial,
-            nucleoName: nucleo.nome,
-            nucleoCnpj: additionalData.nucleoCnpj,
-            nucleoAddress: additionalData.nucleoAddress,
-            nucleoCity: additionalData.nucleoCity,
+    // Build the fixed contract HTML from the template
+    const buildContractHtml = () => {
+        const V = (v: string, fallback = '_______________') => v?.trim() || fallback;
+        return `
+<p style="text-align:center;font-weight:bold;font-size:12pt;margin-bottom:20px;">Contrato de Prestação de Serviços de Mão de Obra Terceirizada</p>
 
-            // Nucleo Representative
-            nucleoRepName: additionalData.nucleoResponsavelName,
-            nucleoRepCargo: additionalData.nucleoResponsavelCargo,
-            nucleoRepNacionalidade: additionalData.nucleoResponsavelNacionalidade,
-            nucleoRepEstCivil: additionalData.nucleoResponsavelEstCivil,
-            nucleoRepProfissao: additionalData.nucleoResponsavelProfissao,
-            nucleoRepCPF: additionalData.nucleoResponsavelCPF,
-            nucleoRepRG: additionalData.nucleoResponsavelRG,
+<p>O presente instrumento particular de contrato de prestação de serviços, que entre si fazem de um lado, <strong>${V(inst)}</strong>, com sede na ${V(d.contratanteAddress)}, inscrita no CNPJ/MF sob o nº ${V(d.contratanteCnpj)}, neste ato representada conforme seus atos constitutivos, doravante simplesmente denominada "CONTRATANTE";</p>
 
-            // Employee
-            employeeName: employee.name,
-            employeeCpf: employee.documentCpf,
-            employeeAddress: additionalData.employeeAddress,
-            employeeNacionalidade: additionalData.employeeNacionalidade,
-            employeeEstadoCivil: additionalData.employeeEstadoCivil,
-            employeeRG: additionalData.employeeRG,
-            employeeProfissao: additionalData.employeeProfissao,
+<p>e, de outro lado,</p>
 
-            role: employee.role,
+<p><strong>${V(d.contratadaRazaoSocial)}</strong>, com sede na ${V(d.contratadaAddress)}, inscrita no CNPJ/MF sob o nº ${V(d.contratadaCnpj)}, neste ato representada conforme seus atos constitutivos, doravante simplesmente denominada "CONTRATADA", nas cláusulas e condições descritas no presente instrumento.</p>
 
-            // Contract Specs
-            contractType: employee.contract?.type,
-            startDate: employee.contract?.startDate ? new Date(employee.contract.startDate).toLocaleDateString() : '...',
-            endDate: employee.contract?.endDate ? new Date(employee.contract.endDate).toLocaleDateString() : '...',
-            contractValue: additionalData.contractValue,
-            paymentDay: additionalData.paymentDay,
+<p>As partes identificadas e qualificadas acima declaram estar aqui devidamente representadas na forma de seus vigentes instrumentos legais.</p>
 
-            // Witness
-            witness1Name: additionalData.witness1Name,
-            witness1CPF: additionalData.witness1CPF,
-            witness2Name: additionalData.witness2Name,
-            witness2CPF: additionalData.witness2CPF,
-        };
+<p style="font-weight:bold;margin-top:16px;">"OBJETO DO CONTRATO"</p>
+<p>Este contrato tem por objeto a prestação de serviços de <strong>${V(d.cargoFuncao)}</strong>, em projeto aprovado através da Lei de Incentivo ao Esporte Federal, vinculada ao Termo de Compromisso nº ${V(d.termoCompromisso)}, Processo nº ${V(d.processo)} SLI ${V(d.sli)} "${V(d.nomeProjetoContrato)}" do Ministério do Esporte, que serão executados pela CONTRATADA à CONTRATANTE por seu representante legal e/ou empregados registrados, vinculados e com qualificação técnica necessária para execução.</p>
 
-        try {
-            const { text, usage } = await generateContractText(data);
-            const html = parseMarkdown(text);
+<p style="font-weight:bold;margin-top:16px;">"DA VIGÊNCIA DO CONTRATO"</p>
+<p>O presente contrato inicia em ${V(d.startDate)} e findará em ${V(d.endDate)}.</p>
 
-            // Start Typewriter
-            setFullText(html);
-            setContractHtml(''); // Reset
-            setLastUsage(usage);
-            setIsTyping(true);
+<p style="font-weight:bold;margin-top:16px;">"DO PREÇO"</p>
+<p>O valor mensal a ser pago será de R$ ${V(d.contractValue)} (${V(d.contractValueExtenso, 'valor por extenso')}).</p>
 
-        } catch (err: any) {
-            setContractText("Erro ao gerar contrato: " + err.message);
-        } finally {
-            setIsLoading(false);
-            setIsDataReady(true);
-        }
+<p style="font-weight:bold;margin-top:16px;">"DA DOCUMENTAÇÃO NECESSÁRIA PARA PAGAMENTO"</p>
+<p>O pagamento só poderá ser liberado mediante a nota fiscal da prestação de serviço, bem como poderá ser solicitado apresentação de recibo, das certidões de tributos municipais, certidão de tributos estaduais, certidão da dívida ativa da união, certificado de regularidade do FGTS e certidão da Justiça do Trabalho.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"DA FORMA DE PAGAMENTO"</p>
+<p>A CONTRATANTE pagará a CONTRATADA os valores, conforme condições estabelecidas mediante Transferência Bancária.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"DA RESCISÃO"</p>
+<p>O presente contrato poderá ser rescindido, sem qualquer indenização, bastando simples notificação por escrito com antecedência mínima de 10 (dez) dias, ou nos casos de descumprimento de qualquer cláusula ora avençada, o que se dará de forma imediata, mediante notificação por escrito;</p>
+<p>O presente contrato poderá ainda ser rescindido por razões de força maior, caso fortuito, fato príncipe, falência, recuperação judicial ou extrajudicial de uma das partes, interdição de estabelecimento, revogação ou suspensão das licenças de funcionamento de qualquer das partes pelas autoridades que possam impedir o exercício legal da atividade objeto do presente contrato;</p>
+<p>O contrato poderá ainda ser rescindido sem nenhuma indenização e independentemente de notificação nos seguintes casos:</p>
+<ul style="margin-left:20px;"><li>Prestação de serviço inadequada, sem planejamento;</li><li>Na ausência imotivada no momento da prestação de serviços;</li><li>Postura inadequada na prestação de serviços.</li></ul>
+
+<p style="font-weight:bold;margin-top:16px;">"EQUIPAMENTOS"</p>
+<p>A CONTRATANTE fornecerá os materiais esportivos necessários a prestação de serviços da CONTRATADA, que deverá devolvê-los ao final do contrato;</p>
+<p>Todos os materiais esportivos necessários para a prestação dos serviços serão de responsabilidade exclusiva da CONTRATADA, que deverá utilizá-los com zelo. No momento da reposição do material, a CONTRATADA deverá apresentar o material antigo.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"DAS OBRIGAÇÕES DA CONTRATANTE"</p>
+<p>Efetuar os pagamentos devidos à CONTRATADA rigorosamente nos prazos estabelecidos;</p>
+<p>Comunicar a CONTRATADA qualquer irregularidade que venha a constatar, tanto na execução dos serviços como no recebimento das notas e cobranças emitidas, de modo a viabilizar a correção necessária no menor tempo possível;</p>
+<p>Fornecer à CONTRATADA todas as informações necessárias, inclusive material esportivo à realização dos serviços, devendo especificar os detalhes necessários à perfeita consecução dos mesmos e a forma como eles deverão ser entregues;</p>
+<p>Fornecer informações e/ou dados necessários para que a CONTRATADA possa cumprir o objeto deste instrumento em tempo hábil.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"DAS OBRIGAÇÕES DA CONTRATADA"</p>
+<p>Assumir todos os encargos trabalhistas, civis, previdenciários e securitários relativos aos seus empregados, prepostos ou sócios, que estejam prestando serviço na CONTRATANTE, inclusive salários, indenização, aviso prévio, 13º salário, FGTS, seguros e outros, sem qualquer ônus para a CONTRATANTE;</p>
+<p>Obedecer a todas as leis, normas, e regulamentos federais, estaduais e municipais relacionados com o trabalho executado;</p>
+<p>Fornecer a ${V(d.cargoFuncao)} com qualidade, com planejamento, dentro dos padrões técnicos de qualidade, que totalizam ${V(d.cargaHoraria)};</p>
+<p>Se responsabilizar pela guarda e manutenção dos materiais objeto desta prestação de serviço que lhe forem entregues ou fornecidos pela própria CONTRATANTE;</p>
+<p>Disponibilizar profissionais e/ou colaboradores identificados e qualificados para execução do objeto deste instrumento, de forma a não deixar os núcleos esportivos sem assistência, sob pena de arcar com os prejuízos causados ou sofrer descontos no valor da prestação de serviços;</p>
+<p>Responsabilizar-se pelos danos e/ou prejuízos que seus profissionais e/ou colaboradores que vierem a causar à CONTRATANTE por imprudência, imperícia ou negligência;</p>
+<p>Executar suas obrigações sem vícios, garantindo o devido cumprimento de suas obrigações, nos estritos termos do Contrato e normas em vigor, cumprindo todos os prazos e/ou datas acordadas por escrito com a Contratante para realização de etapas, fases e entregas dos Serviços;</p>
+<p>Abster-se de praticar quaisquer atos que possam interferir negativamente na imagem da CONTRATANTE, responsabilizando-se integralmente pelas consequências de qualquer eventual descumprimento;</p>
+<p>Arcar com todos os tributos de sua responsabilidade que incidam ou venham a incidir sobre o objeto deste Contrato, conforme o disposto na legislação aplicável sejam eles de natureza federal, estadual e/ou municipal, responsabilizando-se, inclusive, pelas infrações a que der causa em virtude da não observância do disposto nesta cláusula;</p>
+<p>Fica expressamente estipulado que não se estabelece, por força desta contratação, qualquer vínculo empregatício ou de responsabilidade, mesmo por salário, por parte da CONTRATANTE em relação aos empregados que a CONTRATADA empregar diretamente ou indiretamente, para a execução dos serviços ora ajustados, correndo por conta exclusiva da CONTRATADA todas as despesas com esse pessoal, inclusive encargos de legislação trabalhista, previdenciária, securitária ou qualquer outra, obrigando-se a Contratada ao cumprimento das disposições legais, quer seja quanto à remuneração de seus empregados, quer seja quanto aos demais encargos de qualquer natureza, em especial aqueles referentes a acidente de trabalho;</p>
+<p>O representante legal da empresa deverá providenciar ${V(d.cargoFuncao, 'profissional').toLowerCase()} substituto em caso de ausência do titular.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"DISPOSIÇÕES GERAIS"</p>
+<p>O presente instrumento constitui título executivo extrajudicial, nos termos do artigo 784 do Código de Processo Civil/15.</p>
+<p>Em qualquer hipótese, será sempre a CONTRATADA responsável por todos os serviços prestados e por todas as obrigações assumidas no presente instrumento.</p>
+<p>O presente contrato contém o acordo integral estabelecido entre as partes com relação ao objeto deste instrumento. Quaisquer documentos, compromissos e avenças anteriores, orais, escritos ou de outra forma estabelecidos entre as partes e referentes ao objeto deste pacto serão considerados cancelados e não afetarão ou modificarão quaisquer termos ou obrigações.</p>
+<p>Qualquer alteração ou notificação entre as partes só será válida se prévia e expressamente acordado por escrito entre as partes.</p>
+<p>A rescisão do presente contrato não libera as partes das obrigações devidas até a data da rescisão, que não afetará ou limitará qualquer direito, que expressamente ou por sua natureza, deva permanecer em vigor após a rescisão do presente contrato ou que decorra de tal rescisão.</p>
+<p>Qualquer postergação no exercício de direito ou prerrogativa prevista neste contrato significará mera liberalidade e não novação. A tolerância, a inércia ou a demora, de qualquer das partes no exercício de quaisquer direitos e atribuições ou na obtenção de qualquer reparação, conforme previsto no presente contrato, não impedirão o exercício de quaisquer direitos e não constituirão a renúncia por tal PARTE ao seu direito de exercê-lo a qualquer tempo.</p>
+<p>A tolerância, por uma das Partes, à infração das Cláusulas e disposições contidas neste Contrato, bem como a prática de quaisquer atos ou procedimentos não previstos de forma expressa neste Contrato, será considerada mera liberalidade, não se configurando como precedente ou novação contratual.</p>
+
+<p style="font-weight:bold;margin-top:16px;">"FORO"</p>
+<p>As partes elegem o Foro da cidade de ${V(d.foro)}, para dirimir quaisquer dúvidas ou litígios relacionados a este contrato, renunciando a qualquer outro por mais privilegiado que seja. O presente contrato obriga as partes e sucessoras, a cumprirem e a fazerem cumprir, a qualquer tempo, as cláusulas ora pactuadas.</p>
+
+<p>E por estarem justas e contratadas, firmam o presente instrumento.</p>
+
+<p style="text-align:right;margin-top:30px;">${V(d.foro)}, ${V(d.dataAssinatura)}.</p>
+
+<div style="margin-top:50px;text-align:center;">
+<p>______________________</p>
+<p><strong>CONTRATANTE</strong></p>
+<p>${V(inst)}</p>
+</div>
+
+<div style="margin-top:40px;text-align:center;">
+<p>_______________________</p>
+<p><strong>CONTRATADA</strong></p>
+<p>${V(d.contratadaRazaoSocial, 'Nome da Empresa')}</p>
+${d.contratadaRepName ? `<p>Por ${d.contratadaRepName}${d.contratadaRepCPF ? ` CPF ${d.contratadaRepCPF}` : ''}</p>` : ''}
+</div>
+`;
     };
 
-    // Typewriter Effect (Simple - single page, no overflow detection)
+    // Regenerate contract when data changes
     useEffect(() => {
-        if (isTyping && fullText) {
-            let currentIndex = 0;
-            const interval = setInterval(() => {
-                if (currentIndex >= fullText.length) {
-                    clearInterval(interval);
-                    setIsTyping(false);
-                    // Also set contractText for copy/save
-                    setContractText(fullText);
-                    return;
-                }
-
-                const char = fullText[currentIndex];
-                let nextChunk = char;
-                let newIndex = currentIndex + 1;
-
-                // Handle HTML tags as single chunks to preserve structure
-                if (char === '<') {
-                    const tagEnd = fullText.indexOf('>', currentIndex);
-                    if (tagEnd !== -1) {
-                        nextChunk = fullText.substring(currentIndex, tagEnd + 1);
-                        newIndex = tagEnd + 1;
-                    }
-                }
-
-                // Simply append to the single page
-                setContractHtml(prev => prev + nextChunk);
-
-                // Auto-scroll to bottom
-                if (scrollContainerRef.current) {
-                    scrollContainerRef.current.scrollTo({
-                        top: scrollContainerRef.current.scrollHeight,
-                        behavior: 'auto'
-                    });
-                }
-
-                currentIndex = newIndex;
-            }, 5);
-
-            return () => clearInterval(interval);
+        if (isOpen) {
+            setContractHtml(buildContractHtml());
+            setContractText(buildContractHtml());
         }
-    }, [isTyping, fullText]);
+    }, [isOpen]);
+
+    const handleGenerate = () => {
+        const html = buildContractHtml();
+        setContractHtml(html);
+        setContractText(html);
+    };
 
     if (!isOpen) return null;
 
     const generateHTML = () => {
-        // Get content from the editor ref or from state
         const content = editorRef.current?.innerHTML || contractHtml;
-
-        const currentDate = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-
         return `
             <html>
             <head>
                 <meta charset="UTF-8">
                 <title>Contrato - ${employee.name}</title>
                 <style>
-                    @page {
-                        size: A4;
-                        margin: 20mm 30mm 20mm 20mm; /* Top Right (3cm) Bottom Left (2cm) */
-                    }
-                    body { font-family: '${fontFamily}', sans-serif; line-height: 1.5; font-size: ${fontSize}pt; text-align: justify; color: #000; margin: 0; }
+                    @page { size: A4; margin: 20mm 30mm 20mm 20mm; }
+                    body { font-family: '${fontFamily}', sans-serif; line-height: 1.6; font-size: ${fontSize}pt; text-align: justify; color: #000; margin: 0; }
                     .content { text-align: justify; }
-                    .signature-section { margin-top: 50px; page-break-inside: avoid; page-break-before: always; }
-                    .digital-sig-box { border: 1px dashed #ccc; padding: 20px; text-align: center; margin-top: 10px; }
-                    .gov-sig { color: #007bfb; font-weight: bold; }
-                    img.manual-sig { max-height: 80px; }
-                    .gov-sig { color: #007bfb; font-weight: bold; }
-                    img.manual-sig { max-height: 80px; }
-                    /* Signature Layout */
-                    .signature-block { text-align: center; margin-top: 40px; page-break-inside: avoid; }
-                    .witness-section { margin-top: 40px; page-break-inside: avoid; display: flex; justify-content: space-between; gap: 20px; }
-                    .witness-box { width: 48%; text-align: center; }
-                    
-                    /* Formatting Overrides (Ensure Markdown styles appear) */
-                    strong, b { font-weight: 900 !important; color: #000; } /* Force heavy bold */
-                    .page-container strong, .page-container b { font-weight: 900 !important; } /* Specificity */
-                    h1, h2, h3, h4 { font-weight: 900 !important; margin-top: 20px; margin-bottom: 10px; color: #000; }
-                    h1 { font-size: 14pt; text-transform: uppercase; text-align: center; }
-                    h2 { font-size: 12pt; }
-                    h3 { font-size: 11pt; }
-
-                    /* Screen View Styling (Like Editor) */
+                    strong, b { font-weight: 900 !important; }
+                    ul { margin-left: 20px; }
                     @media screen {
-                        body {
-                            background-color: #f3f4f6; /* Gray-100 */
-                            display: flex;
-                            justify-content: center;
-                            padding: 40px;
-                        }
-                        
-                        /* Wrap content in a "page" div */
+                        body { background-color: #f3f4f6; display: flex; justify-content: center; padding: 40px; }
                         .page-container {
-                            background-color: white;
-                            width: 210mm;
-                            min-height: 297mm;
-                            height: auto;
-                            padding: 20mm 30mm 20mm 20mm;
-                            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                            margin: 0 auto;
-                            word-wrap: break-word; /* Prevent overflow */
-                            overflow-wrap: break-word;
-                            white-space: pre-wrap; /* Preserve whitespace but wrap */
-                            /* Visual Pagination for Preview */
+                            background-color: white; width: 210mm; min-height: 297mm; padding: 20mm 30mm 20mm 20mm;
+                            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 0 auto;
+                            word-wrap: break-word; overflow-wrap: break-word;
                             background-image: linear-gradient(to bottom, transparent calc(297mm - 1px), #e5e7eb calc(297mm - 1px), #e5e7eb 297mm);
                             background-size: 100% 297mm;
                         }
@@ -295,55 +228,9 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
             <body>
                 <div class="page-container">
                     <div style="text-align: center; margin-bottom: 20px;">
-                        <img src="/header_full.png" alt="Header" style="width: 100%; max-height: 80px; object-fit: contain;" onerror="this.style.display='none'" />
+                        <img src="${projectAssets.header}" alt="Header" style="width: 100%; max-height: 80px; object-fit: contain;" onerror="this.style.display='none'" />
                     </div>
-                    <div class="content">
-                    ${content}
-                </div>
-                
-                <div class="signature-block">
-                    <p style="text-align: right; margin-bottom: 40px;">${additionalData.nucleoCity || 'Curitiba'}, ${currentDate}</p>
-
-                    <p><strong>Assinatura do Contratante:</strong></p>
-                    ${additionalData.digitalSignature ? `
-                        <div style="margin-top: 10px; margin-bottom: 20px;">
-                             <img src="${additionalData.digitalSignature}" class="manual-sig" /><br/>
-                             <small style="font-size: 9px; color: #666;">Assinado eletronicamente por Rep. Legal</small>
-                        </div>
-                    ` : '<br/><br/>'}
-                    ________________________________________________<br/>
-                    <strong>${additionalData.nucleoRazaoSocial.split(' - ')[0]}</strong><br/>
-                    ${additionalData.nucleoCnpj}<br/>
-                    ${additionalData.nucleoResponsavelName ? `Rep: ${additionalData.nucleoResponsavelName}` : ''}
-                </div>
-
-                <div class="signature-block" style="margin-top: 30px; page-break-before: auto;"> 
-                    <p><strong>Assinatura do Contratado:</strong></p>
-                    <br/><br/>
-                    ________________________________________________<br/>
-                    <strong>${employee.name}</strong><br/>
-                    CPF: ${employee.documentCpf}
-                </div>
-
-                <div class="witness-section">
-                        <div class="witness-box">
-                            <p><strong>Testemunha 1:</strong></p>
-                            <br/>
-                             ${additionalData.witness1Signature ? `<img src="${additionalData.witness1Signature}" class="manual-sig" style="max-height: 40px;" /><br/>` : '<br/><br/>'}
-                            ______________________________________<br/>
-                            Nome: ${additionalData.witness1Name || '__________________'}<br/>
-                            CPF: ${additionalData.witness1CPF || '__________________'}
-                        </div>
-                        
-                        <div class="witness-box">
-                            <p><strong>Testemunha 2:</strong></p>
-                            <br/>
-                            ${additionalData.witness2Signature ? `<img src="${additionalData.witness2Signature}" class="manual-sig" style="max-height: 40px;" /><br/>` : '<br/><br/>'}
-                            ______________________________________<br/>
-                            Nome: ${additionalData.witness2Name || '__________________'}<br/>
-                            CPF: ${additionalData.witness2CPF || '__________________'}
-                        </div>
-                </div>
+                    <div class="content">${content}</div>
                 </div>
             </body>
             </html>
@@ -389,21 +276,8 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                         <div>
                             <h2 className="text-xl font-bold text-gray-800">Gerador de Contratos (IA)</h2>
                             <p className="text-gray-500 text-sm">Minuta Jurídica Personalizada</p>
-                            {lastUsage && (
-                                <>
-                                    💰 Custo Estimado: <strong>R$ {((lastUsage.promptTokenCount / 1000000 * 0.075 + lastUsage.candidatesTokenCount / 1000000 * 0.30) * 6).toFixed(4)}</strong>
-                                    <span className="ml-2 opacity-75">(In: {lastUsage.promptTokenCount} | Out: {lastUsage.candidatesTokenCount})</span>
-                                </>
-                            )}
                         </div>
                     </div>
-
-                    {/* Status Indicator */}
-                    {isTyping && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-bold animate-pulse">
-                            ✍️ Digitando contrato...
-                        </div>
-                    )}
 
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -420,94 +294,79 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                         <div>
                             <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
                                 <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                Contratante (Núcleo)
+                                Contratante
                             </h3>
                             <div className="space-y-2">
-                                <input placeholder="Razão Social" value={additionalData.nucleoRazaoSocial} onChange={e => setAdditionalData({ ...additionalData, nucleoRazaoSocial: e.target.value })} className="w-full p-2 text-xs rounded border" />
-                                <input placeholder="CNPJ" value={additionalData.nucleoCnpj} onChange={e => setAdditionalData({ ...additionalData, nucleoCnpj: e.target.value })} className="w-full p-2 text-xs rounded border" />
-                                <input placeholder="Endereço Completo" value={additionalData.nucleoAddress} onChange={e => setAdditionalData({ ...additionalData, nucleoAddress: e.target.value })} className="w-full p-2 text-xs rounded border" />
-                                <input placeholder="Cidade/Foro" value={additionalData.nucleoCity} onChange={e => setAdditionalData({ ...additionalData, nucleoCity: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <div className="p-2 text-xs rounded border bg-gray-100 text-gray-600 font-semibold">{projectAssets.name}</div>
+                                <input placeholder="Endereço Sede" value={d.contratanteAddress} onChange={e => setAdditionalData({ ...additionalData, contratanteAddress: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="CNPJ" value={d.contratanteCnpj} onChange={e => setAdditionalData({ ...additionalData, contratanteCnpj: e.target.value })} className="w-full p-2 text-xs rounded border" />
                             </div>
                         </div>
 
-                        {/* Seção 2: Representante Legal */}
-                        <div>
-                            <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                Representante Legal
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                <input placeholder="Nome Completo" className="col-span-2 w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelName} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelName: e.target.value })} />
-                                <input placeholder="CPF" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelCPF} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelCPF: e.target.value })} />
-                                <input placeholder="RG" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelRG} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelRG: e.target.value })} />
-                                <input placeholder="Nacionalidade" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelNacionalidade} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelNacionalidade: e.target.value })} />
-                                <input placeholder="Est. Civil" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelEstCivil} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelEstCivil: e.target.value })} />
-                                <input placeholder="Profissão" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelProfissao} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelProfissao: e.target.value })} />
-                                <input placeholder="Cargo" className="w-full p-2 text-xs rounded border" value={additionalData.nucleoResponsavelCargo} onChange={e => setAdditionalData({ ...additionalData, nucleoResponsavelCargo: e.target.value })} />
-                            </div>
-                        </div>
-
-                        {/* Seção 3: Contratado (Extras) */}
+                        {/* Seção 2: Contratada */}
                         <div>
                             <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
                                 <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                Dados do Contratado
+                                Contratada (Empresa)
                             </h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                <input placeholder="RG" className="w-full p-2 text-xs rounded border" value={additionalData.employeeRG} onChange={e => setAdditionalData({ ...additionalData, employeeRG: e.target.value })} />
-                                <input placeholder="Nacionalidade" className="w-full p-2 text-xs rounded border" value={additionalData.employeeNacionalidade} onChange={e => setAdditionalData({ ...additionalData, employeeNacionalidade: e.target.value })} />
-                                <input placeholder="Est. Civil" className="w-full p-2 text-xs rounded border" value={additionalData.employeeEstadoCivil} onChange={e => setAdditionalData({ ...additionalData, employeeEstadoCivil: e.target.value })} />
-                                <input placeholder="Profissão" className="w-full p-2 text-xs rounded border" value={additionalData.employeeProfissao} onChange={e => setAdditionalData({ ...additionalData, employeeProfissao: e.target.value })} />
-                                <input placeholder="Endereço Completo" className="col-span-2 w-full p-2 text-xs rounded border" value={additionalData.employeeAddress} onChange={e => setAdditionalData({ ...additionalData, employeeAddress: e.target.value })} />
+                            <div className="space-y-2">
+                                <input placeholder="Razão Social" value={d.contratadaRazaoSocial} onChange={e => setAdditionalData({ ...additionalData, contratadaRazaoSocial: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="CNPJ" value={d.contratadaCnpj} onChange={e => setAdditionalData({ ...additionalData, contratadaCnpj: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Endereço Completo" value={d.contratadaAddress} onChange={e => setAdditionalData({ ...additionalData, contratadaAddress: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Rep. Legal (Nome)" value={d.contratadaRepName} onChange={e => setAdditionalData({ ...additionalData, contratadaRepName: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="CPF do Rep. Legal" value={d.contratadaRepCPF} onChange={e => setAdditionalData({ ...additionalData, contratadaRepCPF: e.target.value })} className="w-full p-2 text-xs rounded border" />
                             </div>
                         </div>
 
-                        {/* Seção 4: Financeiro */}
+                        {/* Seção 3: Objeto do Contrato */}
+                        <div>
+                            <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
+                                <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Objeto do Contrato
+                            </h3>
+                            <div className="space-y-2">
+                                <input placeholder="Cargo/Função (ex: ASSISTENTE SOCIAL)" value={d.cargoFuncao} onChange={e => setAdditionalData({ ...additionalData, cargoFuncao: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Termo de Compromisso nº" value={d.termoCompromisso} onChange={e => setAdditionalData({ ...additionalData, termoCompromisso: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Processo nº" value={d.processo} onChange={e => setAdditionalData({ ...additionalData, processo: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="SLI" value={d.sli} onChange={e => setAdditionalData({ ...additionalData, sli: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Nome do Projeto no Contrato" value={d.nomeProjetoContrato} onChange={e => setAdditionalData({ ...additionalData, nomeProjetoContrato: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Carga Horária" value={d.cargaHoraria} onChange={e => setAdditionalData({ ...additionalData, cargaHoraria: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                            </div>
+                        </div>
+
+                        {/* Seção 4: Vigência e Valor */}
                         <div>
                             <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
                                 <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Pagamento
+                                Vigência e Valor
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
-                                <input placeholder="Valor Mensal (R$)" className="w-full p-2 text-xs rounded border" value={additionalData.contractValue} onChange={e => setAdditionalData({ ...additionalData, contractValue: e.target.value })} />
-                                <input placeholder="Dia Pagamento (ex: 05)" className="w-full p-2 text-xs rounded border" value={additionalData.paymentDay} onChange={e => setAdditionalData({ ...additionalData, paymentDay: e.target.value })} />
+                                <input placeholder="Início (dd/mm/aaaa)" value={d.startDate} onChange={e => setAdditionalData({ ...additionalData, startDate: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Fim (dd/mm/aaaa)" value={d.endDate} onChange={e => setAdditionalData({ ...additionalData, endDate: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Valor Mensal (R$)" value={d.contractValue} onChange={e => setAdditionalData({ ...additionalData, contractValue: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Valor por Extenso" value={d.contractValueExtenso} onChange={e => setAdditionalData({ ...additionalData, contractValueExtenso: e.target.value })} className="w-full p-2 text-xs rounded border" />
                             </div>
                         </div>
 
-                        {/* Seção 5: Testemunhas */}
+                        {/* Seção 5: Foro e Data */}
                         <div>
                             <h3 className="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm uppercase">
-                                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                Testemunhas
+                                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+                                Foro e Assinatura
                             </h3>
-                            <div className="space-y-2">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input placeholder="Nome Testemunha 1" className="w-full p-2 text-xs rounded border" value={additionalData.witness1Name} onChange={e => setAdditionalData({ ...additionalData, witness1Name: e.target.value })} />
-                                    <input placeholder="CPF Testemunha 1" className="w-full p-2 text-xs rounded border" value={additionalData.witness1CPF} onChange={e => setAdditionalData({ ...additionalData, witness1CPF: e.target.value })} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input placeholder="Nome Testemunha 2" className="w-full p-2 text-xs rounded border" value={additionalData.witness2Name} onChange={e => setAdditionalData({ ...additionalData, witness2Name: e.target.value })} />
-                                    <input placeholder="CPF Testemunha 2" className="w-full p-2 text-xs rounded border" value={additionalData.witness2CPF} onChange={e => setAdditionalData({ ...additionalData, witness2CPF: e.target.value })} />
-                                </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <input placeholder="Foro (Cidade-UF)" value={d.foro} onChange={e => setAdditionalData({ ...additionalData, foro: e.target.value })} className="w-full p-2 text-xs rounded border" />
+                                <input placeholder="Data Assinatura" value={d.dataAssinatura} onChange={e => setAdditionalData({ ...additionalData, dataAssinatura: e.target.value })} className="w-full p-2 text-xs rounded border" />
                             </div>
                         </div>
-
-
 
                         <div className="mt-2 text-center space-y-2">
                             <button
                                 onClick={handleGenerate}
-                                disabled={isLoading || isTyping}
+                                disabled={isLoading}
                                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold rounded-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-teal-600 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                             >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Gerando Minuta...
-                                    </>
-                                ) : isTyping ? (
-                                    <span>...</span>
-                                ) : 'ATUALIZAR CONTRATO'}
+                                📄 ATUALIZAR CONTRATO
                             </button>
 
                             {onSave && (
@@ -520,7 +379,7 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                                     SALVAR MINUTA
                                 </button>
                             )}
-                            <p className="text-[10px] text-gray-400 mt-2">Preencha os dados acima e clique em Atualizar para regenerar o texto.</p>
+                            <p className="text-[10px] text-gray-400 mt-2">Preencha os dados e clique em Atualizar para regenerar.</p>
                         </div>
                     </div>
 
@@ -561,13 +420,18 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                         <div
                             ref={editorRef}
                             contentEditable
-                            className="bg-white shadow-2xl relative outline-none p-0 leading-relaxed text-justify text-gray-900 break-words whitespace-pre-wrap [&_strong]:font-black [&_b]:font-black"
+                            className="bg-white shadow-2xl relative outline-none p-0 leading-relaxed text-justify text-gray-900 [&_strong]:font-black [&_b]:font-black"
                             style={{
                                 width: '210mm',
                                 minHeight: '297mm',
-                                padding: '20mm 30mm 20mm 20mm', // Top 2cm, Right 3cm, Bottom 2cm, Left 2cm
+                                height: 'auto',
+                                padding: '20mm 25mm 40mm 20mm',
                                 fontFamily: fontFamily,
                                 fontSize: `${fontSize}pt`,
+                                lineHeight: '1.6',
+                                wordWrap: 'break-word' as const,
+                                overflowWrap: 'break-word' as const,
+                                whiteSpace: 'normal' as const,
                                 // Visual A4 page break lines every 297mm
                                 backgroundImage: 'linear-gradient(to bottom, transparent calc(297mm - 1px), #d1d5db calc(297mm - 1px), #d1d5db 297mm)',
                                 backgroundSize: '100% 297mm',
@@ -607,14 +471,14 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                                             onClick={() => { setCurrentSigField('witness1'); setShowSignaturePad(true); setIsFabOpen(false); }}
                                             className="px-4 py-3 bg-gray-900 text-white text-xs font-bold rounded-xl shadow-xl hover:bg-black whitespace-nowrap flex items-center gap-3 transition-transform hover:-translate-x-1"
                                         >
-                                            <span className={`w-3 h-3 rounded-full border border-white/20 ${additionalData.witness1Signature ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-gray-500'}`}></span>
+                                            <span className={`w-3 h-3 rounded-full border border-white/20 bg-gray-500`}></span>
                                             Testemunha 1
                                         </button>
                                         <button
                                             onClick={() => { setCurrentSigField('witness2'); setShowSignaturePad(true); setIsFabOpen(false); }}
                                             className="px-4 py-3 bg-gray-900 text-white text-xs font-bold rounded-xl shadow-xl hover:bg-black whitespace-nowrap flex items-center gap-3 transition-transform hover:-translate-x-1"
                                         >
-                                            <span className={`w-3 h-3 rounded-full border border-white/20 ${additionalData.witness2Signature ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-gray-500'}`}></span>
+                                            <span className={`w-3 h-3 rounded-full border border-white/20 bg-gray-500`}></span>
                                             Testemunha 2
                                         </button>
                                     </div>
@@ -716,13 +580,7 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
                                         const canvas = canvasRef.current;
                                         if (canvas) {
                                             const sigData = canvas.toDataURL();
-                                            if (currentSigField === 'contractor') {
-                                                setAdditionalData({ ...additionalData, digitalSignature: sigData, signatureType: 'MANUAL' });
-                                            } else if (currentSigField === 'witness1') {
-                                                setAdditionalData({ ...additionalData, witness1Signature: sigData });
-                                            } else if (currentSigField === 'witness2') {
-                                                setAdditionalData({ ...additionalData, witness2Signature: sigData });
-                                            }
+                                            setAdditionalData({ ...additionalData, digitalSignature: sigData, signatureType: 'MANUAL' });
                                             setShowSignaturePad(false);
                                         }
                                     }} className="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold shadow hover:bg-purple-700">Confirmar</button>
