@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
+    "@supabase/supabase-js": "^2.105.4",
     "@types/leaflet": "^1.9.21",
     "jspdf": "^4.2.0",
     "leaflet": "^1.9.4",
