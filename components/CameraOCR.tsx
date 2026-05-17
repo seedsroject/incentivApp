@@ -481,7 +481,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
 
     const filteredList = listByTab.filter(s => {
       const matchName = !filterName || s.nome.toLowerCase().includes(filterName.toLowerCase());
-      const matchDate = isDateInRange(s.data_assinatura || '', filterStartDate, filterEndDate);
+      const matchDate = (!filterStartDate && !filterEndDate) || isDateInRange(s.data_assinatura || '', filterStartDate, filterEndDate);
       return matchName && matchDate;
     });
 
