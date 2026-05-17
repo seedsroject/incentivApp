@@ -737,7 +737,7 @@ const AppContent: React.FC = () => {
           telefone: data.telefone || null,
           email_contato: data.email_contato || null,
           escola_nome: data.escola_nome || null,
-          escola_tipo: data.escola_tipo || null,
+          escola_tipo: data.escola_tipo || '',
           n_sli: data.n_sli || null,
           nucleo_id: data.nucleo_id || null,
           status: data.status || 'ATIVO',
@@ -760,7 +760,7 @@ const AppContent: React.FC = () => {
       setStudents(prev => [...prev, newStudent]);
       // Persistir no Supabase
       if (supabaseProjectId) {
-        const { data: inserted, error } = await supabase.from('students').insert({
+        const insertPayload = {
           project_id: supabaseProjectId,
           nucleo_id: data.nucleo_id || null,
           nome: data.nome,
@@ -771,7 +771,7 @@ const AppContent: React.FC = () => {
           telefone: data.telefone || null,
           email_contato: data.email_contato || null,
           escola_nome: data.escola_nome || null,
-          escola_tipo: data.escola_tipo || null,
+          escola_tipo: data.escola_tipo || '',
           n_sli: data.n_sli || null,
           nome_projeto: data.nome_projeto || null,
           proponente: data.proponente || null,
@@ -779,10 +779,17 @@ const AppContent: React.FC = () => {
           status: 'ATIVO',
           materiais_pendentes: data.materiais_pendentes || false,
           portador_necessidade_especial: data.portador_necessidade_especial || false,
-        }).select().single();
+          assinatura: data.assinatura || null,
+          data_assinatura: data.data_assinatura || null,
+          ficha_url: data.ficha_url || data.fichaUrl || null,
+        };
+        console.log('[Supabase] Inserindo aluno:', data.nome, insertPayload);
+        const { data: inserted, error } = await supabase.from('students').insert(insertPayload).select().single();
         if (error) {
-          console.warn('Erro ao inserir aluno no Supabase:', error);
+          console.error('❌ Erro ao inserir aluno no Supabase:', error.message, error.details, error.hint);
+          alert(`Erro ao salvar no banco: ${error.message}`);
         } else if (inserted) {
+          console.log('✅ Aluno salvo no Supabase:', inserted.id);
           // Atualizar o id local com o UUID real do banco
           setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
         }

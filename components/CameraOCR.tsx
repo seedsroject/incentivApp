@@ -392,25 +392,9 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   };
 
   const handleDigitalSubmit = () => {
-    // Validação Comum
+    // Validação mínima — apenas nome é obrigatório
+    // Demais dados podem ser complementados depois no cadastro do aluno
     if (!formData.nome) return alert("O nome do aluno é obrigatório.");
-    if (!formData.nome_responsavel_organizacao) return alert("O nome do responsável da organização (Associação/Federação) é obrigatório.");
-    if (!agreed) return alert("É necessário concordar com os termos.");
-    if (!formData.assinatura) return alert("A assinatura do responsável legal é obrigatória.");
-    if (!formData.data_assinatura) return alert("A data da assinatura é obrigatória.");
-
-    // Validação Específica Report 7 (Beneficiados)
-    if (reportType === 'REPORT_7') {
-      if (!formData.endereco) return alert("Endereço completo é obrigatório para Beneficiados.");
-      if (!formData.telefone) return alert("Telefone é obrigatório para Beneficiados.");
-      if (!formData.data_nascimento) return alert("Data de nascimento (para cálculo da idade) é obrigatória.");
-    }
-
-    // Validação Específica Report 8 (Escolas)
-    if (reportType === 'REPORT_8') {
-      if (!formData.escola_nome) return alert("Nome da escola é obrigatório.");
-      if (!formData.escola_tipo) return alert("Tipo da escola é obrigatório.");
-    }
 
     onSave({ ...formData, reportType, nucleo_id: nucleoId });
     setMode('SUCCESS');
