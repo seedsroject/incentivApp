@@ -407,6 +407,7 @@ export interface DocumentLog {
   status?: string;
   nucleoId?: string;
   uploadedBy?: string;
+  studentId?: string;
 }
 
 export enum AppView {
