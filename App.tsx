@@ -30,6 +30,12 @@ import { PreCadastroData } from './types';
 import { ReportPreview } from './components/ReportPreview';
 
 
+
+const isValidUUID = (uuid?: string | null) => {
+  if (!uuid) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+};
+
 // --- MOCK DATA SERVICES ---
 const generateStockDetails = (status: 'LOW' | 'MEDIUM' | 'HIGH') => {
   const items = [
@@ -761,7 +767,7 @@ const AppContent: React.FC = () => {
             escola_nome: data.escola_nome || null,
             escola_tipo: data.escola_tipo || '',
             n_sli: data.n_sli || null,
-            nucleo_id: data.nucleo_id || null,
+            nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
             status: data.status || 'ATIVO',
             materiais_pendentes: data.materiais_pendentes || false,
             portador_necessidade_especial: data.portador_necessidade_especial || false,
@@ -807,7 +813,7 @@ const AppContent: React.FC = () => {
           const insertPayload = {
             id: newStudent.id,
             project_id: supabaseProjectId,
-            nucleo_id: data.nucleo_id || null,
+            nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
             nome: data.nome,
             data_nascimento: data.data_nascimento || null,
             rg_cpf: data.rg_cpf || null,
@@ -887,7 +893,7 @@ const AppContent: React.FC = () => {
     if (supabaseProjectId) {
       const { error } = await supabase.from('documents').insert({
         project_id: supabaseProjectId,
-        nucleo_id: data.nucleoId || user?.nucleo_id || null,
+        nucleo_id: isValidUUID(data.nucleoId) ? data.nucleoId : (isValidUUID(user?.nucleo_id) ? user?.nucleo_id : null),
         student_id: data.studentId || null,
         uploaded_by: user?.uid || null,
         type: data.type,
@@ -1114,7 +1120,7 @@ const AppContent: React.FC = () => {
             if (supabaseProjectId) {
               supabase.from('pre_cadastros').insert({
                 project_id: supabaseProjectId,
-                nucleo_id: data.nucleo_id || null,
+                nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
                 status: 'AGUARDANDO',
                 nome_aluno: data.nome_aluno,
                 data_nascimento: data.data_nascimento || null,
@@ -1478,7 +1484,7 @@ const AppContent: React.FC = () => {
               if (supabaseProjectId) {
                 const { error } = await supabase.from('pre_cadastros').insert({
                   project_id: supabaseProjectId,
-                  nucleo_id: data.nucleo_id || null,
+                  nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
                   status: data.status || 'AGUARDANDO',
                   nome_aluno: data.nome_aluno,
                   data_nascimento: data.data_nascimento || null,
