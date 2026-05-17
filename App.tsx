@@ -805,6 +805,7 @@ const AppContent: React.FC = () => {
           }
 
           const insertPayload = {
+            id: newStudent.id,
             project_id: supabaseProjectId,
             nucleo_id: data.nucleo_id || null,
             nome: data.nome,
@@ -827,16 +828,15 @@ const AppContent: React.FC = () => {
             data_assinatura: data.data_assinatura || null,
             ficha_url: fichaForDb,
           };
-          console.log('[Supabase] Inserindo aluno:', data.nome, 'projeto:', supabaseProjectId);
-          const { data: inserted, error } = await supabase.from('students').insert(insertPayload).select().single();
+          console.log('[Supabase] Inserindo aluno:', data.nome, 'projeto:', supabaseProjectId, 'ID:', newStudent.id);
+          const { error } = await supabase.from('students').insert(insertPayload);
           if (error) {
             console.error('❌ Erro ao inserir aluno no Supabase:', error.message, error.details, error.hint, error.code);
             alert(`Erro ao salvar no banco: ${error.message}`);
-          } else if (inserted) {
-            console.log('✅ Aluno salvo no Supabase:', inserted.id, inserted.nome);
-            // Atualizar o id local com o UUID real do banco
-            setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
-            return inserted.id;
+          } else {
+            console.log('✅ Aluno salvo no Supabase:', newStudent.id, newStudent.nome);
+            // newStudent is already in students state with newStudent.id
+            return newStudent.id;
           }
         } catch (err: any) {
           console.error('❌ Exceção ao inserir aluno:', err?.message || err);
@@ -1463,7 +1463,7 @@ const AppContent: React.FC = () => {
             itemsCount={students.length + collectedEvidence.length + collectedDocuments.length}
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
             projectId={activeProject}
-            nucleoId={user?.nucleo_id}
+            nucleoId={user?.nucleo_id || undefined}
           />
         )}
 
@@ -1475,7 +1475,7 @@ const AppContent: React.FC = () => {
             onAddCandidate={async (data) => {
               setPreCadastros(prev => [...prev, data]);
               if (supabaseProjectId) {
-                const { data: inserted, error } = await supabase.from('pre_cadastros').insert({
+                const { error } = await supabase.from('pre_cadastros').insert({
                   project_id: supabaseProjectId,
                   nucleo_id: data.nucleo_id || null,
                   status: data.status || 'AGUARDANDO',
@@ -1508,10 +1508,11 @@ const AppContent: React.FC = () => {
                   sabe_nadar: data.sabe_nadar || null,
                   sabe_pedalar: data.sabe_pedalar || null,
                   intuito: data.intuito || null,
+                  id: data.id,
                   restricao_dias: data.restricao_dias || null,
-                }).select().single();
+                });
                 if (error) console.warn('Erro ao salvar pré-cadastro:', error);
-                else if (inserted) setPreCadastros(prev => prev.map(p => p.id === data.id ? { ...p, id: inserted.id } : p));
+                // The candidate is already added to state with data.id
               }
             }}
             onUpdateCandidate={async (id, updates) => {
