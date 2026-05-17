@@ -323,6 +323,21 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     return val;
   };
 
+  const formatPhone = (val: string) => {
+    val = val.replace(/\D/g, '');
+    if (val.length > 11) val = val.substring(0, 11);
+    if (val.length > 2) val = val.replace(/^(\d{2})(\d)/g, '($1) $2');
+    if (val.length > 9) val = val.replace(/(\d{5})(\d)/, '$1-$2');
+    else if (val.length > 8) val = val.replace(/(\d{4})(\d)/, '$1-$2');
+    return val;
+  };
+
+  const isInvalidRepeating = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    if (digits.length > 0 && /^(\d)\1+$/.test(digits)) return true;
+    return false;
+  };
+
   const [mode, setMode] = useState<Mode>(initialMode || 'MENU');
   const [reportType, setReportType] = useState<ReportType>('REPORT_8');
 
@@ -424,6 +439,9 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     // Validação mínima — apenas nome é obrigatório
     // Demais dados podem ser complementados depois no cadastro do aluno
     if (!formData.nome) return alert("O nome do aluno é obrigatório.");
+    if (formData.rg_cpf && isInvalidRepeating(formData.rg_cpf)) return alert("CPF/RG inválido. Não insira valores repetidos como 000.000.000-00.");
+    if (formData.telefone && isInvalidRepeating(formData.telefone)) return alert("Telefone inválido. Não insira valores repetidos.");
+    if (formData.email_contato && (!formData.email_contato.includes('@') || !formData.email_contato.includes('.'))) return alert("Por favor, insira um endereço de e-mail válido.");
 
     onSave({ ...formData, reportType, nucleo_id: nucleoId });
     setMode('SUCCESS');
@@ -1806,8 +1824,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
 
           {/* Contato (Tel / Email) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Telefone de contato</label><input type="text" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} className={inputStyle} placeholder="( )" /></div>
-            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email</label><input type="email" value={formData.email_contato} onChange={e => setFormData({ ...formData, email_contato: e.target.value })} className={inputStyle} /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Telefone de contato</label><input type="text" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: formatPhone(e.target.value) })} className={inputStyle} placeholder="(11) 99999-9999" /></div>
+            <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email</label><input type="email" value={formData.email_contato} onChange={e => setFormData({ ...formData, email_contato: e.target.value.toLowerCase() })} className={inputStyle} placeholder="email@exemplo.com" /></div>
           </div>
         </div>
 
