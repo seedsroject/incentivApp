@@ -34,6 +34,7 @@ export interface Nucleo {
   address?: string; // Endereço completo
   phone?: string;
   email?: string;
+  responsavel_nome?: string; // Nome do responsável pelo núcleo
   employees?: Employee[];
 
   // N° SLI - Número de inscrição do projeto aprovado

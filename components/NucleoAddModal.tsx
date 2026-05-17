@@ -26,6 +26,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
     const [nome, setNome] = useState('');
     const [sliNumber, setSliNumber] = useState('');
     const [cnpj, setCnpj] = useState('');
+    const [responsavel_nome, setResponsavelNome] = useState('');
     const [address, setAddress] = useState('');
     const [city, setCity] = useState('');
     const [dias, setDias] = useState<string[]>([]);
@@ -73,6 +74,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
             project: projectId,
             sliNumber: sliNumber || undefined,
             cnpj: cnpj || undefined,
+            responsavel_nome: responsavel_nome || undefined,
             address: address || undefined,
             city: city || undefined,
             dias_aulas: dias.length > 0 ? dias : undefined,
@@ -90,7 +92,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
         };
         onSave(newNucleo);
         // Reset
-        setNome(''); setSliNumber(''); setCnpj(''); setAddress(''); setCity('');
+        setNome(''); setSliNumber(''); setCnpj(''); setResponsavelNome(''); setAddress(''); setCity('');
         setDias([]); setHorario(''); setDurabilidade(''); setDataInicio(''); setDataTermino(''); setTurmas([]);
         onClose();
     };
@@ -157,6 +159,16 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
                                     value={cnpj}
                                     onChange={e => setCnpj(e.target.value)}
                                     placeholder="00.000.000/0001-00"
+                                    className={`w-full border border-gray-200 bg-gray-50 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 ${tc.ring}`}
+                                />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-gray-600 mb-1">Responsável pelo Núcleo</label>
+                                <input
+                                    type="text"
+                                    value={responsavel_nome}
+                                    onChange={e => setResponsavelNome(e.target.value)}
+                                    placeholder="Nome do Responsável"
                                     className={`w-full border border-gray-200 bg-gray-50 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 ${tc.ring}`}
                                 />
                             </div>

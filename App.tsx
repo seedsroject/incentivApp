@@ -1535,6 +1535,7 @@ const AppContent: React.FC = () => {
             savedStudents={students}
             onSave={handleSaveStudent}
             nucleoId={user?.nucleo_id || undefined}
+            currentNucleo={nucleos.find(n => n.id === user?.nucleo_id)}
             onInactivateStudent={handleInactivateStudent}
             onReactivateStudent={handleReactivateStudent}
             collectedDocuments={collectedDocuments}

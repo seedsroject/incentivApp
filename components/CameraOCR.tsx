@@ -12,6 +12,7 @@ interface CameraOCRProps {
   savedStudents?: StudentDraft[];
   initialMode?: Mode; // Adicionado para pular menu
   nucleoId?: string; // ID do núcleo atual para associar ao aluno
+  currentNucleo?: import('../types').Nucleo;
   onUpdateStudent?: (studentId: string, updates: Partial<StudentDraft>) => void;
   onInactivateStudent?: (studentId: string, checklist: { id: string; name: string; returned: boolean }[], replacementId?: string, replacementName?: string) => void;
   onReactivateStudent?: (studentId: string) => void;
@@ -302,8 +303,26 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   onSaveDeclaracao,
   onSaveDeclaracaoProntidao,
   baseUrl = '',
-  preCadastros = []
+  preCadastros = [],
+  currentNucleo
 }) => {
+  const formatDate = (val: string) => {
+    val = val.replace(/\D/g, '');
+    if (val.length > 8) val = val.substring(0, 8);
+    if (val.length > 4) return val.replace(/(\d{2})(\d{2})(\d+)/, '$1/$2/$3');
+    if (val.length > 2) return val.replace(/(\d{2})(\d+)/, '$1/$2');
+    return val;
+  };
+
+  const formatCPF = (val: string) => {
+    val = val.replace(/\D/g, '');
+    if (val.length > 11) val = val.substring(0, 11);
+    if (val.length > 9) return val.replace(/(\d{3})(\d{3})(\d{3})(\d+)/, '$1.$2.$3-$4');
+    if (val.length > 6) return val.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+    if (val.length > 3) return val.replace(/(\d{3})(\d+)/, '$1.$2');
+    return val;
+  };
+
   const [mode, setMode] = useState<Mode>(initialMode || 'MENU');
   const [reportType, setReportType] = useState<ReportType>('REPORT_8');
 
@@ -348,6 +367,16 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     portador_necessidade_especial: false,
     laudo_url: ''
   });
+
+  useEffect(() => {
+    if (currentNucleo) {
+      setFormData(prev => ({
+        ...prev,
+        proponente: `${currentNucleo.nome}${currentNucleo.address ? ' - ' + currentNucleo.address : ''}`,
+        nome_responsavel_organizacao: currentNucleo.responsavel_nome || prev.nome_responsavel_organizacao
+      }));
+    }
+  }, [currentNucleo]);
 
   // State local para laudos de alunos já salvos (quando onUpdateStudent não é fornecido)
   const [localLaudoMap, setLocalLaudoMap] = useState<Record<string, string>>({});
@@ -1663,11 +1692,11 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Data de Nascimento</label>
-              <input type="text" value={formData.data_nascimento} placeholder="DD/MM/AAAA" onChange={e => setFormData({ ...formData, data_nascimento: e.target.value })} className={inputStyle} />
+              <input type="text" value={formData.data_nascimento} placeholder="DD/MM/AAAA" onChange={e => setFormData({ ...formData, data_nascimento: formatDate(e.target.value) })} className={inputStyle} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">RG/CPF do aluno(a)</label>
-              <input type="text" value={formData.rg_cpf} onChange={e => setFormData({ ...formData, rg_cpf: e.target.value })} className={inputStyle} />
+              <input type="text" value={formData.rg_cpf} onChange={e => setFormData({ ...formData, rg_cpf: formatCPF(e.target.value) })} className={inputStyle} />
             </div>
           </div>
 

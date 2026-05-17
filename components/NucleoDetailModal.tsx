@@ -32,6 +32,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
     const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [geralData, setGeralData] = useState({
         cnpj: nucleo.cnpj || '',
+        responsavel_nome: nucleo.responsavel_nome || '',
         sliNumber: nucleo.sliNumber || '',
         address: nucleo.address || '',
         city: nucleo.city || '',
@@ -94,6 +95,12 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                         <label className="text-xs font-bold text-gray-500 block mb-1">N° SLI</label>
                         <input value={geralData.sliNumber} onChange={e => setGeralData(p => ({ ...p, sliNumber: e.target.value }))}
                             placeholder="Número de inscrição do projeto"
+                            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="text-xs font-bold text-gray-500 block mb-1">Responsável pelo Núcleo</label>
+                        <input value={geralData.responsavel_nome} onChange={e => setGeralData(p => ({ ...p, responsavel_nome: e.target.value }))}
+                            placeholder="Nome do Responsável"
                             className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                     </div>
                     <div>
