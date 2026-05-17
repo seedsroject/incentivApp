@@ -728,25 +728,33 @@ const AppContent: React.FC = () => {
       });
       // Persistir no Supabase
       if (supabaseProjectId) {
-        const { error } = await supabase.from('students').update({
-          nome: data.nome,
-          data_nascimento: data.data_nascimento || null,
-          rg_cpf: data.rg_cpf || null,
-          nome_responsavel: data.nome_responsavel || null,
-          endereco: data.endereco || null,
-          telefone: data.telefone || null,
-          email_contato: data.email_contato || null,
-          escola_nome: data.escola_nome || null,
-          escola_tipo: data.escola_tipo || '',
-          n_sli: data.n_sli || null,
-          nucleo_id: data.nucleo_id || null,
-          status: data.status || 'ATIVO',
-          materiais_pendentes: data.materiais_pendentes || false,
-          portador_necessidade_especial: data.portador_necessidade_especial || false,
-          assinatura: data.assinatura || null,
-          data_assinatura: data.data_assinatura || null,
-        }).eq('id', data.id);
-        if (error) console.warn('Erro ao atualizar aluno no Supabase:', error);
+        try {
+          // Limitar tamanho da assinatura base64 (max ~500KB)
+          const assinaturaValue = data.assinatura && data.assinatura.length < 500000 ? data.assinatura : null;
+          const { error } = await supabase.from('students').update({
+            nome: data.nome,
+            data_nascimento: data.data_nascimento || null,
+            rg_cpf: data.rg_cpf || null,
+            nome_responsavel: data.nome_responsavel || null,
+            endereco: data.endereco || null,
+            telefone: data.telefone || null,
+            email_contato: data.email_contato || null,
+            escola_nome: data.escola_nome || null,
+            escola_tipo: data.escola_tipo || '',
+            n_sli: data.n_sli || null,
+            nucleo_id: data.nucleo_id || null,
+            status: data.status || 'ATIVO',
+            materiais_pendentes: data.materiais_pendentes || false,
+            portador_necessidade_especial: data.portador_necessidade_especial || false,
+            assinatura: assinaturaValue,
+            data_assinatura: data.data_assinatura || null,
+          }).eq('id', data.id);
+          if (error) {
+            console.error('❌ Erro ao atualizar aluno:', error.message, error.details);
+          }
+        } catch (err: any) {
+          console.error('❌ Exceção ao atualizar aluno:', err);
+        }
       }
     } else {
       // INSERT novo
@@ -760,39 +768,59 @@ const AppContent: React.FC = () => {
       setStudents(prev => [...prev, newStudent]);
       // Persistir no Supabase
       if (supabaseProjectId) {
-        const insertPayload = {
-          project_id: supabaseProjectId,
-          nucleo_id: data.nucleo_id || null,
-          nome: data.nome,
-          data_nascimento: data.data_nascimento || null,
-          rg_cpf: data.rg_cpf || null,
-          nome_responsavel: data.nome_responsavel || null,
-          endereco: data.endereco || null,
-          telefone: data.telefone || null,
-          email_contato: data.email_contato || null,
-          escola_nome: data.escola_nome || null,
-          escola_tipo: data.escola_tipo || '',
-          n_sli: data.n_sli || null,
-          nome_projeto: data.nome_projeto || null,
-          proponente: data.proponente || null,
-          nome_responsavel_organizacao: data.nome_responsavel_organizacao || null,
-          status: 'ATIVO',
-          materiais_pendentes: data.materiais_pendentes || false,
-          portador_necessidade_especial: data.portador_necessidade_especial || false,
-          assinatura: data.assinatura || null,
-          data_assinatura: data.data_assinatura || null,
-          ficha_url: data.ficha_url || data.fichaUrl || null,
-        };
-        console.log('[Supabase] Inserindo aluno:', data.nome, insertPayload);
-        const { data: inserted, error } = await supabase.from('students').insert(insertPayload).select().single();
-        if (error) {
-          console.error('❌ Erro ao inserir aluno no Supabase:', error.message, error.details, error.hint);
-          alert(`Erro ao salvar no banco: ${error.message}`);
-        } else if (inserted) {
-          console.log('✅ Aluno salvo no Supabase:', inserted.id);
-          // Atualizar o id local com o UUID real do banco
-          setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
+        try {
+          // Não enviar base64 grandes no INSERT — eles vão para Storage depois
+          // fichaUrl pode ter MB de base64, assinatura pode ter ~50-200KB
+          const assinaturaValue = data.assinatura && data.assinatura.length < 500000 ? data.assinatura : null;
+          const fichaValue = (data.ficha_url || data.fichaUrl);
+          const fichaForDb = fichaValue && fichaValue.length < 500000 ? fichaValue : null;
+          
+          if (fichaValue && fichaValue.length >= 500000) {
+            console.warn(`⚠️ ficha_url muito grande (${(fichaValue.length/1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
+          }
+          if (data.assinatura && data.assinatura.length >= 500000) {
+            console.warn(`⚠️ assinatura muito grande (${(data.assinatura.length/1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
+          }
+
+          const insertPayload = {
+            project_id: supabaseProjectId,
+            nucleo_id: data.nucleo_id || null,
+            nome: data.nome,
+            data_nascimento: data.data_nascimento || null,
+            rg_cpf: data.rg_cpf || null,
+            nome_responsavel: data.nome_responsavel || null,
+            endereco: data.endereco || null,
+            telefone: data.telefone || null,
+            email_contato: data.email_contato || null,
+            escola_nome: data.escola_nome || null,
+            escola_tipo: data.escola_tipo || '',
+            n_sli: data.n_sli || null,
+            nome_projeto: data.nome_projeto || null,
+            proponente: data.proponente || null,
+            nome_responsavel_organizacao: data.nome_responsavel_organizacao || null,
+            status: 'ATIVO',
+            materiais_pendentes: data.materiais_pendentes || false,
+            portador_necessidade_especial: data.portador_necessidade_especial || false,
+            assinatura: assinaturaValue,
+            data_assinatura: data.data_assinatura || null,
+            ficha_url: fichaForDb,
+          };
+          console.log('[Supabase] Inserindo aluno:', data.nome, 'projeto:', supabaseProjectId);
+          const { data: inserted, error } = await supabase.from('students').insert(insertPayload).select().single();
+          if (error) {
+            console.error('❌ Erro ao inserir aluno no Supabase:', error.message, error.details, error.hint, error.code);
+            alert(`Erro ao salvar no banco: ${error.message}`);
+          } else if (inserted) {
+            console.log('✅ Aluno salvo no Supabase:', inserted.id, inserted.nome);
+            // Atualizar o id local com o UUID real do banco
+            setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
+          }
+        } catch (err: any) {
+          console.error('❌ Exceção ao inserir aluno:', err?.message || err);
+          alert(`Erro inesperado ao salvar: ${err?.message || 'Erro de conexão'}`);
         }
+      } else {
+        console.warn('⚠️ supabaseProjectId é null — aluno salvo apenas localmente!');
       }
     }
   };
