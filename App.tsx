@@ -558,12 +558,8 @@ const AppContent: React.FC = () => {
         if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'].includes(project)) {
           setActiveProject(project as ProjectId);
           try {
-            const { data: projectData } = await supabase
-              .from('projects')
-              .select('id')
-              .eq('slug', project)
-              .single();
-            if (projectData) setSupabaseProjectId(projectData.id);
+            // Load Nucleos from Supabase instead of just projectData, this sets up the publicNucleo context correctly
+            await loadNucleosFromSupabase(project as ProjectId);
           } catch (e) {
             console.error('Erro ao buscar supabaseProjectId na rota publica:', e);
           }
