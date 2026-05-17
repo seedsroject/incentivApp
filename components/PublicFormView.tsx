@@ -17,6 +17,7 @@ interface PublicFormViewProps {
   studentId?: string;
   onSave: (data: any) => any | Promise<any>;
   projectId?: ProjectId;
+  currentNucleo?: import('../types').Nucleo;
 }
 
 // ─── WIZARD STEPS ───────────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ const SuccessScreen: React.FC<{ skipped: number[]; logoSrc?: string }> = ({ skip
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId }) => {
+export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId, currentNucleo }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [skippedSteps, setSkippedSteps] = useState<number[]>([]);
@@ -285,6 +286,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 key="wizard-ficha"
                 onBack={() => { }}
                 initialMode="FORM_DIGITAL"
+                currentNucleo={currentNucleo}
                 onSave={async (data: StudentDraft) => {
                   // Persist and extract student identity for following steps
                   const returnedId = await onSave(data);

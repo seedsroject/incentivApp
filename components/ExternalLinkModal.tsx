@@ -7,9 +7,10 @@ interface ExternalLinkModalProps {
   serviceTitle: string;
   onClose: () => void;
   projectId?: ProjectId;
+  nucleoId?: string;
 }
 
-export const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ serviceId, serviceTitle, onClose, projectId }) => {
+export const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ serviceId, serviceTitle, onClose, projectId, nucleoId }) => {
   const [copySuccess, setCopySuccess] = useState(false);
 
   // Token único para a sessão
@@ -26,7 +27,7 @@ export const ExternalLinkModal: React.FC<ExternalLinkModalProps> = ({ serviceId,
   const sanitizedBaseUrl = baseUrl.replace(/\/index\.html$/, '').replace(/\/$/, '');
   
   // Link Público com Parâmetros
-  const publicUrl = `${sanitizedBaseUrl}/?token=${token}&service=${serviceId}${projectId ? `&project=${projectId}` : ''}`;
+  const publicUrl = `${sanitizedBaseUrl}/?token=${token}&service=${serviceId}${projectId ? `&project=${projectId}` : ''}${nucleoId ? `&nucleoId=${nucleoId}` : ''}`;
 
   const message = `Olá! 👋 Aqui é do Núcleo Esportivo.\n\nPara concluir o serviço *${serviceTitle}* do seu filho(a), por favor preencha os dados oficiais no link abaixo:\n\n🔗 ${publicUrl}\n\n⚠️ Este link é seguro para preenchimento via celular.`;
 

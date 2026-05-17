@@ -551,9 +551,10 @@ const AppContent: React.FC = () => {
       const service = searchParams.get('service') || hashParams.get('service');
       const studentId = searchParams.get('studentId') || hashParams.get('studentId');
       const project = searchParams.get('project') || hashParams.get('project');
+      const nucleoId = searchParams.get('nucleoId') || hashParams.get('nucleoId');
 
       if (token && service) {
-        console.log("Rota pública detectada:", { token, service, studentId, project });
+        console.log("Rota pública detectada:", { token, service, studentId, project, nucleoId });
         if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'].includes(project)) {
           setActiveProject(project as ProjectId);
           try {
@@ -568,7 +569,7 @@ const AppContent: React.FC = () => {
           }
         }
         setView(AppView.PUBLIC_FORM);
-        setNavParams({ token, service, studentId, project });
+        setNavParams({ token, service, studentId, project, nucleoId });
       }
     };
 
@@ -1074,11 +1075,13 @@ const AppContent: React.FC = () => {
   // --- RENDER LOGIC ---
 
   if (view === AppView.PUBLIC_FORM) {
+    const publicNucleo = nucleos.find(n => n.id === navParams.nucleoId) || filteredNucleos.find(n => n.id === navParams.nucleoId);
     return (
       <PublicFormView
         serviceId={navParams.service}
         studentId={navParams.studentId}
         projectId={navParams.project as ProjectId | undefined}
+        currentNucleo={publicNucleo}
         onSave={async (data) => {
           if (navParams.service === 'ficha') {
             if (data?.type === 'declaracao_uniformes') {
@@ -1464,6 +1467,7 @@ const AppContent: React.FC = () => {
             itemsCount={students.length + collectedEvidence.length + collectedDocuments.length}
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
             projectId={activeProject}
+            nucleoId={user?.nucleo_id}
           />
         )}
 

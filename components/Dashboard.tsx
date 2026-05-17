@@ -8,9 +8,10 @@ interface DashboardProps {
   itemsCount: number;
   onBack?: () => void;
   projectId?: ProjectId;
+  nucleoId?: string;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES' }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId }) => {
   const iconColor = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'text-green-600';
     if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
@@ -227,6 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           serviceTitle={sharingService.title}
           onClose={() => setSharingService(null)}
           projectId={projectId}
+          nucleoId={nucleoId}
         />
       )}
     </div>
