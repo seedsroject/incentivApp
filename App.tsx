@@ -888,6 +888,7 @@ const AppContent: React.FC = () => {
       const { error } = await supabase.from('documents').insert({
         project_id: supabaseProjectId,
         nucleo_id: data.nucleoId || user?.nucleo_id || null,
+        student_id: data.studentId || null,
         uploaded_by: user?.uid || null,
         type: data.type,
         title: data.title,
@@ -1086,7 +1087,7 @@ const AppContent: React.FC = () => {
               return handleSaveDeclaracaoProntidao(data.studentId, data.declaracao);
             } else if (data?.type === 'autorizacao_viagem') {
               return handleSaveAutorizacaoViagem(data.studentId, data.autorizacao);
-            } else if (data?.categoria) {
+            } else if (data?.categoria || data?.type === 'MATRICULA' || data?.type === 'BOLETIM') {
               return handleSaveDocument(data);
             } else {
               return handleSaveStudent(data);

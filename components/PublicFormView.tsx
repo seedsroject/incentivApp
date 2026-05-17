@@ -287,6 +287,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 onBack={() => { }}
                 initialMode="FORM_DIGITAL"
                 currentNucleo={currentNucleo}
+                nucleoId={currentNucleo?.id}
                 onSave={async (data: StudentDraft) => {
                   // Persist and extract student identity for following steps
                   const returnedId = await onSave(data);
@@ -309,7 +310,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 key="wizard-matricula"
                 studentName={wizardStudentName || wizardStudent?.nome}
                 onSave={(doc: DocumentLog) => {
-                  onSave(doc);
+                  onSave({ ...doc, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });
                   advance(2);
                 }}
               />
