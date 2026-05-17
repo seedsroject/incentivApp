@@ -540,7 +540,7 @@ const AppContent: React.FC = () => {
 
   // Efeito para tratar Link Externo (Pai) - Captura de Hash e Query de forma robusta
   useEffect(() => {
-    const handleRouting = () => {
+    const handleRouting = async () => {
       const searchParams = new URLSearchParams(window.location.search);
       const hashContent = window.location.hash.includes('?')
         ? window.location.hash.split('?')[1]
@@ -556,6 +556,16 @@ const AppContent: React.FC = () => {
         console.log("Rota pública detectada:", { token, service, studentId, project });
         if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'].includes(project)) {
           setActiveProject(project as ProjectId);
+          try {
+            const { data: projectData } = await supabase
+              .from('projects')
+              .select('id')
+              .eq('slug', project)
+              .single();
+            if (projectData) setSupabaseProjectId(projectData.id);
+          } catch (e) {
+            console.error('Erro ao buscar supabaseProjectId na rota publica:', e);
+          }
         }
         setView(AppView.PUBLIC_FORM);
         setNavParams({ token, service, studentId, project });
@@ -563,11 +573,11 @@ const AppContent: React.FC = () => {
     };
 
     handleRouting();
-    window.addEventListener('hashchange', handleRouting);
-    window.addEventListener('popstate', handleRouting);
+    window.addEventListener('hashchange', () => handleRouting());
+    window.addEventListener('popstate', () => handleRouting());
     return () => {
-      window.removeEventListener('hashchange', handleRouting);
-      window.removeEventListener('popstate', handleRouting);
+      window.removeEventListener('hashchange', () => handleRouting());
+      window.removeEventListener('popstate', () => handleRouting());
     };
   }, []);
 
@@ -674,8 +684,20 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleDemoAccess = () => {
-    const demoNucleo = filteredNucleos[0] || nucleos[0];
+  const handleDemoAccess = async () => {
+    const demoNucleo = filteredNucleos.find(n => n.id === loginNucleoId) || filteredNucleos[0] || nucleos[0];
+    
+    try {
+      const { data: projectData } = await supabase
+        .from('projects').select('id').eq('slug', activeProject).single();
+      if (projectData) {
+        setSupabaseProjectId(projectData.id);
+        await loadAllProjectData(projectData.id, activeProject);
+      }
+    } catch (e) {
+      console.error('Erro ao buscar supabaseProjectId no demo:', e);
+    }
+
     setUser({
       uid: 'demo_user',
       nome: 'Administrador Demo',
@@ -714,7 +736,7 @@ const AppContent: React.FC = () => {
   };
 
   // --- Data Handlers (Supabase-Integrated) ---
-  const handleSaveStudent = async (data: StudentDraft) => {
+  const handleSaveStudent = async (data: StudentDraft): Promise<string | undefined> => {
     const timestamp = new Date().toISOString();
     const existingIndex = students.findIndex(s => s.id === data.id);
 
@@ -751,11 +773,14 @@ const AppContent: React.FC = () => {
           }).eq('id', data.id);
           if (error) {
             console.error('❌ Erro ao atualizar aluno:', error.message, error.details);
+          } else {
+            return data.id;
           }
         } catch (err: any) {
           console.error('❌ Exceção ao atualizar aluno:', err);
         }
       }
+      return data.id;
     } else {
       // INSERT novo
       const newStudent: StudentDraft = {
@@ -814,6 +839,7 @@ const AppContent: React.FC = () => {
             console.log('✅ Aluno salvo no Supabase:', inserted.id, inserted.nome);
             // Atualizar o id local com o UUID real do banco
             setStudents(prev => prev.map(s => s.id === newStudent.id ? { ...s, id: inserted.id } : s));
+            return inserted.id;
           }
         } catch (err: any) {
           console.error('❌ Exceção ao inserir aluno:', err?.message || err);
@@ -822,6 +848,7 @@ const AppContent: React.FC = () => {
       } else {
         console.warn('⚠️ supabaseProjectId é null — aluno salvo apenas localmente!');
       }
+      return newStudent.id;
     }
   };
 
@@ -1023,6 +1050,27 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleSaveAutorizacaoViagem = async (studentIdOrNome: string, autorizacao: import('./types').AutorizacaoViagem) => {
+    const student = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentIdOrNome || s.nome === studentIdOrNome) {
+        return { ...s, autorizacao_viagem: autorizacao };
+      }
+      return s;
+    }));
+    // Persistir no Supabase
+    if (student?.id) {
+      await supabase.from('student_declarations').delete().eq('student_id', student.id).eq('type', 'VIAGEM');
+      await supabase.from('student_declarations').insert({
+        student_id: student.id,
+        type: 'VIAGEM',
+        data: autorizacao,
+        assinatura: (autorizacao as any).assinatura_responsavel || null,
+        data_assinatura: (autorizacao as any).data_assinatura || null,
+      });
+    }
+  };
+
   // --- RENDER LOGIC ---
 
   if (view === AppView.PUBLIC_FORM) {
@@ -1031,8 +1079,20 @@ const AppContent: React.FC = () => {
         serviceId={navParams.service}
         studentId={navParams.studentId}
         projectId={navParams.project as ProjectId | undefined}
-        onSave={(data) => {
-          if (navParams.service === 'ficha') handleSaveStudent(data);
+        onSave={async (data) => {
+          if (navParams.service === 'ficha') {
+            if (data?.type === 'declaracao_uniformes') {
+              return handleSaveDeclaracao(data.studentId, data.declaracao);
+            } else if (data?.type === 'declaracao_prontidao') {
+              return handleSaveDeclaracaoProntidao(data.studentId, data.declaracao);
+            } else if (data?.type === 'autorizacao_viagem') {
+              return handleSaveAutorizacaoViagem(data.studentId, data.autorizacao);
+            } else if (data?.categoria) {
+              return handleSaveDocument(data);
+            } else {
+              return handleSaveStudent(data);
+            }
+          }
           if (navParams.service === 'meta') handleSaveDocument(data);
           if (navParams.service === 'socio') handleSaveDocument(data);
           if (navParams.service === 'boletim') handleSaveDocument(data);
@@ -1250,7 +1310,9 @@ const AppContent: React.FC = () => {
                       >
                         <option value="">Selecione seu núcleo...</option>
                         {filteredNucleos.map(nucleo => (
-                          <option key={nucleo.id} value={nucleo.id}>{nucleo.nome}</option>
+                          <option key={nucleo.id} value={nucleo.id}>
+                            {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
+                          </option>
                         ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
@@ -1308,7 +1370,11 @@ const AppContent: React.FC = () => {
                         className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
                       >
                         <option value="">Selecione...</option>
-                        {filteredNucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split('-')[0]}</option>)}
+                        {filteredNucleos.map(n => (
+                          <option key={n.id} value={n.id}>
+                            {n.nome.split('-')[0]} {n.address ? ` - ${n.address}` : ''}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

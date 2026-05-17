@@ -15,7 +15,7 @@ import { StudentDraft, DocumentLog, PreCadastroData, DeclaracaoUniformes, Declar
 interface PublicFormViewProps {
   serviceId: string;
   studentId?: string;
-  onSave: (data: any) => void;
+  onSave: (data: any) => any | Promise<any>;
   projectId?: ProjectId;
 }
 
@@ -141,6 +141,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
   const [skippedSteps, setSkippedSteps] = useState<number[]>([]);
   const [wizardStudentName, setWizardStudentName] = useState('');
   const [wizardStudentId, setWizardStudentId] = useState(studentId || '');
+  const [wizardStudentData, setWizardStudentData] = useState<StudentDraft | undefined>(undefined);
 
   // Project-aware logo & name
   const projectLogo = useMemo(() => {
@@ -261,16 +262,8 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
   // ── WIZARD MODE (serviceId === 'ficha') ───────────────────────────────────
   if (isSuccess) return <SuccessScreen skipped={skippedSteps} logoSrc={projectLogo} />;
 
-  // Fetch student object from localStorage using wizardStudentId (populated after step 1)
-  const wizardStudent: StudentDraft | undefined = (() => {
-    if (!wizardStudentId) return undefined;
-    try {
-      const saved = localStorage.getItem('students_v2');
-      if (!saved) return undefined;
-      const students: StudentDraft[] = JSON.parse(saved);
-      return students.find(s => s.id === wizardStudentId || s.nome === wizardStudentId);
-    } catch { return undefined; }
-  })();
+  // Removemos a busca do localStorage para o wizard, agora usamos o state interno
+  const wizardStudent: StudentDraft | undefined = wizardStudentData;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -292,13 +285,14 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 key="wizard-ficha"
                 onBack={() => { }}
                 initialMode="FORM_DIGITAL"
-                onSave={(data: StudentDraft) => {
+                onSave={async (data: StudentDraft) => {
                   // Persist and extract student identity for following steps
+                  const returnedId = await onSave(data);
                   const name = data.nome || '';
-                  const id = data.id || data.nome || '';
+                  const id = returnedId || data.id || data.nome || '';
                   setWizardStudentName(name);
                   setWizardStudentId(id);
-                  onSave(data);
+                  setWizardStudentData({ ...data, id });
                   advance(1);
                 }}
               />
@@ -332,11 +326,10 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
               <AutorizacaoViagemForm
                 key="wizard-viagem"
                 studentName={wizardStudentName || wizardStudent?.nome}
-                studentData={wizardStudent}
+                studentData={wizardStudentData}
                 isPublic={true}
-                onSave={(autorizacao: AutorizacaoViagem) => {
-                  saveStudentToLocalStorage({ autorizacao_viagem: autorizacao }, wizardStudentId);
-                  onSave({ type: 'autorizacao_viagem', studentId: wizardStudentId, autorizacao });
+                onSave={async (autorizacao: AutorizacaoViagem) => {
+                  await onSave({ type: 'autorizacao_viagem', studentId: wizardStudentId, autorizacao });
                   advance(3);
                 }}
               />
@@ -373,16 +366,15 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   Declare os uniformes recebidos e assine abaixo.
                 </p>
               </div>
-              {wizardStudent ? (
+              {wizardStudentName ? (
                 <DeclaracaoUniformesForm
                   key="wizard-uniformes"
-                  studentName={wizardStudent.nome}
-                  responsavelName={wizardStudent.nome_responsavel}
-                  cpfResponsavel={wizardStudent.rg_cpf}
+                  studentName={wizardStudentName}
+                  responsavelName={wizardStudentData?.nome_responsavel || ''}
+                  cpfResponsavel={wizardStudentData?.rg_cpf || ''}
                   isPublic={true}
-                  onSave={(declaracao: DeclaracaoUniformes) => {
-                    saveStudentToLocalStorage({ declaracao_uniformes: declaracao }, wizardStudentId);
-                    onSave({ type: 'declaracao_uniformes', studentId: wizardStudentId, declaracao });
+                  onSave={async (declaracao: DeclaracaoUniformes) => {
+                    await onSave({ type: 'declaracao_uniformes', studentId: wizardStudentId, declaracao });
                     advance(5);
                   }}
                 />
@@ -404,15 +396,14 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                   Questionário de Prontidão para Atividade Física. Responda com atenção.
                 </p>
               </div>
-              {wizardStudent ? (
+              {wizardStudentName ? (
                 <DeclaracaoProntidaoForm
                   key="wizard-parq"
-                  studentName={wizardStudent.nome}
-                  responsavelName={wizardStudent.nome_responsavel}
+                  studentName={wizardStudentName}
+                  responsavelName={wizardStudentData?.nome_responsavel || ''}
                   isPublic={true}
-                  onSave={(declaracao: DeclaracaoProntidao) => {
-                    saveStudentToLocalStorage({ declaracao_prontidao: declaracao }, wizardStudentId);
-                    onSave({ type: 'declaracao_prontidao', studentId: wizardStudentId, declaracao });
+                  onSave={async (declaracao: DeclaracaoProntidao) => {
+                    await onSave({ type: 'declaracao_prontidao', studentId: wizardStudentId, declaracao });
                     advance(6);
                   }}
                 />
