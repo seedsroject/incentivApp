@@ -772,7 +772,7 @@ const AppContent: React.FC = () => {
           // Não enviar base64 grandes no INSERT — eles vão para Storage depois
           // fichaUrl pode ter MB de base64, assinatura pode ter ~50-200KB
           const assinaturaValue = data.assinatura && data.assinatura.length < 500000 ? data.assinatura : null;
-          const fichaValue = (data.ficha_url || data.fichaUrl);
+          const fichaValue = data.fichaUrl;
           const fichaForDb = fichaValue && fichaValue.length < 500000 ? fichaValue : null;
           
           if (fichaValue && fichaValue.length >= 500000) {
