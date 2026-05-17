@@ -3,7 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { StudentDraft, SchoolReportItem, AttendanceReportItem, FrequencyListItem, DeclaracaoMatriculaOCR } from "../types";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const geminiKey = (import.meta.env.VITE_GEMINI_API_KEY || '') as string;
+const ai = new GoogleGenAI({ apiKey: geminiKey });
 
 // Helper para limpar base64 (Remove qualquer cabeçalho data:image/xxx;base64, ou data:application/pdf;base64,)
 const cleanBase64 = (base64: string) => {

@@ -322,7 +322,7 @@ const AIAnalysisBlock: React.FC<{
   const editRef = useRef<HTMLDivElement>(null);
   const position = widget.aiPosition || 'below';
 
-  const hasApiKey = Boolean(process.env.GEMINI_API_KEY);
+  const hasApiKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY);
 
   // Build template vars from current data context — recalculates when núcleo changes
   const templateVars = useMemo(() => buildTemplateVars(ctx), [ctx]);
