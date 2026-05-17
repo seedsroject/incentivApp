@@ -1093,7 +1093,7 @@ const AppContent: React.FC = () => {
               return handleSaveDeclaracaoProntidao(data.studentId, data.declaracao);
             } else if (data?.type === 'autorizacao_viagem') {
               return handleSaveAutorizacaoViagem(data.studentId, data.autorizacao);
-            } else if (data?.categoria || data?.type === 'MATRICULA' || data?.type === 'BOLETIM') {
+            } else if (data?.type === 'INDICADORES_SAUDE' || data?.type === 'PESQUISA_META' || data?.type === 'DECLARACAO_MATRICULA' || data?.categoria || data?.type === 'MATRICULA' || data?.type === 'BOLETIM' || (data?.id && typeof data?.id === 'string' && (data.id.startsWith('saude_') || data.id.startsWith('meta_')))) {
               return handleSaveDocument(data);
             } else {
               return handleSaveStudent(data);
