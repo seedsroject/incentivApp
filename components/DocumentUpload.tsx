@@ -2144,11 +2144,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
     if (mode === 'DECLARACAO_VIEW') {
         const declaracaoHistory = history.filter(d => d.type === 'DECLARACAO_MATRICULA');
         const hasOcr = (v?: string) => !!v && v !== 'DESCONHECIDO';
-        const autoMatch = (name: string) => {
+        const autoMatch = (name?: string) => {
             if (!name) return;
             const n = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
             const m = students.find(s => n(s.nome) === n(name));
-            if (m) { setSelectedStudentId(m.id); setStudentName(m.nome); } else { setStudentName(name); }
+            if (m) { setSelectedStudentId(m.id || ''); setStudentName(m.nome || ''); } else { setStudentName(name || ''); }
         };
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative">

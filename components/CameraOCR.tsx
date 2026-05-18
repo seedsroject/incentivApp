@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { extractStudentData } from '../services/geminiService';
 import { StudentDraft, DeclaracaoUniformes, DeclaracaoProntidao, PreCadastroData } from '../types';
@@ -6,6 +5,7 @@ import { SmartCamera } from './SmartCamera';
 import { DeclaracaoUniformesForm } from './DeclaracaoUniformesForm';
 import { DeclaracaoProntidaoForm } from './DeclaracaoProntidaoForm';
 import { generateAutorizacaoPDF } from './AutorizacaoViagemForm';
+import { generateSocioeconomicaPDF, generateQuantitativoPDF } from './utils/pdfGenerators';
 
 interface CameraOCRProps {
   onBack: () => void;
@@ -1331,10 +1331,12 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   onClick={() => {
                                     const key = student.id || student.nome;
                                     if (student.questionario_quantitativo) {
-                                      if (student.questionario_quantitativo.url) {
+                                      if (student.questionario_quantitativo.metadata) {
+                                        generateQuantitativoPDF({ nome: student.nome, ...student.questionario_quantitativo.metadata });
+                                      } else if (student.questionario_quantitativo.url) {
                                         window.open(student.questionario_quantitativo.url, '_blank');
                                       } else {
-                                        alert("Questionário preenchido digitalmente. Acesse o menu 'Meta Qualitativa' na barra lateral e vá em 'Histórico' para exportar o PDF.");
+                                        alert("Os dados do questionário não foram encontrados no banco de dados.");
                                       }
                                     } else {
                                       const url = `${baseUrl}?service=meta&studentId=${encodeURIComponent(key)}&token=nucleo`;
@@ -1358,10 +1360,12 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   onClick={() => {
                                     const key = student.id || student.nome;
                                     if (student.pesquisa_socioeconomica) {
-                                      if (student.pesquisa_socioeconomica.url) {
+                                      if (student.pesquisa_socioeconomica.metadata) {
+                                        generateSocioeconomicaPDF({ nome: student.nome, ...student.pesquisa_socioeconomica.metadata });
+                                      } else if (student.pesquisa_socioeconomica.url) {
                                         window.open(student.pesquisa_socioeconomica.url, '_blank');
                                       } else {
-                                        alert("Pesquisa preenchida digitalmente. Acesse o menu 'Indicadores de Saúde' na barra lateral e vá em 'Histórico' para exportar o PDF.");
+                                        alert("Os dados da pesquisa não foram encontrados no banco de dados.");
                                       }
                                     } else {
                                       const url = `${baseUrl}?service=socio&studentId=${encodeURIComponent(key)}&token=nucleo`;

@@ -309,7 +309,7 @@ export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatricula
                                             )}
                                             {hasValue(ocrData.situacaoAluno) && (
                                                 <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                    <span>{SITUACAO_LABELS[ocrData.situacaoAluno] || ocrData.situacaoAluno}</span>
+                                                    <span>{SITUACAO_LABELS[ocrData.situacaoAluno as string] || ocrData.situacaoAluno}</span>
                                                 </div>
                                             )}
                                             {ocrData.nomeResponsavel && (

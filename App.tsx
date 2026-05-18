@@ -384,8 +384,8 @@ const AppContent: React.FC = () => {
             declaracao_uniformes: uni ? uni.data : undefined,
             declaracao_prontidao: pron ? pron.data : undefined,
             autorizacao_viagem: auto ? auto.data : undefined,
-            questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at } : undefined,
-            pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at } : undefined,
+            questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at, metadata: meta.metadata } : undefined,
+            pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at, metadata: socio.metadata } : undefined,
             boletim_escolar: boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, parcial: boletim.metadata?.parcial } : undefined,
           };
         });
@@ -1023,10 +1023,10 @@ const AppContent: React.FC = () => {
         if (s.id === data.studentId || s.nome === data.studentId) {
           const docUrl = data.fileUrl || data.metaData?.url || '';
           if (data.type === 'PESQUISA_META') {
-            return { ...s, questionario_quantitativo: { url: docUrl, timestamp: new Date().toISOString() } };
+            return { ...s, questionario_quantitativo: { url: docUrl, timestamp: new Date().toISOString(), metadata: data.metaData } };
           }
           if (data.type === 'INDICADORES_SAUDE') {
-            return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: new Date().toISOString() } };
+            return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: new Date().toISOString(), metadata: data.metaData } };
           }
           if (data.type === 'BOLETIM') {
             return { ...s, boletim_escolar: { url: docUrl, timestamp: new Date().toISOString(), parcial: data.metaData?.parcial } };
