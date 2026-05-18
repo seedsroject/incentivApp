@@ -102,7 +102,7 @@ Em suma, este projeto é mais do que uma simples prática esportiva; é um instr
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split('|')[0]?.trim()}</option>)}
+            {nucleos.map(n => <option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>)}
           </select>
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>

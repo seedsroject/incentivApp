@@ -62,10 +62,10 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   const year = new Date().getFullYear();
   const pName = projectName.toUpperCase();
 
-  // Filter students by nucleo
+  // Filter students by nucleo (includes students without nucleo assigned)
   const filtered = useMemo(() => {
     if (!selectedNucleoId) return students;
-    return students.filter(s => s.nucleo_id === selectedNucleoId);
+    return students.filter(s => s.nucleo_id === selectedNucleoId || !s.nucleo_id);
   }, [students, selectedNucleoId]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => a.nome.localeCompare(b.nome)), [filtered]);
@@ -222,7 +222,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome}</option>))}
+            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>))}
           </select>
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>

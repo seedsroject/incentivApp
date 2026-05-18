@@ -212,7 +212,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
             className="freq-select"
           >
             {nucleos.map(n => (
-              <option key={n.id} value={n.id}>{n.nome}</option>
+              <option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>
             ))}
           </select>
 

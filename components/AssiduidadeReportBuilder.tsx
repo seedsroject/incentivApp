@@ -99,7 +99,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
     return age;
   };
   // Build student rows for Tabela 5 from selected nucleo
-  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId).sort((a, b) => a.nome.localeCompare(b.nome));
+  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId || !s.nucleo_id).sort((a, b) => a.nome.localeCompare(b.nome));
 
   // --- Unified mock grade data per student ---
   // Deterministic "hash" based on student name to generate consistent grades
@@ -198,7 +198,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome}</option>))}
+            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>))}
           </select>
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
