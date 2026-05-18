@@ -1765,38 +1765,27 @@ const AppContent: React.FC = () => {
                 const reports = data.metaData.reports as any[];
                 reports.forEach((report: any) => {
                   if (report.studentId) {
+                    const boletimData = {
+                      url: report.imageUrl || '',
+                      timestamp: data.timestamp,
+                      grade1: report.grade1,
+                      attendance1: report.attendance1,
+                      grade2: report.grade2,
+                      attendance2: report.attendance2,
+                      subjects: report.subjects,
+                      status: report.status,
+                      avaliacao: report.avaliacao,
+                    };
                     setStudents(prev => prev.map(s =>
                       s.id === report.studentId ? {
                         ...s,
-                        boletim_escolar: {
-                          url: report.imageUrl || '',
-                          timestamp: data.timestamp,
-                          parcial: {
-                            grade1: report.grade1,
-                            attendance1: report.attendance1,
-                            grade2: report.grade2,
-                            attendance2: report.attendance2,
-                            subjects: report.subjects,
-                            status: report.status,
-                            avaliacao: report.avaliacao,
-                          }
-                        }
+                        boletim_escolar: boletimData
                       } : s
                     ));
                     // Persist boletim image to student in Supabase
                     if (supabaseProjectId) {
                       supabase.from('students').update({
-                        boletim_escolar: {
-                          url: report.imageUrl || '',
-                          timestamp: data.timestamp,
-                          parcial: {
-                            grade1: report.grade1,
-                            attendance1: report.attendance1,
-                            grade2: report.grade2,
-                            attendance2: report.attendance2,
-                            status: report.status,
-                          }
-                        }
+                        boletim_escolar: boletimData
                       }).eq('id', report.studentId);
                     }
                   }

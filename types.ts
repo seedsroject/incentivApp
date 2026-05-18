@@ -160,8 +160,19 @@ export interface StudentDraft {
   // Documentos Escolares e Formulários Adicionais
   questionario_quantitativo?: { url: string; timestamp: string; metadata?: any };   // Questionário Quantitativo (arquivo ou json)
   pesquisa_socioeconomica?: { url: string; timestamp: string; metadata?: any };      // Pesquisa Socioeconômica (arquivo ou json)
-  boletim_escolar?: { url: string; timestamp: string; parcial?: boolean }; // Boletim Escolar (parcial = só 1 bimestre)
-  declaracao_matricula?: { url: string; timestamp: string; ocrData?: DeclaracaoMatriculaOCR }; // Declaração de Matrícula Escolar (imagem ou PDF)
+  boletim_escolar?: {
+    url: string;
+    timestamp: string;
+    parcial?: boolean; // Boletim Escolar (parcial = só 1 bimestre) — legado
+    grade1?: number;
+    attendance1?: number;
+    grade2?: number;
+    attendance2?: number;
+    subjects?: SubjectGrade[];
+    status?: 'MELHORA' | 'PIORA' | 'MANTEVE';
+    avaliacao?: 'Bom' | 'Regular' | 'Insatisfatório' | 'Péssimo';
+  };
+  declaracao_matricula?: { url?: string; imageUrl?: string; timestamp?: string; dataRegistro?: string; ocrData?: DeclaracaoMatriculaOCR; [key: string]: any }; // Declaração de Matrícula Escolar
 }
 
 // Dados extraídos via OCR da Declaração de Matrícula Escolar
