@@ -5,6 +5,7 @@ import { StudentDraft, DeclaracaoUniformes, DeclaracaoProntidao, PreCadastroData
 import { SmartCamera } from './SmartCamera';
 import { DeclaracaoUniformesForm } from './DeclaracaoUniformesForm';
 import { DeclaracaoProntidaoForm } from './DeclaracaoProntidaoForm';
+import { generateAutorizacaoPDF } from './AutorizacaoViagemForm';
 
 interface CameraOCRProps {
   onBack: () => void;
@@ -1166,6 +1167,14 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     }`}>
                                     {student.boletim_escolar && !student.boletim_escolar.parcial ? '✓' : student.boletim_escolar?.parcial ? '~' : '✗'} Boletim
                                   </span>
+                                  {/* Autorização de Viagem */}
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0
+                                    ${student.autorizacao_viagem
+                                      ? 'bg-green-50 text-green-700 border-green-200'
+                                      : 'bg-red-50 text-red-600 border-red-200'
+                                    }`}>
+                                    {student.autorizacao_viagem ? '✓' : '✗'} Viagem
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -1322,7 +1331,11 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   onClick={() => {
                                     const key = student.id || student.nome;
                                     if (student.questionario_quantitativo) {
-                                      window.open(student.questionario_quantitativo.url, '_blank');
+                                      if (student.questionario_quantitativo.url) {
+                                        window.open(student.questionario_quantitativo.url, '_blank');
+                                      } else {
+                                        alert("Questionário preenchido digitalmente. Acesse o menu 'Meta Qualitativa' na barra lateral e vá em 'Histórico' para exportar o PDF.");
+                                      }
                                     } else {
                                       const url = `${baseUrl}?service=meta&studentId=${encodeURIComponent(key)}&token=nucleo`;
                                       navigator.clipboard.writeText(url).then(() => {
@@ -1335,7 +1348,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                       ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
                                       : 'bg-blue-50 border-blue-200 text-blue-500 hover:bg-blue-100'
                                     }`}
-                                  title={student.questionario_quantitativo ? 'Questionário Quantitativo enviado – clique para ver' : 'Questionário Quantitativo pendente – clique para copiar link'}
+                                  title={student.questionario_quantitativo ? 'Questionário Quantitativo respondido' : 'Questionário Quantitativo pendente – clique para copiar link'}
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                                 </button>
@@ -1345,7 +1358,11 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   onClick={() => {
                                     const key = student.id || student.nome;
                                     if (student.pesquisa_socioeconomica) {
-                                      window.open(student.pesquisa_socioeconomica.url, '_blank');
+                                      if (student.pesquisa_socioeconomica.url) {
+                                        window.open(student.pesquisa_socioeconomica.url, '_blank');
+                                      } else {
+                                        alert("Pesquisa preenchida digitalmente. Acesse o menu 'Indicadores de Saúde' na barra lateral e vá em 'Histórico' para exportar o PDF.");
+                                      }
                                     } else {
                                       const url = `${baseUrl}?service=socio&studentId=${encodeURIComponent(key)}&token=nucleo`;
                                       navigator.clipboard.writeText(url).then(() => {
@@ -1358,7 +1375,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                       ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
                                       : 'bg-teal-50 border-teal-200 text-teal-500 hover:bg-teal-100'
                                     }`}
-                                  title={student.pesquisa_socioeconomica ? 'Pesquisa Socioeconômica enviada – clique para ver' : 'Pesquisa Socioeconômica pendente – clique para copiar link'}
+                                  title={student.pesquisa_socioeconomica ? 'Pesquisa Socioeconômica respondida' : 'Pesquisa Socioeconômica pendente – clique para copiar link'}
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                                 </button>
@@ -1392,6 +1409,28 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   }
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                </button>
+                                {/* Botão Autorização de Viagem */}
+                                <button
+                                  onClick={() => {
+                                    if (student.autorizacao_viagem) {
+                                      generateAutorizacaoPDF(student.autorizacao_viagem);
+                                    } else {
+                                      const key = student.id || student.nome;
+                                      const url = `${baseUrl}?service=autorizacao&studentId=${encodeURIComponent(key)}&token=nucleo`;
+                                      navigator.clipboard.writeText(url).then(() => {
+                                        alert(`✅ Link copiado!\n\nEnvie para o aluno/responsável preencher a Autorização de Viagem:\n${url}`);
+                                      }).catch(() => { prompt('Copie o link abaixo:', url); });
+                                    }
+                                  }}
+                                  className={`p-2 rounded-full border transition-colors flex items-center justify-center
+                                    ${student.autorizacao_viagem
+                                      ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
+                                      : 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100'
+                                    }`}
+                                  title={student.autorizacao_viagem ? 'Autorização de Viagem respondida' : 'Autorização de Viagem pendente – clique para copiar link'}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </button>
                               </div>
                             )}

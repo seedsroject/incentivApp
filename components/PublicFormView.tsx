@@ -354,7 +354,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 initialMode="DIGITAL_FORM"
                 defaultStudentName={wizardStudentName || ''}
                 onSave={(data: DocumentLog) => {
-                  onSave(data);
+                  onSave({ ...data, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });
                   advance(4);
                 }}
               />
@@ -437,7 +437,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 defaultResponsibleName={wizardStudentData?.nome_responsavel || ''}
                 defaultProfessorName={currentNucleo?.nome ? currentNucleo.nome.split('-')[0].trim() : ''}
                 onSave={(data: DocumentLog) => {
-                  onSave(data);
+                  onSave({ ...data, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });
                   advance(7);
                 }}
               />

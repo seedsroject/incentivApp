@@ -115,7 +115,7 @@ const ResponsavelSection: React.FC<{
 );
 
 // ─── PDF GENERATOR ──────────────────────────────────────────────────────────
-const generatePDF = (d: any) => {
+export const generateAutorizacaoPDF = (d: any) => {
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Autorização de Viagem Nacional</title>
 <style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.6;margin:40px 50px;color:#111}
 h1{text-align:center;font-size:14pt;margin-bottom:5px}
@@ -272,7 +272,7 @@ export const AutorizacaoViagemForm: React.FC<Props> = ({ studentName, studentDat
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Opções de Assinatura</p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button type="button" onClick={() => generatePDF(data)}
+            <button type="button" onClick={() => generateAutorizacaoPDF(data)}
               className="flex-1 py-3 px-4 bg-gray-800 text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 shadow-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               Baixar PDF para Assinatura GOV.BR
