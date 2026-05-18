@@ -329,33 +329,66 @@ const AppContent: React.FC = () => {
         .from('students').select('*').eq('project_id', projectUUID).order('nome');
       if (error) { console.warn('Erro ao carregar alunos:', error); return; }
       if (data && data.length > 0) {
-        const mapped: StudentDraft[] = data.map((s: any) => ({
-          id: s.id,
-          projectId: projectSlug,
-          nucleo_id: s.nucleo_id,
-          turma_id: s.turma_id,
-          nome: s.nome,
-          data_nascimento: s.data_nascimento || '',
-          rg_cpf: s.rg_cpf || '',
-          nome_responsavel: s.nome_responsavel || '',
-          endereco: s.endereco || '',
-          telefone: s.telefone || '',
-          email_contato: s.email_contato || '',
-          escola_nome: s.escola_nome || '',
-          escola_tipo: s.escola_tipo || '',
-          n_sli: s.n_sli || '',
-          nome_projeto: s.nome_projeto || '',
-          proponente: s.proponente || '',
-          nome_responsavel_organizacao: s.nome_responsavel_organizacao || '',
-          status: s.status || 'ATIVO',
-          materiais_pendentes: s.materiais_pendentes || false,
-          portador_necessidade_especial: s.portador_necessidade_especial || false,
-          laudo_url: s.laudo_url,
-          ficha_url: s.ficha_url,
-          assinatura: s.assinatura,
-          data_assinatura: s.data_assinatura,
-          timestamp: s.created_at,
-        }));
+        // Fetch declarations and documents in parallel to enrich the students
+        const studentIds = data.map((s: any) => s.id);
+        const [decsResult, docsResult] = await Promise.all([
+          supabase.from('student_declarations').select('*').in('student_id', studentIds),
+          supabase.from('documents').select('student_id, type, file_url, metadata, created_at').in('student_id', studentIds)
+        ]);
+
+        const decs = decsResult.data || [];
+        const docs = docsResult.data || [];
+
+        const mapped: StudentDraft[] = data.map((s: any) => {
+          const studentDecs = decs.filter((d: any) => d.student_id === s.id);
+          const uni = studentDecs.find((d: any) => d.type === 'UNIFORMES');
+          const pron = studentDecs.find((d: any) => d.type === 'PRONTIDAO');
+          const auto = studentDecs.find((d: any) => d.type === 'AUTORIZACAO_VIAGEM');
+
+          const studentDocs = docs.filter((d: any) => d.student_id === s.id);
+          // Helper to get latest document of a type
+          const getLatestDoc = (type: string) => studentDocs
+            .filter((d: any) => d.type === type)
+            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+          const meta = getLatestDoc('PESQUISA_META');
+          const socio = getLatestDoc('INDICADORES_SAUDE');
+          const boletim = getLatestDoc('BOLETIM');
+
+          return {
+            id: s.id,
+            projectId: projectSlug,
+            nucleo_id: s.nucleo_id,
+            turma_id: s.turma_id,
+            nome: s.nome,
+            data_nascimento: s.data_nascimento || '',
+            rg_cpf: s.rg_cpf || '',
+            nome_responsavel: s.nome_responsavel || '',
+            endereco: s.endereco || '',
+            telefone: s.telefone || '',
+            email_contato: s.email_contato || '',
+            escola_nome: s.escola_nome || '',
+            escola_tipo: s.escola_tipo || '',
+            n_sli: s.n_sli || '',
+            nome_projeto: s.nome_projeto || '',
+            proponente: s.proponente || '',
+            nome_responsavel_organizacao: s.nome_responsavel_organizacao || '',
+            status: s.status || 'ATIVO',
+            materiais_pendentes: s.materiais_pendentes || false,
+            portador_necessidade_especial: s.portador_necessidade_especial || false,
+            laudo_url: s.laudo_url,
+            ficha_url: s.ficha_url,
+            assinatura: s.assinatura,
+            data_assinatura: s.data_assinatura,
+            timestamp: s.created_at,
+            declaracao_uniformes: uni ? uni.data : undefined,
+            declaracao_prontidao: pron ? pron.data : undefined,
+            autorizacao_viagem: auto ? auto.data : undefined,
+            questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at } : undefined,
+            pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at } : undefined,
+            boletim_escolar: boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, parcial: boletim.metadata?.parcial } : undefined,
+          };
+        });
         setStudents(mapped);
       }
     } catch (err) {
@@ -983,6 +1016,26 @@ const AppContent: React.FC = () => {
     }
 
     setCollectedDocuments(prev => [...prev, data]);
+    
+    // Atualizar o estado do aluno localmente se for um documento de questionário/boletim
+    if (data.studentId && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM'].includes(data.type)) {
+      setStudents(prev => prev.map(s => {
+        if (s.id === data.studentId || s.nome === data.studentId) {
+          const docUrl = data.fileUrl || data.metaData?.url || '';
+          if (data.type === 'PESQUISA_META') {
+            return { ...s, questionario_quantitativo: { url: docUrl, timestamp: new Date().toISOString() } };
+          }
+          if (data.type === 'INDICADORES_SAUDE') {
+            return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: new Date().toISOString() } };
+          }
+          if (data.type === 'BOLETIM') {
+            return { ...s, boletim_escolar: { url: docUrl, timestamp: new Date().toISOString(), parcial: data.metaData?.parcial } };
+          }
+        }
+        return s;
+      }));
+    }
+
     // Persistir no Supabase
     if (supabaseProjectId) {
       const { error } = await supabase.from('documents').insert({
