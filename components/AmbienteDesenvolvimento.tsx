@@ -180,7 +180,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
                 .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
                 .map(n => (
                 <option key={n.id} value={n.id}>
-                  {n.nome}
+                  {n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}
                 </option>
               ))}
             </select>
@@ -369,7 +369,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
                       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
                       .map(n => (
                       <option key={n.id} value={n.nome}>
-                        {n.nome}
+                        {n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}
                       </option>
                     ))}
                   </select>
