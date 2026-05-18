@@ -665,23 +665,42 @@ const AppContent: React.FC = () => {
       if (accessData) {
         role = accessData.role;
         if (accessData.nucleo_id) nucleoId = accessData.nucleo_id;
+        // Super Admin / Admin: permite trocar de núcleo pelo seletor de login
+        if ((role === 'ADMIN' || role === 'SUPER_ADMIN') && loginNucleoId) {
+          nucleoId = loginNucleoId;
+        }
       } else {
-        // Verifica se tem acesso a QUALQUER projeto
+        // Verifica se tem acesso a QUALQUER projeto (pode ser super admin global)
         const { data: anyAccess } = await supabase
           .from('user_project_access')
           .select('*, projects(slug)')
           .eq('user_id', authData.user.id);
         
-        if (!anyAccess || anyAccess.length === 0) {
+        if (anyAccess && anyAccess.length > 0) {
+          // Tem acesso a outro projeto — criar acesso cross-project para admins
+          const isAdmin = anyAccess.some((a: any) => a.role === 'ADMIN' || a.role === 'SUPER_ADMIN');
+          if (isAdmin) {
+            // Admin pode acessar qualquer projeto: cria acesso automático
+            role = 'ADMIN';
+            nucleoId = loginNucleoId || null;
+            await supabase.from('user_project_access').insert({
+              user_id: authData.user.id,
+              project_id: projectData.id,
+              nucleo_id: nucleoId,
+              role: 'ADMIN',
+              is_default: false,
+            });
+          } else {
+            setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
+            setLoading(false);
+            return;
+          }
+        } else {
           setLoginError('Você não tem acesso a nenhum projeto. Contate o administrador.');
           await supabase.auth.signOut();
           setLoading(false);
           return;
         }
-        // Tem acesso a outro projeto mas não a este
-        setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
-        setLoading(false);
-        return;
       }
 
       // 3. Carregar todos os dados do Supabase
@@ -975,7 +994,7 @@ const AppContent: React.FC = () => {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState<'PROFESSOR' | 'ADMIN'>('PROFESSOR');
+  const [regRole, setRegRole] = useState<'PROFESSOR' | 'COORDENADOR' | 'ADMIN'>('PROFESSOR');
   const [regNucleo, setRegNucleo] = useState('');
 
   const handleDischargeStudent = async (studentId: string, nucleoId: string) => {
@@ -1389,10 +1408,11 @@ const AppContent: React.FC = () => {
                       <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Perfil</label>
                       <select
                         value={regRole}
-                        onChange={(e) => setRegRole(e.target.value as 'PROFESSOR' | 'ADMIN')}
+                        onChange={(e) => setRegRole(e.target.value as 'PROFESSOR' | 'COORDENADOR' | 'ADMIN')}
                         className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
                       >
                         <option value="PROFESSOR">Professor</option>
+                        <option value="COORDENADOR">Coordenador</option>
                         <option value="ADMIN">Administrador</option>
                       </select>
                     </div>

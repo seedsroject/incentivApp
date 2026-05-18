@@ -7,6 +7,8 @@ interface MetaQualitativaProps {
   onBack: () => void;
   onSave: (data: DocumentLog) => void;
   defaultProfessorName?: string;
+  defaultStudentName?: string;
+  defaultResponsibleName?: string;
   history?: DocumentLog[];
   initialMode?: Mode; // Adicionado para pular menu
   headerImage?: string;
@@ -178,12 +180,12 @@ const MetaTemplate: React.FC<{
   );
 }
 
-export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, history = [], initialMode, headerImage, projectName = 'ESCOLINHA DE TRIATHLON' }) => {
+export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, defaultStudentName, defaultResponsibleName, history = [], initialMode, headerImage, projectName = 'ESCOLINHA DE TRIATHLON' }) => {
   const [mode, setMode] = useState<Mode>(initialMode || 'MENU');
 
   // Form State
-  const [studentName, setStudentName] = useState('');
-  const [responsibleName, setResponsibleName] = useState('');
+  const [studentName, setStudentName] = useState(defaultStudentName || '');
+  const [responsibleName, setResponsibleName] = useState(defaultResponsibleName || '');
   const [professorName, setProfessorName] = useState(defaultProfessorName || '');
   const [answers, setAnswers] = useState<Record<string, Option>>({});
 

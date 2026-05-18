@@ -9,6 +9,7 @@ interface SocioeconomicFormProps {
     initialMode?: 'MENU' | 'DIGITAL_FORM' | 'HISTORY';
     history?: DocumentLog[];
     headerImage?: string;
+    defaultStudentName?: string;
 }
 
 type QuestionField = keyof SocioeconomicData;
@@ -104,12 +105,12 @@ const SocioTemplate: React.FC<{ data: SocioeconomicData, headerImage: string }> 
 
 type FormMode = 'MENU' | 'DIGITAL_FORM' | 'HISTORY' | 'CAMERA_SCAN' | 'SCAN_PREVIEW';
 
-export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [], headerImage = '/header_full.png' }) => {
+export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [], headerImage = '/header_full.png', defaultStudentName = '' }) => {
     const [mode, setMode] = useState<FormMode>(initialMode);
 
     // State for Form Data
     const [formData, setFormData] = useState<SocioeconomicData>({
-        nome: '',
+        nome: defaultStudentName,
         genero: '',
         cor_raca: '',
         faixa_etaria: '',
