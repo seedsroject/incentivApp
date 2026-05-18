@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId } from '../types';
+import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId, User } from '../types';
 import { usePDFBuilder } from './PDFBuilderContext';
 import { AdminMap } from './AdminMap';
 import { Logo } from './Logo';
@@ -12,6 +12,7 @@ interface AdminDashboardProps {
     nucleos: Nucleo[];
     onNavigateToServices: () => void;
     userParams: { nome: string; email: string };
+    currentUser: User;
     onLogout: () => void;
     students: StudentDraft[];
     documents: DocumentLog[];
@@ -25,6 +26,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     nucleos,
     onNavigateToServices,
     userParams,
+    currentUser,
     onLogout,
     students,
     documents,
@@ -123,10 +125,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             const fetchPending = async () => {
                 const { data } = await supabase
                     .from('user_project_access')
-                    .select('*, profiles(nome, email), projects!inner(slug)')
+                    .select('*, profiles(nome, email), projects!inner(slug), nucleos(estado)')
                     .eq('projects.slug', projectId)
                     .eq('status', 'PENDENTE');
-                if (data) setPendingAccesses(data);
+                
+                if (data) {
+                    const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
+                    let filteredData = data;
+                    if (!isSuperAdmin && currentUser.estado_responsavel) {
+                        filteredData = data.filter((req: any) => 
+                            req.estado_responsavel === currentUser.estado_responsavel || 
+                            (req.nucleos && req.nucleos.estado === currentUser.estado_responsavel)
+                        );
+                    }
+                    setPendingAccesses(filteredData);
+                }
             };
             fetchPending();
         }

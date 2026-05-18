@@ -596,13 +596,27 @@ const AppContent: React.FC = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- PROJECT-SCOPED DATA ---
-  const filteredNucleos = useMemo(() => nucleos.filter(n => n.project === activeProject), [nucleos, activeProject]);
-  const projectStudents = useMemo(() => students.filter(s => !s.projectId || s.projectId === activeProject), [students, activeProject]);
+  const filteredNucleos = useMemo(() => {
+    let list = nucleos.filter(n => n.project === activeProject);
+    if (user && user.role === 'ADMIN' && user.estado_responsavel && user.email !== 'admin.geral@formandocampeoes.org.br') {
+      list = list.filter(n => n.estado === user.estado_responsavel);
+    }
+    return list;
+  }, [nucleos, activeProject, user]);
+
+  const projectStudents = useMemo(() => {
+    let list = students.filter(s => !s.projectId || s.projectId === activeProject);
+    if (user && user.role === 'ADMIN' && user.estado_responsavel && user.email !== 'admin.geral@formandocampeoes.org.br') {
+      const allowedNucleos = new Set(filteredNucleos.map(n => n.id));
+      list = list.filter(s => s.nucleo_id && allowedNucleos.has(s.nucleo_id));
+    }
+    return list;
+  }, [students, activeProject, user, filteredNucleos]);
   const projectPreCadastros = useMemo(() => preCadastros.filter(p => !p.projectId || p.projectId === activeProject), [preCadastros, activeProject]);
 
   // Alunos filtrados pelo núcleo do usuário logado
   const nucleoStudents = useMemo(() => {
-    if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo: vê todos
+    if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo ou com estado_responsavel: vê todos (do estado, já filtrado acima)
     return projectStudents.filter(s => s.nucleo_id === user.nucleo_id || !s.nucleo_id);
   }, [projectStudents, user?.nucleo_id]);
 
@@ -1125,6 +1139,7 @@ const AppContent: React.FC = () => {
   const [regPassword, setRegPassword] = useState('');
   const [regRole, setRegRole] = useState<'PROFESSOR' | 'COORDENADOR' | 'ADMIN'>('PROFESSOR');
   const [regNucleo, setRegNucleo] = useState('');
+  const [regEstado, setRegEstado] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
 
@@ -1337,8 +1352,16 @@ const AppContent: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName || !regEmail || !regPassword || !regNucleo) {
+    if (!regName || !regEmail || !regPassword) {
       setLoginError('Por favor, preencha todos os campos.');
+      return;
+    }
+    if (regRole === 'ADMIN' && !regEstado) {
+      setLoginError('Por favor, selecione o Estado de atuação.');
+      return;
+    }
+    if (regRole !== 'ADMIN' && !regNucleo) {
+      setLoginError('Por favor, selecione o Núcleo.');
       return;
     }
 
@@ -1373,9 +1396,10 @@ const AppContent: React.FC = () => {
         await supabase.from('user_project_access').insert({
           user_id: authData.user.id,
           project_id: projectData.id,
-          nucleo_id: regNucleo,
+          nucleo_id: regRole === 'ADMIN' ? null : regNucleo,
           role: regRole,
           is_default: true,
+          estado_responsavel: regRole === 'ADMIN' ? regEstado : null,
         });
       }
 
@@ -1386,16 +1410,17 @@ const AppContent: React.FC = () => {
         await loadAllProjectData(projectData.id, activeProject);
       }
 
-      const selectedNucleoObj = nucleos.find(n => n.id === regNucleo);
+      const selectedNucleoObj = regRole !== 'ADMIN' ? nucleos.find(n => n.id === regNucleo) : undefined;
       setUser({
         uid: authData.user.id,
         nome: regName,
         email: regEmail,
         role: regRole,
-        nucleo_id: regNucleo,
+        nucleo_id: regRole === 'ADMIN' ? null : regNucleo,
         nucleo_nome: selectedNucleoObj?.nome,
         projectId: activeProject,
         status: 'PENDENTE',
+        estado_responsavel: regRole === 'ADMIN' ? regEstado : undefined,
       });
       setView(AppView.PENDING_APPROVAL);
       alert(`Cadastro realizado com sucesso! Sua solicitação está em análise.`);
@@ -1558,19 +1583,34 @@ const AppContent: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Núcleo</label>
-                      <select
-                        value={regNucleo}
-                        onChange={(e) => setRegNucleo(e.target.value)}
-                        className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
-                      >
-                        <option value="">Selecione...</option>
-                        {filteredNucleos.map(n => (
-                          <option key={n.id} value={n.id}>
-                            {n.nome.split('-')[0]} {n.address ? ` - ${n.address}` : ''}
-                          </option>
-                        ))}
-                      </select>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">
+                        {regRole === 'ADMIN' ? 'Estado / Região' : 'Núcleo'}
+                      </label>
+                      {regRole === 'ADMIN' ? (
+                        <select
+                          value={regEstado}
+                          onChange={(e) => setRegEstado(e.target.value)}
+                          className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
+                        >
+                          <option value="">Selecione o Estado...</option>
+                          {['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map(uf => (
+                            <option key={uf} value={uf}>{uf}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <select
+                          value={regNucleo}
+                          onChange={(e) => setRegNucleo(e.target.value)}
+                          className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2 px-2 text-[10px] font-bold text-gray-800 focus:outline-none focus:border-blue-500 transition-all"
+                        >
+                          <option value="">Selecione...</option>
+                          {filteredNucleos.map(n => (
+                            <option key={n.id} value={n.id}>
+                              {n.nome.split('-')[0]} {n.address ? ` - ${n.address}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
                   </div>
 
@@ -1676,6 +1716,7 @@ const AppContent: React.FC = () => {
             nucleos={filteredNucleos}
             onNavigateToServices={() => setView(AppView.DASHBOARD)}
             userParams={{ nome: user.nome, email: user.email }}
+            currentUser={user}
             onLogout={handleLogout}
             students={projectStudents}
             documents={projectDocuments}

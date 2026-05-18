@@ -14,6 +14,7 @@ export interface User {
   nucleo_nome?: string;
   projectId?: ProjectId;
   status?: 'PENDENTE' | 'APROVADO' | 'REJEITADO';
+  estado_responsavel?: string; // Sigla do estado (ex: 'SP') para administradores regionais
 }
 
 export interface NucleoTurma {
@@ -30,6 +31,7 @@ export interface Nucleo {
   coordinates?: [number, number]; // [lat, lng]
   stockStatus?: 'LOW' | 'MEDIUM' | 'HIGH';
   stockDetails?: { item: string; qty: number; status: 'OK' | 'LOW' }[];
+  estado?: string; // Estado (UF) do núcleo
 
   // Novos campos para Gestão de RH/Funcionários (Aba Núcleos)
   address?: string; // Endereço completo
