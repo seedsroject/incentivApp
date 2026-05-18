@@ -350,8 +350,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   const [prontidaoModalStudent, setProntidaoModalStudent] = useState<StudentDraft | null>(null);
   // State para o popup de pendências de material (alunos inativos)
   const [pendingItemsStudent, setPendingItemsStudent] = useState<StudentDraft | null>(null);
-  // State para o modal de preview de documentos (boletim, declaração de matrícula)
-  const [docPreviewModal, setDocPreviewModal] = useState<{ title: string; imageUrl: string; studentName: string } | null>(null);
+  // State para o modal de preview de documentos (boletim, declaração de matrícula, relatórios)
+  const [docPreviewModal, setDocPreviewModal] = useState<{ title: string; imageUrl?: string; htmlContent?: string; studentName: string } | null>(null);
   // State para o painel de detalhes/edição do aluno (aberto ao clicar no ≡)
   const [detailStudent, setDetailStudent] = useState<StudentDraft | null>(null);
   const [detailEdits, setDetailEdits] = useState<StudentDraft | null>(null);
@@ -1342,9 +1342,10 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     const key = student.id || student.nome;
                                     if (student.questionario_quantitativo) {
                                       if (student.questionario_quantitativo.metadata) {
-                                        generateQuantitativoPDF({ nome: student.nome, ...student.questionario_quantitativo.metadata }, headerImage);
+                                        const html = generateQuantitativoPDF({ nome: student.nome, ...student.questionario_quantitativo.metadata }, headerImage, true);
+                                        setDocPreviewModal({ title: 'Questionário de Meta Qualitativa', htmlContent: html, studentName: student.nome });
                                       } else if (student.questionario_quantitativo.url) {
-                                        window.open(student.questionario_quantitativo.url, '_blank');
+                                        setDocPreviewModal({ title: 'Questionário de Meta Qualitativa', imageUrl: student.questionario_quantitativo.url, studentName: student.nome });
                                       } else {
                                         alert("Os dados do questionário não foram encontrados no banco de dados.");
                                       }
@@ -1371,9 +1372,10 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     const key = student.id || student.nome;
                                     if (student.pesquisa_socioeconomica) {
                                       if (student.pesquisa_socioeconomica.metadata) {
-                                        generateSocioeconomicaPDF({ nome: student.nome, ...student.pesquisa_socioeconomica.metadata }, headerImage);
+                                        const html = generateSocioeconomicaPDF({ nome: student.nome, ...student.pesquisa_socioeconomica.metadata }, headerImage, true);
+                                        setDocPreviewModal({ title: 'Indicadores Socioeconômicos e de Saúde', htmlContent: html, studentName: student.nome });
                                       } else if (student.pesquisa_socioeconomica.url) {
-                                        window.open(student.pesquisa_socioeconomica.url, '_blank');
+                                        setDocPreviewModal({ title: 'Indicadores Socioeconômicos e de Saúde', imageUrl: student.pesquisa_socioeconomica.url, studentName: student.nome });
                                       } else {
                                         alert("Os dados da pesquisa não foram encontrados no banco de dados.");
                                       }
@@ -1443,7 +1445,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                 <button
                                   onClick={() => {
                                     if (student.autorizacao_viagem) {
-                                      generateAutorizacaoPDF(student.autorizacao_viagem, headerImage);
+                                      const html = generateAutorizacaoPDF(student.autorizacao_viagem, headerImage, true);
+                                      setDocPreviewModal({ title: 'Autorização de Viagem Nacional', htmlContent: html, studentName: student.nome });
                                     } else {
                                       const key = student.id || student.nome;
                                       const url = `${baseUrl}?service=autorizacao&studentId=${encodeURIComponent(key)}&token=nucleo`;
@@ -1492,21 +1495,31 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              {/* Image */}
-              <div className="flex-1 overflow-auto p-4 bg-gray-100 flex items-center justify-center">
-                {docPreviewModal.imageUrl.startsWith('data:application/pdf') ? (
+              {/* Content */}
+              <div className="flex-1 overflow-auto bg-gray-100">
+                {docPreviewModal.htmlContent ? (
                   <iframe
-                    src={docPreviewModal.imageUrl}
-                    className="w-full h-[70vh] rounded border border-gray-300"
+                    srcDoc={docPreviewModal.htmlContent}
+                    className="w-full border-0"
+                    style={{ height: '70vh' }}
                     title={docPreviewModal.title}
                   />
-                ) : (
-                  <img
+                ) : docPreviewModal.imageUrl?.startsWith('data:application/pdf') ? (
+                  <iframe
                     src={docPreviewModal.imageUrl}
-                    alt={docPreviewModal.title}
-                    className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg border border-gray-200"
+                    className="w-full border-0"
+                    style={{ height: '70vh' }}
+                    title={docPreviewModal.title}
                   />
-                )}
+                ) : docPreviewModal.imageUrl ? (
+                  <div className="p-4 flex items-center justify-center">
+                    <img
+                      src={docPreviewModal.imageUrl}
+                      alt={docPreviewModal.title}
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg border border-gray-200"
+                    />
+                  </div>
+                ) : null}
               </div>
               {/* Footer */}
               <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex justify-between items-center">
@@ -1514,14 +1527,35 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                   {new Date().toLocaleDateString('pt-BR')}
                 </span>
                 <div className="flex gap-2">
-                  <a
-                    href={docPreviewModal.imageUrl}
-                    download={`${docPreviewModal.title.replace(/\s/g, '_')}_${docPreviewModal.studentName.replace(/\s/g, '_')}.${docPreviewModal.imageUrl.startsWith('data:application/pdf') ? 'pdf' : 'jpg'}`}
-                    className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Baixar
-                  </a>
+                  {/* Botão Imprimir (para relatórios HTML) */}
+                  {docPreviewModal.htmlContent && (
+                    <button
+                      onClick={() => {
+                        const iframe = document.querySelector<HTMLIFrameElement>('.doc-preview-iframe');
+                        if (iframe?.contentWindow) {
+                          iframe.contentWindow.print();
+                        } else {
+                          const win = window.open('', '_blank');
+                          if (win) { win.document.write(docPreviewModal.htmlContent || ''); win.document.close(); setTimeout(() => win.print(), 500); }
+                        }
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                      Imprimir
+                    </button>
+                  )}
+                  {/* Botão Baixar (para imagens) */}
+                  {docPreviewModal.imageUrl && (
+                    <a
+                      href={docPreviewModal.imageUrl}
+                      download={`${docPreviewModal.title.replace(/\s/g, '_')}_${docPreviewModal.studentName.replace(/\s/g, '_')}.${docPreviewModal.imageUrl.startsWith('data:application/pdf') ? 'pdf' : 'jpg'}`}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                      Baixar
+                    </a>
+                  )}
                   <button
                     onClick={() => setDocPreviewModal(null)}
                     className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-300 transition-colors"

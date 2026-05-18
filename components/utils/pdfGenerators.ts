@@ -1,4 +1,4 @@
-export const generateSocioeconomicaPDF = (data: any, headerImage: string = '/header_full.png') => {
+export const generateSocioeconomicaPDF = (data: any, headerImage: string = '/header_full.png', returnHtml: boolean = false): string => {
   const { nome, genero, faixa_etaria, ...otherData } = data;
   const sName = nome || 'Não informado';
   const sGender = genero || 'Não informado';
@@ -93,11 +93,15 @@ export const generateSocioeconomicaPDF = (data: any, headerImage: string = '/hea
 
   <script>window.onload = () => { setTimeout(() => { window.print(); }, 500); }</script>
 </body></html>`;
+  // Remove auto-print script for modal preview
+  const htmlClean = html.replace(/<script>.*?<\/script>/s, '');
+  if (returnHtml) return htmlClean;
   const win = window.open('', '_blank');
   if (win) { win.document.write(html); win.document.close(); }
+  return htmlClean;
 };
 
-export const generateQuantitativoPDF = (data: any, headerImage: string = '/header_full.png') => {
+export const generateQuantitativoPDF = (data: any, headerImage: string = '/header_full.png', returnHtml: boolean = false): string => {
   const { studentName, responsibleName, professorName, answers = {} } = data;
   const sName = studentName || data.nome || '';
   const rName = responsibleName || '';
@@ -161,6 +165,10 @@ export const generateQuantitativoPDF = (data: any, headerImage: string = '/heade
 
   <script>window.onload = () => { setTimeout(() => { window.print(); }, 500); }</script>
 </body></html>`;
+  // Remove auto-print script for modal preview
+  const htmlClean = html.replace(/<script>.*?<\/script>/s, '');
+  if (returnHtml) return htmlClean;
   const win = window.open('', '_blank');
   if (win) { win.document.write(html); win.document.close(); }
+  return htmlClean;
 };

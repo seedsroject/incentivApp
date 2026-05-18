@@ -116,7 +116,7 @@ const ResponsavelSection: React.FC<{
 );
 
 // ─── PDF GENERATOR ──────────────────────────────────────────────────────────
-export const generateAutorizacaoPDF = (d: any, headerImage: string = '/header_full.png') => {
+export const generateAutorizacaoPDF = (d: any, headerImage: string = '/header_full.png', returnHtml: boolean = false): string => {
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Autorização de Viagem Nacional</title>
 <style>
   body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; margin: 40px auto; max-width: 800px; padding: 20px; color: #111; }
@@ -168,8 +168,12 @@ export const generateAutorizacaoPDF = (d: any, headerImage: string = '/header_fu
   </div>
 </body></html>`;
 
+  // Remove auto-print for modal preview
+  const htmlClean = html.replace(/<script>.*?<\/script>/gs, '').replace(/setTimeout.*?;/gs, '');
+  if (returnHtml) return htmlClean;
   const w = window.open('', '_blank');
   if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+  return htmlClean;
 };
 
 // ─── HELPERS: extract city/UF from endereco string ─────────────────────────
