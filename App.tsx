@@ -354,6 +354,7 @@ const AppContent: React.FC = () => {
           const meta = getLatestDoc('PESQUISA_META');
           const socio = getLatestDoc('INDICADORES_SAUDE');
           const boletim = getLatestDoc('BOLETIM');
+          const decMatricula = getLatestDoc('DECLARACAO_MATRICULA');
 
           return {
             id: s.id,
@@ -386,7 +387,9 @@ const AppContent: React.FC = () => {
             autorizacao_viagem: auto ? auto.data : undefined,
             questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at, metadata: meta.metadata } : undefined,
             pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at, metadata: socio.metadata } : undefined,
-            boletim_escolar: boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, parcial: boletim.metadata?.parcial } : undefined,
+            // Prioridade: campo direto na tabela students > documents table (fallback)
+            boletim_escolar: s.boletim_escolar || (boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, ...boletim.metadata } : undefined),
+            declaracao_matricula: s.declaracao_matricula || (decMatricula ? { url: decMatricula.file_url || decMatricula.metadata?.url, imageUrl: decMatricula.metadata?.imageUrl || decMatricula.file_url || '', timestamp: decMatricula.created_at, ocrData: decMatricula.metadata?.ocrData } : undefined),
           };
         });
         setStudents(mapped);
@@ -1029,7 +1032,8 @@ const AppContent: React.FC = () => {
             return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: new Date().toISOString(), metadata: data.metaData } };
           }
           if (data.type === 'BOLETIM') {
-            return { ...s, boletim_escolar: { url: docUrl, timestamp: new Date().toISOString(), parcial: data.metaData?.parcial } };
+            const boletimPayload = { url: docUrl, timestamp: new Date().toISOString(), ...data.metaData };
+            return { ...s, boletim_escolar: boletimPayload };
           }
         }
         return s;
@@ -1051,6 +1055,25 @@ const AppContent: React.FC = () => {
         status: data.status || null,
       });
       if (error) console.warn('Erro ao salvar documento:', error);
+
+      // Persist boletim/declaração to student record for reload durability
+      const sid = data.studentId;
+      if (sid && isValidUUID(sid)) {
+        if (data.type === 'BOLETIM') {
+          const docUrl = data.fileUrl || data.metaData?.url || '';
+          const { error: updErr } = await supabase.from('students').update({
+            boletim_escolar: { url: docUrl, timestamp: new Date().toISOString(), ...data.metaData }
+          }).eq('id', sid);
+          if (updErr) console.warn('Erro ao vincular boletim ao aluno:', updErr);
+        }
+        if (data.type === 'DECLARACAO_MATRICULA' || data.type === 'DECLARACAO') {
+          const docUrl = data.fileUrl || data.metaData?.imageUrl || data.metaData?.url || '';
+          const { error: updErr } = await supabase.from('students').update({
+            declaracao_matricula: { url: docUrl, imageUrl: data.metaData?.imageUrl || '', timestamp: new Date().toISOString(), ocrData: data.metaData?.ocrData }
+          }).eq('id', sid);
+          if (updErr) console.warn('Erro ao vincular declaração ao aluno:', updErr);
+        }
+      }
     }
   };
 
@@ -1750,14 +1773,16 @@ const AppContent: React.FC = () => {
                   } : s
                 ));
                 // Persist declaração to student in Supabase
-                if (supabaseProjectId) {
+                if (supabaseProjectId && isValidUUID(sid)) {
                   supabase.from('students').update({
                     declaracao_matricula: {
                       ...ocr,
                       imageUrl: data.metaData?.imageUrl || '',
                       dataRegistro: data.timestamp,
                     }
-                  }).eq('id', sid);
+                  }).eq('id', sid).then(({ error }) => {
+                    if (error) console.warn('Erro ao vincular declaração ao aluno:', error);
+                  });
                 }
               }
               // Auto-attach boletim data to each linked student (Boletim Escolar)
@@ -1782,11 +1807,13 @@ const AppContent: React.FC = () => {
                         boletim_escolar: boletimData
                       } : s
                     ));
-                    // Persist boletim image to student in Supabase
-                    if (supabaseProjectId) {
+                    // Persist boletim to student record in Supabase
+                    if (supabaseProjectId && isValidUUID(report.studentId)) {
                       supabase.from('students').update({
                         boletim_escolar: boletimData
-                      }).eq('id', report.studentId);
+                      }).eq('id', report.studentId).then(({ error }) => {
+                        if (error) console.warn('Erro ao salvar boletim no aluno:', error);
+                      });
                     }
                   }
                 });

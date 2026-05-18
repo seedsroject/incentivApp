@@ -234,6 +234,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 onSave={(data: PreCadastroData) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'boletim' ? (
               <PublicBoletimUpload key="public-boletim"
+                studentId={studentId || undefined}
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'declaracao' ? (
               student ? (

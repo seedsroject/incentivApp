@@ -4,9 +4,10 @@ import { DocumentLog } from '../types';
 
 interface PublicBoletimUploadProps {
     onSave: (doc: DocumentLog) => void;
+    studentId?: string;
 }
 
-export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave }) => {
+export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave, studentId }) => {
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -78,8 +79,10 @@ export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave
                     title: `Boletim - ${finalStudentName}`,
                     description: `Boletim enviado via portal público. Classificação: ${ocrResult.periodType || 'PARCIAL'}`,
                     fileUrl: base64, // ideal era storage cloud, mas usa base64 como fallback igual resto do projeto
+                    studentId: studentId || undefined,
                     metaData: {
                         studentName: finalStudentName,
+                        url: base64,
                         grade1: g1,
                         attendance1: ocrResult.attendance1,
                         grade2: g2,
