@@ -534,7 +534,16 @@ const AppContent: React.FC = () => {
               setSupabaseProjectId(defaultAccess.project_id);
               await loadAllProjectData(defaultAccess.project_id, projectSlug);
             }
-            setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
+            
+            // Se estiver numa rota pública de formulário, não redireciona para o dashboard
+            const searchParams = new URLSearchParams(window.location.search);
+            const hashContent = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.hash.substring(1);
+            const hashParams = new URLSearchParams(hashContent);
+            const isPublicRoute = (searchParams.get('token') || hashParams.get('token')) && (searchParams.get('service') || hashParams.get('service'));
+            
+            if (!isPublicRoute) {
+              setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
+            }
           }
         }
       } catch (err) {
