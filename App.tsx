@@ -36,6 +36,34 @@ const isValidUUID = (uuid?: string | null) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
 };
 
+/**
+ * Resolve um nucleoId que pode ser um UUID real ou um slug antigo (ex: "nuc_ilheus", "dd_cajuru").
+ * Retorna o objeto Nucleo correspondente buscando primeiro por UUID, depois por padrão no email.
+ */
+const resolveNucleoFromIdOrSlug = (nucleoIdOrSlug: string | null | undefined, nucleosList: any[]): any | undefined => {
+  if (!nucleoIdOrSlug || !nucleosList.length) return undefined;
+  // 1. Busca direta por UUID
+  const byId = nucleosList.find((n: any) => n.id === nucleoIdOrSlug);
+  if (byId) return byId;
+  // 2. Busca pelo slug antigo no campo email (ex: contato.nuc_ilheus@esporte.gov.br)
+  const byEmail = nucleosList.find((n: any) => n.email && n.email.includes(`${nucleoIdOrSlug}@`));
+  if (byEmail) return byEmail;
+  // 3. Busca pelo slug antigo no campo email com prefixo "contato."
+  const byEmailPrefix = nucleosList.find((n: any) => n.email && n.email.includes(`contato.${nucleoIdOrSlug}@`));
+  if (byEmailPrefix) return byEmailPrefix;
+  // 4. Busca parcial no nome (ex: "nuc_ilheus" → busca "ilhéus" no nome, sem acentos)
+  const slugLower = nucleoIdOrSlug.toLowerCase().replace(/^(nuc_|dd_|fut_)/, '');
+  if (slugLower.length >= 3) {
+    const byNome = nucleosList.find((n: any) => {
+      const nomeLower = (n.nome || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return nomeLower.includes(slugLower);
+    });
+    if (byNome) return byNome;
+  }
+  return undefined;
+};
+
 // --- MOCK DATA SERVICES ---
 const generateStockDetails = (status: 'LOW' | 'MEDIUM' | 'HIGH') => {
   const items = [
@@ -1064,10 +1092,10 @@ const AppContent: React.FC = () => {
     }));
     // Persistir no Supabase
     if (student?.id) {
-      await supabase.from('student_declarations').delete().eq('student_id', student.id).eq('type', 'VIAGEM');
+      await supabase.from('student_declarations').delete().eq('student_id', student.id).eq('type', 'AUTORIZACAO_VIAGEM');
       await supabase.from('student_declarations').insert({
         student_id: student.id,
-        type: 'VIAGEM',
+        type: 'AUTORIZACAO_VIAGEM',
         data: autorizacao,
         assinatura: (autorizacao as any).assinatura_responsavel || null,
         data_assinatura: (autorizacao as any).data_assinatura || null,
@@ -1078,7 +1106,7 @@ const AppContent: React.FC = () => {
   // --- RENDER LOGIC ---
 
   if (view === AppView.PUBLIC_FORM) {
-    const publicNucleo = nucleos.find(n => n.id === navParams.nucleoId) || filteredNucleos.find(n => n.id === navParams.nucleoId);
+    const publicNucleo = resolveNucleoFromIdOrSlug(navParams.nucleoId, nucleos) || resolveNucleoFromIdOrSlug(navParams.nucleoId, filteredNucleos);
     return (
       <PublicFormView
         serviceId={navParams.service}
