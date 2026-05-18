@@ -46,7 +46,7 @@ interface AdminMapProps {
     selectedNucleoId?: string | null;
     onSelectNucleo: (id: string) => void;
     filterStatus?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
-    activeTab?: 'estoque' | 'alunos' | 'nucleos';
+    activeTab?: 'estoque' | 'alunos' | 'nucleos' | 'acessos';
     students?: StudentDraft[];
 }
 
