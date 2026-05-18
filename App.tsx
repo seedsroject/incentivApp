@@ -519,6 +519,12 @@ const AppContent: React.FC = () => {
   const projectStudents = useMemo(() => students.filter(s => !s.projectId || s.projectId === activeProject), [students, activeProject]);
   const projectPreCadastros = useMemo(() => preCadastros.filter(p => !p.projectId || p.projectId === activeProject), [preCadastros, activeProject]);
 
+  // Alunos filtrados pelo núcleo do usuário logado
+  const nucleoStudents = useMemo(() => {
+    if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo: vê todos
+    return projectStudents.filter(s => s.nucleo_id === user.nucleo_id || !s.nucleo_id);
+  }, [projectStudents, user?.nucleo_id]);
+
   // Navigation Params
   const [navParams, setNavParams] = useState<any>({});
 
@@ -1608,7 +1614,7 @@ const AppContent: React.FC = () => {
         {view === AppView.FEATURE_OCR && (
           <CameraOCR
             onBack={() => setView(AppView.DASHBOARD)}
-            savedStudents={students}
+            savedStudents={nucleoStudents}
             onSave={handleSaveStudent}
             nucleoId={user?.nucleo_id || undefined}
             currentNucleo={nucleos.find(n => n.id === user?.nucleo_id)}
