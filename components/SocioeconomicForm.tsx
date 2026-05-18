@@ -53,51 +53,49 @@ const QUESTIONS: QuestionConfig[] = [
 // --- TEMPLATE DE VISUALIZAÇÃO INTEGRAL ---
 const SocioTemplate: React.FC<{ data: SocioeconomicData, headerImage: string }> = ({ data, headerImage }) => {
     return (
-        <div className="bg-white text-black font-sans h-full p-2">
+        <div className="bg-white text-black font-sans h-full p-6" style={{ maxWidth: '800px', margin: '0 auto' }}>
             {/* CABEÇALHO OFICIAL */}
-            <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
-                <img src={headerImage} alt="Header" className="h-20 object-contain mb-4 w-full max-w-[210mm]" />
+            <div className="flex flex-col items-center justify-center mb-6">
+                <img src={headerImage} alt="Header" className="h-[60px] object-contain mb-5 w-full max-w-[100%]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 <div className="text-center">
-                    <h1 className="text-lg font-bold text-black uppercase">Indicadores Socioeconômicos e de Saúde</h1>
-                    <h2 className="text-sm font-bold text-gray-600 uppercase">Escolinha de Triathlon - Núcleo Campinas</h2>
+                    <h1 className="text-[16px] font-bold text-black uppercase m-0 leading-tight">Indicadores Socioeconômicos e de Saúde</h1>
+                    <h2 className="text-[13px] font-bold text-[#444] uppercase mt-1 m-0 leading-tight">Escolinha de Triathlon - Núcleo Campinas</h2>
                 </div>
             </div>
 
+            <hr style={{ borderTop: '2px solid black', margin: '0 0 20px 0' }} />
+
             {/* IDENTIFICAÇÃO EM DESTAQUE */}
-            <div className="bg-gray-100 p-3 rounded mb-6 border border-gray-300">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <span className="block text-[10px] font-bold text-gray-500 uppercase">Nome do Atleta</span>
-                        <span className="block text-sm font-bold text-black">{data.nome}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div>
-                            <span className="block text-[10px] font-bold text-gray-500 uppercase">Gênero</span>
-                            <span className="block text-sm font-bold text-black">{data.genero}</span>
-                        </div>
-                        <div>
-                            <span className="block text-[10px] font-bold text-gray-500 uppercase">Idade</span>
-                            <span className="block text-sm font-bold text-black">{data.faixa_etaria}</span>
-                        </div>
-                    </div>
+            <div className="bg-[#f4f6f8] border border-[#ced4da] rounded p-4 mb-8 flex">
+                <div className="flex-[2]">
+                    <span className="block text-[9px] font-bold text-[#6c757d] uppercase mb-1">Nome do Atleta</span>
+                    <span className="block text-[14px] font-bold text-black">{data.nome || 'Não informado'}</span>
+                </div>
+                <div className="flex-1">
+                    <span className="block text-[9px] font-bold text-[#6c757d] uppercase mb-1">Gênero</span>
+                    <span className="block text-[14px] font-bold text-black">{data.genero || 'Não informado'}</span>
+                </div>
+                <div className="flex-1">
+                    <span className="block text-[9px] font-bold text-[#6c757d] uppercase mb-1">Idade</span>
+                    <span className="block text-[14px] font-bold text-black">{data.faixa_etaria || 'Não informado'}</span>
                 </div>
             </div>
 
             {/* GRADEL DE RESPOSTAS */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                {QUESTIONS.slice(2).map((q) => ( // Pula Nome e Gênero que já estão no destaque
-                    <div key={q.id} className="border-b border-gray-100 pb-1 page-break-inside-avoid">
-                        <p className="text-[9px] font-bold text-gray-500 uppercase mb-0.5">{q.label.replace(/^\d+\.\s*/, '')}</p>
-                        <p className="text-xs font-medium text-black">
-                            {data[q.id] || <span className="text-gray-300 italic">Não informado</span>}
+            <div className="flex flex-wrap gap-x-[40px] gap-y-[20px]">
+                {QUESTIONS.slice(2).filter(q => q.id !== 'faixa_etaria').map((q) => (
+                    <div key={q.id} className="w-[calc(50%-20px)] border-b border-[#e9ecef] pb-2 mb-2 page-break-inside-avoid">
+                        <p className="text-[9px] font-bold text-[#6c757d] uppercase mb-1">{q.label.replace(/^\d+\.\s*/, '')}</p>
+                        <p className={`text-[12px] font-bold ${!data[q.id] || String(data[q.id]).trim() === '' ? 'text-[#adb5bd] italic font-normal' : 'text-black'}`}>
+                            {data[q.id] || 'Não informado'}
                         </p>
                     </div>
                 ))}
             </div>
 
             {/* RODAPÉ */}
-            <div className="mt-8 pt-4 border-t border-gray-300 text-center">
-                <p className="text-[9px] text-gray-400">Documento gerado digitalmente via Sistema de Gestão Gov.br</p>
+            <div className="mt-10 pt-4 border-t border-[#e9ecef] text-center">
+                <p className="text-[9px] text-[#adb5bd]">Documento gerado digitalmente via Sistema de Gestão Gov.br</p>
             </div>
         </div>
     );

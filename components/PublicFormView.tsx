@@ -155,6 +155,11 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
     if (projectId === 'FUTEBOL') return 'Escolinha de Futebol';
     return 'Escolinha de Triathlon';
   }, [projectId]);
+  const projectHeader = useMemo(() => {
+    if (projectId === 'DANIEL_DIAS') return '/Banner_Relatorio_Daniel.png';
+    if (projectId === 'FUTEBOL') return '/Banner_relatorio_futebol.png';
+    return '/header_full.png';
+  }, [projectId]);
 
   // For non-wizard services: fetch student from localStorage
   const student: StudentDraft | undefined = React.useMemo(() => {
@@ -331,6 +336,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 studentName={wizardStudentName || wizardStudent?.nome}
                 studentData={wizardStudentData}
                 isPublic={true}
+                headerImage={projectHeader}
                 onSave={async (autorizacao: AutorizacaoViagem) => {
                   await onSave({ type: 'autorizacao_viagem', studentId: wizardStudentId, autorizacao });
                   advance(3);
@@ -353,6 +359,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 onBack={() => { }}
                 initialMode="DIGITAL_FORM"
                 defaultStudentName={wizardStudentName || ''}
+                headerImage={projectHeader}
                 onSave={(data: DocumentLog) => {
                   onSave({ ...data, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });
                   advance(4);
@@ -436,6 +443,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 defaultStudentName={wizardStudentName || ''}
                 defaultResponsibleName={wizardStudentData?.nome_responsavel || ''}
                 defaultProfessorName={currentNucleo?.nome ? currentNucleo.nome.split('-')[0].trim() : ''}
+                headerImage={projectHeader}
                 onSave={(data: DocumentLog) => {
                   onSave({ ...data, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });
                   advance(7);

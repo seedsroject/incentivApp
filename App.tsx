@@ -1719,6 +1719,7 @@ const AppContent: React.FC = () => {
             onSaveDeclaracaoProntidao={handleSaveDeclaracaoProntidao}
             baseUrl={window.location.origin + window.location.pathname}
             preCadastros={preCadastros}
+            headerImage={projectAssets.header}
           />
         )}
 

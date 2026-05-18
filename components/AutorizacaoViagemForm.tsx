@@ -7,6 +7,7 @@ interface Props {
   studentData?: StudentDraft; // Dados já preenchidos na ficha de inscrição
   onSave: (data: AutorizacaoViagem) => void;
   isPublic?: boolean;
+  headerImage?: string;
 }
 
 // ─── SIGNATURE PAD ──────────────────────────────────────────────────────────
@@ -115,42 +116,60 @@ const ResponsavelSection: React.FC<{
 );
 
 // ─── PDF GENERATOR ──────────────────────────────────────────────────────────
-export const generateAutorizacaoPDF = (d: any) => {
+export const generateAutorizacaoPDF = (d: any, headerImage: string = '/header_full.png') => {
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Autorização de Viagem Nacional</title>
-<style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.6;margin:40px 50px;color:#111}
-h1{text-align:center;font-size:14pt;margin-bottom:5px}
-.sub{text-align:center;font-size:9pt;color:#555;margin-bottom:20px}
-.field{border-bottom:1px solid #333;min-width:80px;display:inline-block;padding:0 4px;font-weight:bold}
-.check{font-weight:bold} .sig-area{margin-top:40px;display:flex;gap:40px;justify-content:center}
-.sig-block{text-align:center;flex:1;max-width:300px}
-.sig-line{border-top:1px solid #333;margin-top:60px;padding-top:5px;font-size:10pt}
-.sig-img{max-height:60px;margin-top:10px}
-p{margin:6px 0}</style></head><body>
-<h1>FORMULÁRIO DE AUTORIZAÇÃO DE VIAGEM NACIONAL</h1>
-<p class="sub">(Res. Nº 295/2019 – CNJ) Válida até <span class="field">${d.validade_data || '____/____/20_____'}</span></p>
-<p>Eu, <span class="field">${d.resp1_nome || ''}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.resp1_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.resp1_orgao_expedidor || ''}</span>, na data de <span class="field">${d.resp1_data_expedicao || ''}</span>.</p>
-<p>CPF nº <span class="field">${d.resp1_cpf || ''}</span>.</p>
-<p>Endereço de domicílio <span class="field">${d.resp1_endereco || ''}</span>. Cidade <span class="field">${d.resp1_cidade || ''}</span>. UF: <span class="field">${d.resp1_uf || ''}</span>. País: <span class="field">${d.resp1_pais || ''}</span>.</p>
-<p>Telefone de contato: <span class="field">${d.resp1_telefone || ''}</span></p>
-<p>na qualidade de <span class="check">(${d.resp1_qualidade === 'MAE' ? 'X' : ' '}) MÃE / (${d.resp1_qualidade === 'PAI' ? 'X' : ' '}) PAI / (${d.resp1_qualidade === 'TUTOR' ? 'X' : ' '}) TUTOR(A) / (${d.resp1_qualidade === 'GUARDIAO' ? 'X' : ' '}) GUARDIÃ(O)</span></p>
-${d.resp2_nome ? `<p>E Eu, <span class="field">${d.resp2_nome}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.resp2_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.resp2_orgao_expedidor || ''}</span>, na data de <span class="field">${d.resp2_data_expedicao || ''}</span>.</p>
-<p>CPF nº <span class="field">${d.resp2_cpf || ''}</span>.</p>
-<p>Endereço de domicílio <span class="field">${d.resp2_endereco || ''}</span>. Cidade <span class="field">${d.resp2_cidade || ''}</span>. UF: <span class="field">${d.resp2_uf || ''}</span>. País: <span class="field">${d.resp2_pais || ''}</span>.</p>
-<p>Telefone de contato: <span class="field">${d.resp2_telefone || ''}</span></p>
-<p>na qualidade de <span class="check">(${d.resp2_qualidade === 'MAE' ? 'X' : ' '}) MÃE / (${d.resp2_qualidade === 'PAI' ? 'X' : ' '}) PAI / (${d.resp2_qualidade === 'TUTOR' ? 'X' : ' '}) TUTOR(A) / (${d.resp2_qualidade === 'GUARDIAO' ? 'X' : ' '}) GUARDIÃ(O)</span></p>` : ''}
-<p><b>AUTORIZO(AMOS)</b> a circular livremente, dentro do território nacional, desacompanhada(o) <span class="field">${d.crianca_nome || ''}</span> nascida(o) em <span class="field">${d.crianca_nascimento || ''}</span>, natural de <span class="field">${d.crianca_naturalidade || ''}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.crianca_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.crianca_orgao_expedidor || ''}</span>, na data de <span class="field">${d.crianca_data_expedicao || ''}</span>.</p>
-<p>CPF nº <span class="field">${d.crianca_cpf || ''}</span>.</p>
-<p>Endereço de domicílio <span class="field">${d.crianca_endereco || ''}</span>. Cidade <span class="field">${d.crianca_cidade || ''}</span>. UF: <span class="field">${d.crianca_uf || ''}</span>. País: <span class="field">${d.crianca_pais || ''}</span>.</p>
-<p style="margin-top:20px">Assinatura(s) (reconhecer firmas por semelhança ou autenticidade):</p>
-<div class="sig-area">
-<div class="sig-block">${d.resp1_assinatura ? `<img src="${d.resp1_assinatura}" class="sig-img"/>` : ''}<div class="sig-line">1) ${d.resp1_nome || ''}</div></div>
-${d.resp2_assinatura ? `<div class="sig-block"><img src="${d.resp2_assinatura}" class="sig-img"/><div class="sig-line">2) ${d.resp2_nome || ''}</div></div>` : `<div class="sig-block"><div class="sig-line">2) ________________________</div></div>`}
-</div>
-<p style="text-align:center;margin-top:10px;font-size:9pt;color:#555">(Reconhecimento da(s) assinatura(s) abaixo e no verso)</p>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; margin: 40px auto; max-width: 800px; padding: 20px; color: #111; }
+  .header-logos { text-align: center; margin-bottom: 20px; }
+  .header-logos img { max-height: 60px; max-width: 100%; object-fit: contain; }
+  h1 { text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; margin-top: 0; }
+  .sub { text-align: center; font-size: 11px; font-weight: bold; color: #444; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
+  .header-line { border-top: 2px solid #000; margin-bottom: 20px; }
+  .field { border-bottom: 1px solid #333; min-width: 80px; display: inline-block; padding: 0 4px; font-weight: bold; }
+  .check { font-weight: bold; }
+  .sig-area { margin-top: 40px; display: flex; gap: 40px; justify-content: center; }
+  .sig-block { text-align: center; flex: 1; max-width: 300px; }
+  .sig-line { border-top: 1px solid #333; margin-top: 60px; padding-top: 5px; font-size: 10pt; }
+  .sig-img { max-height: 60px; margin-top: 10px; }
+  p { margin: 8px 0; }
+</style></head><body>
+  <div class="header-logos">
+    <img src="${headerImage}" alt="Logos" onerror="this.style.display='none';" />
+  </div>
+  <h1>FORMULÁRIO DE AUTORIZAÇÃO DE VIAGEM NACIONAL</h1>
+  <div class="sub">(Res. Nº 295/2019 – CNJ) Válida até <span class="field">${d.validade_data || '____/____/20_____'}</span></div>
+  <div class="header-line"></div>
+  
+  <p>Eu, <span class="field">${d.resp1_nome || ''}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.resp1_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.resp1_orgao_expedidor || ''}</span>, na data de <span class="field">${d.resp1_data_expedicao || ''}</span>.</p>
+  <p>CPF nº <span class="field">${d.resp1_cpf || ''}</span>.</p>
+  <p>Endereço de domicílio <span class="field">${d.resp1_endereco || ''}</span>. Cidade <span class="field">${d.resp1_cidade || ''}</span>. UF: <span class="field">${d.resp1_uf || ''}</span>. País: <span class="field">${d.resp1_pais || ''}</span>.</p>
+  <p>Telefone de contato: <span class="field">${d.resp1_telefone || ''}</span></p>
+  <p>na qualidade de <span class="check">(${d.resp1_qualidade === 'MAE' ? 'X' : ' '}) MÃE / (${d.resp1_qualidade === 'PAI' ? 'X' : ' '}) PAI / (${d.resp1_qualidade === 'TUTOR' ? 'X' : ' '}) TUTOR(A) / (${d.resp1_qualidade === 'GUARDIAO' ? 'X' : ' '}) GUARDIÃ(O)</span></p>
+  ${d.resp2_nome ? `<p>E Eu, <span class="field">${d.resp2_nome}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.resp2_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.resp2_orgao_expedidor || ''}</span>, na data de <span class="field">${d.resp2_data_expedicao || ''}</span>.</p>
+  <p>CPF nº <span class="field">${d.resp2_cpf || ''}</span>.</p>
+  <p>Endereço de domicílio <span class="field">${d.resp2_endereco || ''}</span>. Cidade <span class="field">${d.resp2_cidade || ''}</span>. UF: <span class="field">${d.resp2_uf || ''}</span>. País: <span class="field">${d.resp2_pais || ''}</span>.</p>
+  <p>Telefone de contato: <span class="field">${d.resp2_telefone || ''}</span></p>
+  <p>na qualidade de <span class="check">(${d.resp2_qualidade === 'MAE' ? 'X' : ' '}) MÃE / (${d.resp2_qualidade === 'PAI' ? 'X' : ' '}) PAI / (${d.resp2_qualidade === 'TUTOR' ? 'X' : ' '}) TUTOR(A) / (${d.resp2_qualidade === 'GUARDIAO' ? 'X' : ' '}) GUARDIÃ(O)</span></p>` : ''}
+  
+  <div style="background-color: #f4f6f8; border: 1px solid #ced4da; border-radius: 4px; padding: 15px; margin-top: 20px; margin-bottom: 20px;">
+    <p style="margin: 0;"><b>AUTORIZO(AMOS)</b> a circular livremente, dentro do território nacional, desacompanhada(o) <span class="field">${d.crianca_nome || ''}</span> nascida(o) em <span class="field">${d.crianca_nascimento || ''}</span>, natural de <span class="field">${d.crianca_naturalidade || ''}</span>, Cédula de Identidade/passaporte nº <span class="field">${d.crianca_identidade || ''}</span>, expedida(o) pela(o) <span class="field">${d.crianca_orgao_expedidor || ''}</span>, na data de <span class="field">${d.crianca_data_expedicao || ''}</span>.</p>
+    <p style="margin-top: 8px; margin-bottom: 0;">CPF nº <span class="field">${d.crianca_cpf || ''}</span>.</p>
+    <p style="margin-top: 8px; margin-bottom: 0;">Endereço de domicílio <span class="field">${d.crianca_endereco || ''}</span>. Cidade <span class="field">${d.crianca_cidade || ''}</span>. UF: <span class="field">${d.crianca_uf || ''}</span>. País: <span class="field">${d.crianca_pais || ''}</span>.</p>
+  </div>
+  
+  <p style="margin-top:20px; font-weight: bold;">Assinatura(s) (reconhecer firmas por semelhança ou autenticidade):</p>
+  <div class="sig-area">
+    <div class="sig-block">${d.resp1_assinatura ? `<img src="${d.resp1_assinatura}" class="sig-img"/>` : ''}<div class="sig-line">1) ${d.resp1_nome || ''}</div></div>
+    ${d.resp2_assinatura ? `<div class="sig-block"><img src="${d.resp2_assinatura}" class="sig-img"/><div class="sig-line">2) ${d.resp2_nome || ''}</div></div>` : `<div class="sig-block"><div class="sig-line">2) ________________________</div></div>`}
+  </div>
+  <p style="text-align:center;margin-top:10px;font-size:9px;color:#adb5bd">(Reconhecimento da(s) assinatura(s) abaixo e no verso)</p>
+  <div style="margin-top: 20px; text-align: center; font-size: 9px; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 15px;">
+    Documento gerado digitalmente via Sistema de Gestão Gov.br
+  </div>
 </body></html>`;
 
   const w = window.open('', '_blank');
-  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400); }
+  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
 };
 
 // ─── HELPERS: extract city/UF from endereco string ─────────────────────────
@@ -169,7 +188,7 @@ const parseEndereco = (endereco?: string): { rua: string; cidade: string; uf: st
 };
 
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
-export const AutorizacaoViagemForm: React.FC<Props> = ({ studentName, studentData, onSave, isPublic = false }) => {
+export const AutorizacaoViagemForm: React.FC<Props> = ({ studentName, studentData, onSave, isPublic = false, headerImage = '/header_full.png' }) => {
   // Pre-fill from enrollment data
   const parsed = parseEndereco(studentData?.endereco);
 
@@ -272,7 +291,7 @@ export const AutorizacaoViagemForm: React.FC<Props> = ({ studentName, studentDat
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Opções de Assinatura</p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <button type="button" onClick={() => generateAutorizacaoPDF(data)}
+            <button type="button" onClick={() => generateAutorizacaoPDF(data, headerImage)}
               className="flex-1 py-3 px-4 bg-gray-800 text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2 shadow-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               Baixar PDF para Assinatura GOV.BR

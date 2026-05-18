@@ -22,6 +22,7 @@ interface CameraOCRProps {
   onSaveDeclaracaoProntidao?: (studentIdOrNome: string, declaracao: DeclaracaoProntidao) => void;
   baseUrl?: string; // Para gerar o link externo da declaração
   preCadastros?: PreCadastroData[]; // Fila de espera inteligente
+  headerImage?: string; // Imagem do cabeçalho de acordo com o projeto
 }
 
 type Mode = 'MENU' | 'FORM_DIGITAL' | 'CAMERA_SCAN' | 'SCAN_REVIEW' | 'SUCCESS' | 'LIST_VIEW' | 'DETAIL_VIEW';
@@ -305,7 +306,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   onSaveDeclaracaoProntidao,
   baseUrl = '',
   preCadastros = [],
-  currentNucleo
+  currentNucleo,
+  headerImage = '/header_full.png'
 }) => {
   const formatDate = (val: string) => {
     val = val.replace(/\D/g, '');
@@ -1332,7 +1334,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     const key = student.id || student.nome;
                                     if (student.questionario_quantitativo) {
                                       if (student.questionario_quantitativo.metadata) {
-                                        generateQuantitativoPDF({ nome: student.nome, ...student.questionario_quantitativo.metadata });
+                                        generateQuantitativoPDF({ nome: student.nome, ...student.questionario_quantitativo.metadata }, headerImage);
                                       } else if (student.questionario_quantitativo.url) {
                                         window.open(student.questionario_quantitativo.url, '_blank');
                                       } else {
@@ -1361,7 +1363,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     const key = student.id || student.nome;
                                     if (student.pesquisa_socioeconomica) {
                                       if (student.pesquisa_socioeconomica.metadata) {
-                                        generateSocioeconomicaPDF({ nome: student.nome, ...student.pesquisa_socioeconomica.metadata });
+                                        generateSocioeconomicaPDF({ nome: student.nome, ...student.pesquisa_socioeconomica.metadata }, headerImage);
                                       } else if (student.pesquisa_socioeconomica.url) {
                                         window.open(student.pesquisa_socioeconomica.url, '_blank');
                                       } else {
@@ -1418,7 +1420,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                 <button
                                   onClick={() => {
                                     if (student.autorizacao_viagem) {
-                                      generateAutorizacaoPDF(student.autorizacao_viagem);
+                                      generateAutorizacaoPDF(student.autorizacao_viagem, headerImage);
                                     } else {
                                       const key = student.id || student.nome;
                                       const url = `${baseUrl}?service=autorizacao&studentId=${encodeURIComponent(key)}&token=nucleo`;

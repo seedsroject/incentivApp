@@ -50,111 +50,43 @@ const MetaTemplate: React.FC<{
   };
 
   return (
-    <div className="bg-white text-black font-sans h-full freq-report-content">
-      {/* ━━━ PAGE 1: COVER ━━━ */}
-      <div className="freq-page freq-cover-page">
-        <div className="freq-cover-logos">
-          <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-        </div>
-
-        <div className="freq-cover-block">
-          <div className="freq-cover-inner">
-            <div className="freq-cover-spacer" style={{ height: 180 }}></div>
-            <h1 contentEditable={isEditing} suppressContentEditableWarning className="freq-cover-title">
-              ANEXO META QUALITATIVA 01 - RELATÓRIO DE<br/>ASSIDUIDADE E APROVEITAMENTO ESCOLAR
-            </h1>
-          </div>
-        </div>
-
-        <div className="freq-cover-bottom">
-          <div className="freq-cover-bottom-project" contentEditable={isEditing} suppressContentEditableWarning>
-            PROJETO {projectNameUpper}
-          </div>
-          <div className="freq-cover-bottom-citybox" contentEditable={isEditing} suppressContentEditableWarning>
-            [MUNICÍPIO] – [UF]<br/>{currentYear}
-          </div>
-          <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning>
-            RELATÓRIO DA META QUALITATIVA DO PROJETO "{projectNameUpper}",<br/>
-            REFERENTE AO ALUNO: {studentName.toUpperCase()}
-          </div>
-        </div>
-
-        {/* Wave SVG decoration */}
-        <svg className="freq-cover-wave" viewBox="0 0 900 80" preserveAspectRatio="none">
-          <path d="M0,40 C200,80 400,0 600,40 C700,60 800,30 900,50 L900,80 L0,80 Z" fill="#4a8c3f" opacity="0.7"/>
-          <path d="M0,50 C150,20 350,70 550,40 C700,15 800,50 900,35 L900,80 L0,80 Z" fill="#2d6a2e" opacity="0.5"/>
-          <path d="M0,60 C200,40 400,70 600,55 C750,45 850,65 900,50 L900,80 L0,80 Z" fill="#e0e0e0" opacity="0.4"/>
-        </svg>
-      </div>
-
-      {/* ━━━ PAGE 2: TITLE PAGE ━━━ */}
-      <div className="freq-page freq-title-page">
-        <div className="freq-cover-logos" style={{ marginBottom: 20 }}>
-          <img src={headerImage} alt="Header" style={{ width: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-        </div>
-        <div className="freq-title-page-subtitle" contentEditable={isEditing} suppressContentEditableWarning>
-          PROJETO {projectNameUpper}
-        </div>
-        <div className="freq-title-page-body">
-          <h2 contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 24, fontWeight: 900, color: '#1a5276', lineHeight: 1.3, textAlign: 'center', margin: 0 }}>
-            ANEXO META QUALITATIVA 01<br/>RELATÓRIO DE ASSIDUIDADE E APROVEITAMENTO
-          </h2>
-          <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 11, color: '#555', textAlign: 'center', marginTop: 4 }}>
-            PROJETO {projectNameUpper}
-          </p>
-          <div style={{ marginTop: 50, textAlign: 'center' }}>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 15, fontWeight: 700, color: '#333' }}>
-              [MUNICÍPIO] | [UF]
-            </p>
-            <p contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 15, fontWeight: 700, color: '#1a5276' }}>
-              {currentYear}
-            </p>
-          </div>
-        </div>
-        {/* Wave SVG decoration */}
-        <svg className="freq-title-wave" viewBox="0 0 900 60" preserveAspectRatio="none">
-          <path d="M0,30 C200,60 400,10 600,40 C750,55 850,20 900,35 L900,60 L0,60 Z" fill="#2d6ac4" opacity="0.25"/>
-          <path d="M0,40 C150,15 350,55 550,30 C700,10 850,45 900,25 L900,60 L0,60 Z" fill="#4472c4" opacity="0.3"/>
-        </svg>
-      </div>
-
-      {/* ━━━ PAGE 3: QUESTIONNAIRE DATA ━━━ */}
+    <div className="bg-white text-black font-sans h-full freq-report-content" style={{ maxWidth: '800px', margin: '0 auto', padding: '40px' }}>
       <div className="freq-page relative">
         {/* CABEÇALHO OFICIAL */}
-        <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-gray-800 pb-4">
-          <img src={headerImage} alt="Header" className="h-20 object-contain mb-4 w-full max-w-[210mm]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+        <div className="flex flex-col items-center justify-center mb-6 border-b-2 border-black pb-4">
+          <img src={headerImage} alt="Header" className="h-16 object-contain w-full max-w-[210mm]" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
         </div>
 
         {/* TÍTULO */}
-        <div className="text-center mb-6">
-          <h1 className="text-lg font-bold text-black uppercase underline decoration-2 underline-offset-4">QUESTIONÁRIO DE META QUALITATIVA</h1>
-          <h2 className="text-lg font-bold text-black uppercase mt-1">{projectNameUpper}</h2>
+        <div className="text-center mb-8">
+          <h1 className="text-[16px] font-bold text-black uppercase underline decoration-2 underline-offset-4 m-0 leading-tight">QUESTIONÁRIO DE META QUALITATIVA</h1>
+          <h2 className="text-[16px] font-bold text-black uppercase mt-1 m-0 leading-tight">{projectNameUpper}</h2>
         </div>
 
         {/* TABELA DE IDENTIFICAÇÃO */}
-        <div className="border border-black mb-8">
+        <div className="border-[2px] border-black mb-8 w-full" style={{ borderCollapse: 'collapse' }}>
           <div className="flex border-b border-black">
-            <div className="w-1/3 p-2 font-bold text-sm border-r border-black flex items-center">Nome completo do Aluno</div>
-            <div className="w-2/3 p-2 text-sm font-medium uppercase">{studentName}</div>
+            <div className="w-[40%] p-2.5 font-bold text-[13px] border-r border-black flex items-center">Nome completo do Aluno</div>
+            <div className="w-[60%] p-2.5 text-[13px] uppercase">{studentName}</div>
           </div>
           <div className="flex border-b border-black">
-            <div className="w-1/3 p-2 font-bold text-sm border-r border-black flex items-center">Nome do Responsável</div>
-            <div className="w-2/3 p-2 text-sm font-medium uppercase">{responsibleName}</div>
+            <div className="w-[40%] p-2.5 font-bold text-[13px] border-r border-black flex items-center">Nome do Responsável</div>
+            <div className="w-[60%] p-2.5 text-[13px] uppercase">{responsibleName}</div>
           </div>
           <div className="flex">
-            <div className="w-1/3 p-2 font-bold text-sm border-r border-black flex items-center">Nome do Professor</div>
-            <div className="w-2/3 p-2 text-sm font-medium uppercase">{professorName}</div>
+            <div className="w-[40%] p-2.5 font-bold text-[13px] border-r border-black flex items-center">Nome do Professor</div>
+            <div className="w-[60%] p-2.5 text-[13px] uppercase">{professorName}</div>
           </div>
         </div>
 
         {/* PERGUNTAS */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {questions.map((q, idx) => (
             <div key={q.id} className="pb-2 page-break-inside-avoid">
-              <p className="text-sm font-bold text-black uppercase mb-2 leading-tight">
-                {idx + 1}. <span className="text-red-600">{q.target}</span>, {q.text}
+              <p className="text-[13px] font-bold text-black uppercase mb-3 leading-tight">
+                {idx + 1}. <span className="text-[#d32f2f]">{q.target}</span>, {q.text}
               </p>
-              <div className="pl-4 space-y-1">
+              <div className="pl-6 space-y-1.5">
                 {['MUITO_BOM', 'BOM', 'REGULAR', 'RUIM'].map((opt) => (
                   <div key={opt}>
                     {renderOption(opt, answers[q.id])}
@@ -163,17 +95,6 @@ const MetaTemplate: React.FC<{
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Placeholder para Consolidado de Dados Futuro */}
-        <div className="mt-12 p-6 border-2 border-dashed border-gray-300 bg-gray-50 text-center text-gray-500 text-sm page-break-inside-avoid">
-          <p className="font-bold mb-2">Área reservada para os dados exclusivos do relatório consolidado (Tabelas e Gráficos)</p>
-          <p>Esta seção será preenchida assim que os dados finais forem definidos.</p>
-        </div>
-
-        {/* RODAPÉ */}
-        <div className="mt-12 pt-8">
-          <p className="text-xs text-gray-500 text-center">Documento gerado digitalmente via Sistema de Gestão Gov.br</p>
         </div>
       </div>
     </div>
