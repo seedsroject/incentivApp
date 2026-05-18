@@ -175,15 +175,14 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
               className="w-full border border-gray-300 rounded-lg p-2.5 text-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
             >
               <option value="">Todos os Núcleos</option>
-              {nucleos.map(n => {
-                const displayName = n.nome.split('|')[0].trim();
-                const fullLabel = n.address ? `${n.nome} — ${n.address}` : n.city ? `${n.nome} — ${n.city}` : n.nome;
-                return (
-                  <option key={n.id} value={displayName}>
-                    {fullLabel}
-                  </option>
-                );
-              })}
+              {nucleos
+                .slice()
+                .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                .map(n => (
+                <option key={n.id} value={n.id}>
+                  {n.nome}
+                </option>
+              ))}
             </select>
           </div>
           <div className="md:w-64">
@@ -207,13 +206,16 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
           .filter(report => {
             if (filterYear && report.year !== filterYear) return false;
             if (filterNucleo) {
-              // reports.city tem o formato "Cidade - UF" ou "Cidade – UF"
-              // Vamos comparar se o displayName do núcleo escolhido está contido na city do report
-              // Como os placehoders tem city="Cidade", vamos limpar
-              const normalizedReportCity = report.city.toLowerCase().replace(/–|-/g, '');
-              const normalizedFilter = filterNucleo.toLowerCase();
-              if (!normalizedReportCity.includes(normalizedFilter) && report.city !== 'Cidade') {
+              // filterNucleo agora é o UUID do núcleo selecionado
+              // Filtra relatórios pela cidade do núcleo selecionado
+              const selectedNucleoObj = nucleos.find(n => n.id === filterNucleo);
+              if (selectedNucleoObj) {
+                const normalizedNome = selectedNucleoObj.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const normalizedCity = report.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/–|-/g, '');
+                const cityPart = normalizedNome.split('|')[0].trim();
+                if (!normalizedCity.includes(cityPart) && report.city !== 'Cidade') {
                   return false;
+                }
               }
             }
             return true;
@@ -362,14 +364,14 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
                     className="w-full border border-gray-300 rounded-lg p-2 text-gray-700 focus:border-blue-500 focus:outline-none"
                   >
                     <option value="">Selecione um Núcleo</option>
-                    {nucleos.map(n => {
-                      const displayName = n.nome.split('|')[0].trim();
-                      return (
-                        <option key={n.id} value={displayName}>
-                          {displayName}
-                        </option>
-                      );
-                    })}
+                    {nucleos
+                      .slice()
+                      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                      .map(n => (
+                      <option key={n.id} value={n.nome}>
+                        {n.nome}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
