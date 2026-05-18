@@ -350,6 +350,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   const [prontidaoModalStudent, setProntidaoModalStudent] = useState<StudentDraft | null>(null);
   // State para o popup de pendências de material (alunos inativos)
   const [pendingItemsStudent, setPendingItemsStudent] = useState<StudentDraft | null>(null);
+  // State para o modal de preview de documentos (boletim, declaração de matrícula)
+  const [docPreviewModal, setDocPreviewModal] = useState<{ title: string; imageUrl: string; studentName: string } | null>(null);
   // State para o painel de detalhes/edição do aluno (aberto ao clicar no ≡)
   const [detailStudent, setDetailStudent] = useState<StudentDraft | null>(null);
   const [detailEdits, setDetailEdits] = useState<StudentDraft | null>(null);
@@ -1161,13 +1163,19 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                   </span>
                                   {/* Boletim Escolar */}
                                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0
-                                    ${student.boletim_escolar && !student.boletim_escolar.parcial
+                                    ${student.boletim_escolar
                                       ? 'bg-green-50 text-green-700 border-green-200'
-                                      : student.boletim_escolar?.parcial
-                                        ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                        : 'bg-red-50 text-red-600 border-red-200'
+                                      : 'bg-red-50 text-red-600 border-red-200'
                                     }`}>
-                                    {student.boletim_escolar && !student.boletim_escolar.parcial ? '✓' : student.boletim_escolar?.parcial ? '~' : '✗'} Boletim
+                                    {student.boletim_escolar ? '✓' : '✗'} Boletim
+                                  </span>
+                                  {/* Declaração de Matrícula */}
+                                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0
+                                    ${student.declaracao_matricula
+                                      ? 'bg-green-50 text-green-700 border-green-200'
+                                      : 'bg-red-50 text-red-600 border-red-200'
+                                    }`}>
+                                    {student.declaracao_matricula ? '✓' : '✗'} Matrícula
                                   </span>
                                   {/* Autorização de Viagem */}
                                   <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border flex-shrink-0
@@ -1390,8 +1398,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                 <button
                                   onClick={() => {
                                     const key = student.id || student.nome;
-                                    if (student.boletim_escolar) {
-                                      window.open(student.boletim_escolar.url, '_blank');
+                                    if (student.boletim_escolar && student.boletim_escolar.url) {
+                                      setDocPreviewModal({ title: 'Boletim Escolar', imageUrl: student.boletim_escolar.url, studentName: student.nome });
                                     } else {
                                       const url = `${baseUrl}?service=boletim&studentId=${encodeURIComponent(key)}&token=nucleo`;
                                       navigator.clipboard.writeText(url).then(() => {
@@ -1400,21 +1408,36 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     }
                                   }}
                                   className={`p-2 rounded-full border transition-colors flex items-center justify-center
-                                    ${student.boletim_escolar && !student.boletim_escolar.parcial
+                                    ${student.boletim_escolar
                                       ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
-                                      : student.boletim_escolar?.parcial
-                                        ? 'bg-yellow-50 border-yellow-300 text-yellow-600 hover:bg-yellow-100'
-                                        : 'bg-amber-50 border-amber-200 text-amber-500 hover:bg-amber-100'
+                                      : 'bg-amber-50 border-amber-200 text-amber-500 hover:bg-amber-100'
                                     }`}
                                   title={
-                                    student.boletim_escolar && !student.boletim_escolar.parcial
-                                      ? 'Boletim completo enviado – clique para ver'
-                                      : student.boletim_escolar?.parcial
-                                        ? 'Boletim parcial enviado – clique para ver'
-                                        : 'Boletim Escolar pendente – clique para copiar link'
+                                    student.boletim_escolar
+                                      ? 'Boletim enviado – clique para ver'
+                                      : 'Boletim Escolar pendente – clique para copiar link'
                                   }
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                </button>
+
+                                {/* Botão Declaração de Matrícula */}
+                                <button
+                                  onClick={() => {
+                                    if (student.declaracao_matricula && (student.declaracao_matricula.imageUrl || student.declaracao_matricula.url)) {
+                                      setDocPreviewModal({ title: 'Declaração de Matrícula', imageUrl: student.declaracao_matricula.imageUrl || student.declaracao_matricula.url || '', studentName: student.nome });
+                                    } else {
+                                      alert('Declaração de Matrícula ainda não foi enviada para este aluno.');
+                                    }
+                                  }}
+                                  className={`p-2 rounded-full border transition-colors flex items-center justify-center
+                                    ${student.declaracao_matricula
+                                      ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
+                                      : 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100'
+                                    }`}
+                                  title={student.declaracao_matricula ? 'Declaração de Matrícula enviada – clique para ver' : 'Declaração de Matrícula pendente'}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                 </button>
                                 {/* Botão Autorização de Viagem */}
                                 <button
@@ -1451,6 +1474,65 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
           </div>
           <p className="text-center mt-4 text-gray-500 text-xs">Arraste uma linha para adicionar a Ficha ao Relatório PDF.</p>
         </div>
+
+        {/* Modal de Preview de Documentos (Boletim / Declaração de Matrícula) */}
+        {docPreviewModal && (
+          <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDocPreviewModal(null)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-fade-in" onClick={e => e.stopPropagation()}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-white font-bold text-lg">{docPreviewModal.title}</h2>
+                  <p className="text-blue-200 text-sm">{docPreviewModal.studentName}</p>
+                </div>
+                <button
+                  onClick={() => setDocPreviewModal(null)}
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              {/* Image */}
+              <div className="flex-1 overflow-auto p-4 bg-gray-100 flex items-center justify-center">
+                {docPreviewModal.imageUrl.startsWith('data:application/pdf') ? (
+                  <iframe
+                    src={docPreviewModal.imageUrl}
+                    className="w-full h-[70vh] rounded border border-gray-300"
+                    title={docPreviewModal.title}
+                  />
+                ) : (
+                  <img
+                    src={docPreviewModal.imageUrl}
+                    alt={docPreviewModal.title}
+                    className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg border border-gray-200"
+                  />
+                )}
+              </div>
+              {/* Footer */}
+              <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex justify-between items-center">
+                <span className="text-xs text-gray-500">
+                  {new Date().toLocaleDateString('pt-BR')}
+                </span>
+                <div className="flex gap-2">
+                  <a
+                    href={docPreviewModal.imageUrl}
+                    download={`${docPreviewModal.title.replace(/\s/g, '_')}_${docPreviewModal.studentName.replace(/\s/g, '_')}.${docPreviewModal.imageUrl.startsWith('data:application/pdf') ? 'pdf' : 'jpg'}`}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Baixar
+                  </a>
+                  <button
+                    onClick={() => setDocPreviewModal(null)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
