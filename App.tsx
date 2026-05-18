@@ -1376,7 +1376,10 @@ const AppContent: React.FC = () => {
       });
 
       if (authError) {
-        setLoginError(authError.message);
+        let msg = authError.message;
+        if (msg.includes('already registered')) msg = 'Este e-mail já está cadastrado.';
+        if (msg.includes('Password should be')) msg = 'A senha deve ter pelo menos 6 caracteres.';
+        setLoginError(msg);
         setLoading(false);
         return;
       }
@@ -1657,6 +1660,11 @@ const AppContent: React.FC = () => {
                   <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Cadastrando...' : 'Criar Conta'}
                   </button>
+                  {loginError && (
+                    <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium text-center animate-fade-in">
+                      ⚠️ {loginError}
+                    </div>
+                  )}
                 </form>
               )}
             </div>
