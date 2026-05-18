@@ -6,6 +6,7 @@ import { Logo } from './Logo';
 import { DataCrossReferenceModal } from './DataCrossReferenceModal';
 import { NucleoDetailModal } from './NucleoDetailModal';
 import { NucleoAddModal } from './NucleoAddModal';
+import { supabase } from '../services/supabaseClient';
 
 interface AdminDashboardProps {
     nucleos: Nucleo[];
@@ -98,8 +99,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const [selectedNucleoId, setSelectedNucleoId] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState<'LOW' | 'MEDIUM' | 'HIGH' | null>(null);
     const [reportItems, setReportItems] = useState<Nucleo[]>([]);
-    const [activeTab, setActiveTab] = useState<'estoque' | 'alunos' | 'nucleos'>('estoque');
+    const [activeTab, setActiveTab] = useState<'estoque' | 'alunos' | 'nucleos' | 'acessos'>('estoque');
     const [isCrossRefModalOpen, setIsCrossRefModalOpen] = useState(false);
+    const [pendingAccesses, setPendingAccesses] = useState<any[]>([]);
     const [isNucleoDetailOpen, setIsNucleoDetailOpen] = useState(false);
     const [isAddNucleoOpen, setIsAddNucleoOpen] = useState(false);
 
@@ -114,6 +116,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const [pendingReportType, setPendingReportType] = useState<'inventory' | 'students'>('inventory');
     // For students report: store nucleo ID and students data
     const [pendingStudentsData, setPendingStudentsData] = useState<{ nucleoId: string; nucleoName: string; students: any[] } | null>(null);
+
+    // Fetch pending accesses when tab changes to 'acessos'
+    React.useEffect(() => {
+        if (activeTab === 'acessos') {
+            const fetchPending = async () => {
+                const { data } = await supabase
+                    .from('user_project_access')
+                    .select('*, profiles(nome, email), projects!inner(slug)')
+                    .eq('projects.slug', projectId)
+                    .eq('status', 'PENDENTE');
+                if (data) setPendingAccesses(data);
+            };
+            fetchPending();
+        }
+    }, [activeTab, projectId]);
+
+    const handleApproveAccess = async (accessId: string) => {
+        const { error } = await supabase
+            .from('user_project_access')
+            .update({ status: 'APROVADO' })
+            .eq('id', accessId);
+        if (!error) {
+            setPendingAccesses(prev => prev.filter(a => a.id !== accessId));
+            alert('Acesso aprovado com sucesso!');
+        } else {
+            alert('Erro ao aprovar acesso.');
+        }
+    };
+
+    const handleRejectAccess = async (accessId: string) => {
+        const { error } = await supabase
+            .from('user_project_access')
+            .delete()
+            .eq('id', accessId);
+        if (!error) {
+            setPendingAccesses(prev => prev.filter(a => a.id !== accessId));
+            alert('Acesso rejeitado/removido.');
+        } else {
+            alert('Erro ao rejeitar acesso.');
+        }
+    };
 
     // DnD Handlers for Inventory (Estoque)
     const handleDragStart = (e: React.DragEvent, nucleo: Nucleo) => {
@@ -312,6 +355,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'nucleos' ? `bg-gradient-to-r ${theme.gradient} text-white shadow-sm` : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 Núcleos
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('acessos')}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${activeTab === 'acessos' ? `bg-gradient-to-r ${theme.gradient} text-white shadow-sm` : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Acessos
+                                {pendingAccesses.length > 0 && activeTab !== 'acessos' && (
+                                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                )}
                             </button>
                         </div>
 
@@ -609,8 +661,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     )}
                                 </div>
                             </div>
-                        ) : (
-                            /* Nucleos Tab Content */
+                        ) : activeTab === 'nucleos' ? (
                             /* Nucleos Tab Content */
                             <div className="space-y-4">
                                 <div className={`flex justify-between items-center ${theme.bgLight} p-3 rounded-xl border ${theme.border}`}>
@@ -705,7 +756,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        ) : activeTab === 'acessos' ? (
+                            <div className="space-y-4">
+                                <div className={`flex justify-between items-center ${theme.bgLight} p-3 rounded-xl border ${theme.border}`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`${theme.bgMedium} p-2 rounded-lg ${theme.text}`}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Acessos Pendentes</h3>
+                                            <span className={`text-xs ${theme.text} font-bold`}>{pendingAccesses.length} Aguardando Aprovação</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="max-h-[calc(100vh-300px)] overflow-y-auto space-y-3 pr-1">
+                                    {pendingAccesses.length === 0 ? (
+                                        <div className="text-center py-6 text-gray-300">
+                                            <p className="text-xs italic">Não há cadastros pendentes no momento</p>
+                                        </div>
+                                    ) : (
+                                        pendingAccesses.map((access: any) => {
+                                            const nName = nucleos.find(n => n.id === access.nucleo_id)?.nome || 'Sem Núcleo';
+                                            return (
+                                                <div key={access.id} className={`p-4 rounded-xl border bg-white border-yellow-200 shadow-sm transition-all relative overflow-hidden`}>
+                                                    <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+                                                    <div className="flex justify-between items-start mb-2 pl-2">
+                                                        <div>
+                                                            <h4 className="font-bold text-gray-800 text-sm leading-tight">{access.profiles?.nome || 'Usuário'}</h4>
+                                                            <p className="text-xs text-gray-500 mt-0.5">{access.profiles?.email}</p>
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                                                                    Cargo: {access.role}
+                                                                </span>
+                                                                <span className="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-md">
+                                                                    {nName.split(' - ')[0]}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 mt-4 pl-2 border-t border-gray-50 pt-3">
+                                                        <button 
+                                                            onClick={() => handleApproveAccess(access.id)}
+                                                            className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-bold py-2 rounded-lg text-xs transition border border-green-200 flex items-center justify-center gap-1"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                            Aprovar Acesso
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => { if (window.confirm('Tem certeza que deseja rejeitar esse cadastro?')) handleRejectAccess(access.id); }}
+                                                            className="px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold rounded-lg text-xs transition border border-red-100 flex items-center justify-center"
+                                                            title="Rejeitar"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </aside>
 

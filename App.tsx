@@ -578,7 +578,11 @@ const AppContent: React.FC = () => {
             const isPublicRoute = (searchParams.get('token') || hashParams.get('token')) && (searchParams.get('service') || hashParams.get('service'));
             
             if (!isPublicRoute) {
-              setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
+              if (defaultAccess.status === 'PENDENTE') {
+                setView(AppView.PENDING_APPROVAL);
+              } else {
+                setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
+              }
             }
           }
         }
@@ -804,7 +808,9 @@ const AppContent: React.FC = () => {
       });
 
       // 5. Redirecionar
-      if (role === 'ADMIN') {
+      if (accessData?.status === 'PENDENTE') {
+        setView(AppView.PENDING_APPROVAL);
+      } else if (role === 'ADMIN') {
         setView(AppView.ADMIN_DASHBOARD);
       } else {
         setView(AppView.DASHBOARD);
@@ -1389,9 +1395,10 @@ const AppContent: React.FC = () => {
         nucleo_id: regNucleo,
         nucleo_nome: selectedNucleoObj?.nome,
         projectId: activeProject,
+        status: 'PENDENTE',
       });
-      setView(regRole === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
-      alert(`Cadastro realizado com sucesso! Bem-vindo(a), ${regName}.`);
+      setView(AppView.PENDING_APPROVAL);
+      alert(`Cadastro realizado com sucesso! Sua solicitação está em análise.`);
     } catch (err: any) {
       console.error('Erro no cadastro:', err);
       setLoginError('Erro ao cadastrar. Tente novamente.');
@@ -1622,6 +1629,30 @@ const AppContent: React.FC = () => {
             )}
 
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === AppView.PENDING_APPROVAL) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center animate-fade-in border-t-4 border-yellow-500">
+          <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black text-gray-800 mb-2">Acesso Pendente</h2>
+          <p className="text-gray-600 mb-8">
+            Seu cadastro foi recebido com sucesso e está aguardando a aprovação do administrador do projeto. Você receberá acesso assim que for autorizado.
+          </p>
+          <button 
+            onClick={handleLogout}
+            className="text-gray-500 font-bold hover:text-gray-800 transition"
+          >
+            Sair e voltar ao Login
+          </button>
         </div>
       </div>
     );

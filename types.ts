@@ -13,6 +13,7 @@ export interface User {
   nucleo_id: string | null;
   nucleo_nome?: string;
   projectId?: ProjectId;
+  status?: 'PENDENTE' | 'APROVADO' | 'REJEITADO';
 }
 
 export interface NucleoTurma {
@@ -427,6 +428,7 @@ export enum AppView {
   LOGIN = 'LOGIN',
   ONBOARDING = 'ONBOARDING',
   DASHBOARD = 'DASHBOARD',
+  PENDING_APPROVAL = 'PENDING_APPROVAL',
 
   // Serviços
   FEATURE_OCR = 'FEATURE_OCR', // 1. Ficha
