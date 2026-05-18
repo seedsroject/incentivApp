@@ -9,7 +9,7 @@ export interface User {
   uid: string;
   nome: string;
   email: string;
-  role: 'PROFESSOR' | 'MONITOR' | 'ADMIN';
+  role: 'PROFESSOR' | 'MONITOR' | 'COORDENADOR' | 'ADMIN';
   nucleo_id: string | null;
   nucleo_nome?: string;
   projectId?: ProjectId;
