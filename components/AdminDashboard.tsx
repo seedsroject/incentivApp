@@ -804,7 +804,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                                     Cargo: {access.role}
                                                                 </span>
                                                                 <span className="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-md">
-                                                                    {nName.split(' - ')[0]}
+                                                                    {access.estado_responsavel ? `Região: ${access.estado_responsavel}` : nName.split(' - ')[0]}
                                                                 </span>
                                                             </div>
                                                         </div>

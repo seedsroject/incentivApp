@@ -1400,6 +1400,7 @@ const AppContent: React.FC = () => {
           role: regRole,
           is_default: true,
           estado_responsavel: regRole === 'ADMIN' ? regEstado : null,
+          status: 'PENDENTE',
         });
       }
 
