@@ -667,8 +667,15 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                 // Avaliação baseada na nota mais recente (g2 de preferência, ou g1 se não tiver g2)
                 const avaliacao = getAvaliacaoConceito(g2 > 0 ? g2 : g1);
 
+                // Auto-match student name from OCR to registered students
+                const ocrName = data.studentName || 'Não identificado';
+                const n = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+                const matched = students.find(s => n(s.nome) === n(ocrName));
+
                 results.push({
-                    id: `rep_${i}`, fileName: file.name, studentName: data.studentName || 'Não identificado',
+                    id: `rep_${i}`, fileName: file.name, studentName: matched?.nome || ocrName,
+                    studentId: matched?.id || '',
+                    imageUrl: base64,
                     grade1: g1, attendance1: data.attendance1 || 0, grade2: g2, attendance2: data.attendance2 || 0, status, avaliacao,
                     subjects: data.subjects || []
                 });
@@ -1419,13 +1426,13 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                 <div className="bg-white p-4 shadow-sm flex items-center gap-4"><button onClick={() => setMode('BOLETIM_MASS_UPLOAD')} className="text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg></button><h1 className="font-bold text-lg text-gray-800">Revisão dos Dados</h1></div>
                 <div className="flex-1 p-4 overflow-auto bg-gray-50">
                     <div className="max-w-6xl mx-auto space-y-6">
-                        {/* Substituindo Cards por Tabela Unificada para melhor visualização e alinhamento com a cor do sistema */}
-                        <div className="bg-white rounded-lg shadow border border-gray-300 overflow-hidden">
+                        <div className="bg-white rounded-lg shadow border border-gray-300 overflow-hidden overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-blue-100 border-b border-blue-200 text-blue-900 text-xs uppercase font-bold">
+                                        <th className="p-3 border-r border-blue-200 w-10"></th>
                                         <th className="p-3 border-r border-blue-200">Arquivo Original</th>
-                                        <th className="p-3 border-r border-blue-200">Nome do Aluno</th>
+                                        <th className="p-3 border-r border-blue-200" style={{ minWidth: 200 }}>Vincular ao Aluno</th>
                                         <th className="p-3 border-r border-blue-200 text-center w-24">Nota 1</th>
                                         <th className="p-3 border-r border-blue-200 text-center w-24">Freq 1 (%)</th>
                                         <th className="p-3 border-r border-blue-200 text-center w-24">Nota 2</th>
@@ -1434,17 +1441,32 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                 </thead>
                                 <tbody className="text-sm">
                                     {processedReports.map((item, idx) => (
-                                        <tr key={idx} className="border-b border-gray-200 hover:bg-blue-50">
-                                            <td className="p-3 border-r border-gray-200 text-xs text-gray-500 font-medium truncate max-w-[150px]" title={item.fileName}>
+                                        <tr key={idx} className={`border-b border-gray-200 hover:bg-blue-50 ${item.studentId ? 'bg-green-50' : ''}`}>
+                                            <td className="p-2 border-r border-gray-200 text-center">
+                                                {item.imageUrl && <img src={item.imageUrl} alt="" className="w-8 h-8 object-cover rounded border border-gray-200" />}
+                                            </td>
+                                            <td className="p-3 border-r border-gray-200 text-xs text-gray-500 font-medium truncate max-w-[120px]" title={item.fileName}>
                                                 {item.fileName}
                                             </td>
                                             <td className="p-2 border-r border-gray-200">
-                                                <input
-                                                    type="text"
-                                                    value={item.studentName}
-                                                    onChange={e => { const list = [...processedReports]; list[idx].studentName = e.target.value; setProcessedReports(list); }}
-                                                    className="w-full bg-transparent border border-transparent hover:border-gray-300 focus:border-blue-500 rounded px-2 py-1 text-gray-900 font-bold focus:bg-white focus:outline-none transition-all"
-                                                />
+                                                <select
+                                                    value={item.studentId || ''}
+                                                    onChange={e => {
+                                                        const list = [...processedReports];
+                                                        const sid = e.target.value;
+                                                        const s = students.find(x => x.id === sid);
+                                                        list[idx].studentId = sid;
+                                                        if (s) list[idx].studentName = s.nome;
+                                                        setProcessedReports(list);
+                                                    }}
+                                                    className={`w-full border rounded px-2 py-1.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-200 ${item.studentId ? 'bg-green-50 border-green-300 text-green-800' : 'bg-gray-50 border-gray-200 text-gray-800'}`}
+                                                >
+                                                    <option value="">— Selecionar Aluno —</option>
+                                                    {students.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                                                </select>
+                                                {!item.studentId && item.studentName && item.studentName !== 'Não identificado' && item.studentName !== 'Erro' && (
+                                                    <p className="text-[10px] text-amber-600 mt-0.5 font-bold truncate">OCR: {item.studentName}</p>
+                                                )}
                                             </td>
                                             <td className="p-2 border-r border-gray-200">
                                                 <input
@@ -1483,6 +1505,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                                 </tbody>
                             </table>
                         </div>
+                        {processedReports.some(r => !r.studentId) && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                                <p className="text-xs font-bold text-amber-700">⚠ Alguns boletins não foram vinculados a alunos. Selecione o aluno para cada boletim antes de salvar.</p>
+                            </div>
+                        )}
                         <button onClick={handleSaveReports} className="w-full py-4 bg-green-600 text-white font-bold rounded shadow-lg hover:bg-green-700 sticky bottom-4">Salvar Todos</button>
                     </div>
                 </div>

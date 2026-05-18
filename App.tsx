@@ -1727,7 +1727,7 @@ const AppContent: React.FC = () => {
           <DocumentUpload
             docType={navParams.type as DocumentType}
             title={navParams.title || 'Documento'}
-            students={students.filter(s => s.status !== 'INATIVO')}
+            students={nucleoStudents.filter(s => s.status !== 'INATIVO')}
             history={collectedDocuments}
             inventory={inventory}
             nucleos={filteredNucleos}
@@ -1735,7 +1735,7 @@ const AppContent: React.FC = () => {
             onBack={() => setView(AppView.DASHBOARD)}
             onSave={(data) => {
               handleSaveDocument(data);
-              // Auto-attach OCR data to student when linked
+              // Auto-attach OCR data to student when linked (Declaração de Matrícula)
               if (data.type === 'DECLARACAO_MATRICULA' && data.metaData?.studentId && data.metaData?.ocrData) {
                 const sid = data.metaData.studentId;
                 const ocr = data.metaData.ocrData;
@@ -1749,6 +1749,58 @@ const AppContent: React.FC = () => {
                     }
                   } : s
                 ));
+                // Persist declaração to student in Supabase
+                if (supabaseProjectId) {
+                  supabase.from('students').update({
+                    declaracao_matricula: {
+                      ...ocr,
+                      imageUrl: data.metaData?.imageUrl || '',
+                      dataRegistro: data.timestamp,
+                    }
+                  }).eq('id', sid);
+                }
+              }
+              // Auto-attach boletim data to each linked student (Boletim Escolar)
+              if (data.type === 'BOLETIM' && data.metaData?.reports && Array.isArray(data.metaData.reports)) {
+                const reports = data.metaData.reports as any[];
+                reports.forEach((report: any) => {
+                  if (report.studentId) {
+                    setStudents(prev => prev.map(s =>
+                      s.id === report.studentId ? {
+                        ...s,
+                        boletim_escolar: {
+                          url: report.imageUrl || '',
+                          timestamp: data.timestamp,
+                          parcial: {
+                            grade1: report.grade1,
+                            attendance1: report.attendance1,
+                            grade2: report.grade2,
+                            attendance2: report.attendance2,
+                            subjects: report.subjects,
+                            status: report.status,
+                            avaliacao: report.avaliacao,
+                          }
+                        }
+                      } : s
+                    ));
+                    // Persist boletim image to student in Supabase
+                    if (supabaseProjectId) {
+                      supabase.from('students').update({
+                        boletim_escolar: {
+                          url: report.imageUrl || '',
+                          timestamp: data.timestamp,
+                          parcial: {
+                            grade1: report.grade1,
+                            attendance1: report.attendance1,
+                            grade2: report.grade2,
+                            attendance2: report.attendance2,
+                            status: report.status,
+                          }
+                        }
+                      }).eq('id', report.studentId);
+                    }
+                  }
+                });
               }
               setView(AppView.DASHBOARD);
             }}

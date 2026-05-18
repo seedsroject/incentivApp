@@ -268,6 +268,8 @@ export interface SchoolReportItem {
   id: string;
   fileName: string;
   studentName: string;
+  studentId?: string; // ID do aluno cadastrado vinculado
+  imageUrl?: string; // Imagem original do boletim (base64)
   grade1: number; // Aproveitamento 01
   attendance1: number; // Assiduidade 01 (%)
   grade2: number; // Aproveitamento 02
