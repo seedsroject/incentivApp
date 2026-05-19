@@ -251,7 +251,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isActive, onClose
       {/* Tooltip */}
       {showTooltip && step && (
         <div
-          className="absolute z-[10002] bg-white rounded-2xl shadow-2xl border border-gray-200 px-5 py-4 max-w-xs animate-fade-in"
+          className="absolute z-[10002] bg-white rounded-2xl shadow-2xl border border-gray-200 px-5 py-4 max-w-sm animate-fade-in"
           style={{
             ...getTooltipStyle(),
             animation: 'fadeInUp 0.35s ease-out',
@@ -264,7 +264,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isActive, onClose
             </div>
             <h4 className="text-sm font-bold text-gray-900">{step.title}</h4>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed mb-4">
+          <p className="text-xs text-gray-600 leading-relaxed mb-4 whitespace-pre-line">
             {step.description}
           </p>
           <div className="flex gap-2 items-center justify-between">
@@ -344,34 +344,54 @@ export const LOGIN_TOUR_STEPS: TourStep[] = [
 export const DASHBOARD_TOUR_STEPS: TourStep[] = [
   {
     targetSelector: '[data-tour="service-precadastro"]',
-    title: 'Pré-cadastro e Fila de Espera',
-    description: 'Aqui você gerencia a fila de espera inteligente. Famílias preenchem o formulário online e os candidatos são organizados automaticamente por proximidade do núcleo.',
+    title: '0. Pré-cadastro e Fila de Espera',
+    description: 'Este serviço é usado quando NÃO há vagas disponíveis no núcleo. Os interessados entram na fila de espera inteligente. Quando uma vaga abrir, o sistema prioriza quem está há mais tempo na fila e você poderá enviar o link da Ficha de Inscrição para efetivar a matrícula.',
     position: 'bottom',
     clickTarget: true,
   },
   {
-    targetSelector: '[data-tour="service-ficha"]',
-    title: 'Ficha de Inscrição',
-    description: 'Cadastre oficialmente um aluno com todos os dados: nome, responsável, endereço, documentos pessoais e dados socioeconômicos.',
-    position: 'bottom',
+    targetSelector: '[data-tour="share-link-precadastro"]',
+    title: 'Link do Pré-cadastro (WhatsApp)',
+    description: 'Este botão verde gera o link público do FORMULÁRIO DE PRÉ-CADASTRO. Envie pelo WhatsApp para as famílias que querem entrar na fila de espera. Os pais preenchem direto do celular e o aluno entra automaticamente na fila aguardando vaga.',
+    position: 'left',
+    clickTarget: true,
   },
   {
-    targetSelector: '[data-tour="share-link-precadastro"]',
-    title: 'Enviar Link de Cadastro',
-    description: 'Este botão verde gera um link público que você pode enviar pelo WhatsApp para as famílias. Os pais preenchem direto do celular e o aluno entra automaticamente na fila de espera!',
+    targetSelector: '[data-tour="service-ficha"]',
+    title: '1. Ficha de Inscrição (Portal do Aluno)',
+    description: 'Este é o formulário OFICIAL de inscrição. Quando há vaga disponível, você envia este link para os pais. O Portal do Aluno possui 7 passos completos que a família preenche pelo celular.',
+    position: 'bottom',
+    clickTarget: true,
+  },
+  {
+    targetSelector: '[data-tour="share-link-ficha"]',
+    title: 'Enviar Link da Inscrição (7 passos)',
+    description: 'Este botão verde gera o link do PORTAL DO ALUNO. Ao abrir, a família vê uma tela com 7 etapas:\n\n① Inscrição (dados pessoais)\n② Matrícula Escolar\n③ Autorização de Viagem\n④ Socioeconômico\n⑤ Uniformes\n⑥ PAR-Q (aptidão física)\n⑦ Meta Qualitativa\n\nTudo é salvo automaticamente no sistema.',
     position: 'left',
     clickTarget: true,
   },
   {
     targetSelector: '[data-tour="service-declaracao"]',
-    title: 'Documentação Escolar',
-    description: 'Após a matrícula, recolha os documentos: Declaração de Matrícula, Boletim Escolar e Atestado Médico. Sem esses documentos, o aluno fica com pendência.',
+    title: '2. Declaração de Matrícula',
+    description: 'Após a inscrição, é necessário fazer o upload do comprovante de matrícula escolar do aluno. Este documento comprova que a criança está matriculada e frequentando a escola, requisito obrigatório do projeto.',
+    position: 'bottom',
+  },
+  {
+    targetSelector: '[data-tour="service-boletim"]',
+    title: '3. Boletins Escolares',
+    description: 'Upload dos boletins escolares do aluno (início e fim do ciclo). Estes documentos são usados para acompanhar o rendimento escolar e gerar os relatórios de aproveitamento exigidos pela lei de incentivo.',
+    position: 'bottom',
+  },
+  {
+    targetSelector: '[data-tour="service-assiduidade"]',
+    title: '4. Relatório de Assiduidade',
+    description: 'Upload da planilha de assiduidade e aproveitamento escolar. Este relatório compara a frequência e notas dos alunos para medir o impacto do projeto no desempenho acadêmico.',
     position: 'bottom',
   },
   {
     targetSelector: '[data-tour="dev-environment-btn"]',
     title: 'Ambiente de Desenvolvimento',
-    description: 'Acesse aqui os relatórios finais e as ferramentas de análise avançada (cruzamento de dados, gráficos socioeconômicos e exportação em PDF).',
+    description: 'Aqui ficam os RELATÓRIOS AUTOMÁTICOS do projeto. O sistema gera dossiês prontos em PDF com capas, tabelas e gráficos preenchidos automaticamente com os dados dos alunos. Também tem o Construtor de Relatório, uma ferramenta visual de arrastar e soltar para montar relatórios personalizados.',
     position: 'top',
     clickTarget: true,
   },
@@ -398,3 +418,4 @@ export const ADMIN_MAP_TOUR_STEPS: TourStep[] = [
     clickTarget: true,
   },
 ];
+
