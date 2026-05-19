@@ -65,7 +65,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   // Filter students by nucleo (includes students without nucleo assigned)
   const filtered = useMemo(() => {
     if (!selectedNucleoId) return students;
-    return students.filter(s => s.nucleo_id === selectedNucleoId || !s.nucleo_id);
+    return students.filter(s => s.nucleo_id === selectedNucleoId);
   }, [students, selectedNucleoId]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => a.nome.localeCompare(b.nome)), [filtered]);

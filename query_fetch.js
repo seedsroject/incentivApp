@@ -8,7 +8,7 @@ const url = urlMatch[1];
 const key = keyMatch[1];
 
 async function run() {
-  const res = await fetch(`${url}/rest/v1/user_project_access?select=*,profiles(nome,email),projects!inner(slug)`, {
+  const res = await fetch(`${url}/rest/v1/students?select=id,nome,nucleo_id&limit=10`, {
     headers: {
       'apikey': key,
       'Authorization': `Bearer ${key}`

@@ -150,7 +150,7 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
     return age;
   };
   // Build student rows for Tabela 5 from selected nucleo
-  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId || !s.nucleo_id).sort((a, b) => a.nome.localeCompare(b.nome));
+  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId).sort((a, b) => a.nome.localeCompare(b.nome));
 
   // --- Unified mock grade data per student ---
   // Deterministic "hash" based on student name to generate consistent grades

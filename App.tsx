@@ -617,7 +617,7 @@ const AppContent: React.FC = () => {
   // Alunos filtrados pelo núcleo do usuário logado
   const nucleoStudents = useMemo(() => {
     if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo ou com estado_responsavel: vê todos (do estado, já filtrado acima)
-    return projectStudents.filter(s => s.nucleo_id === user.nucleo_id || !s.nucleo_id);
+    return projectStudents.filter(s => s.nucleo_id === user.nucleo_id);
   }, [projectStudents, user?.nucleo_id]);
 
   // Navigation Params
