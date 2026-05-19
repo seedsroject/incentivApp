@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { AppView, ProjectId } from '../types';
 import { ExternalLinkModal } from './ExternalLinkModal';
+import { GuidedTour, DASHBOARD_TOUR_STEPS } from './GuidedTour';
 
 interface DashboardProps {
   onNavigate: (view: AppView, params?: any) => void;
@@ -28,6 +29,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
     return 'hover:border-blue-300 hover:bg-blue-50';
   }, [projectId]);
   const [sharingService, setSharingService] = useState<{ id: string, title: string } | null>(null);
+  const [showTour, setShowTour] = useState(false);
 
   const menuItems = [
     {
@@ -164,6 +166,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
                 Voltar ao Mapa
               </button>
             )}
+            <button
+              onClick={() => setShowTour(true)}
+              className="bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 p-2 rounded-full transition-colors shadow-sm border border-blue-200"
+              title="Tutorial Interativo"
+              data-tour="info-button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
             <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-[10px] font-bold border border-yellow-200 animate-pulse hidden md:block">
               Links Externos Disponíveis
             </div>
@@ -172,7 +184,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-24">
           {menuItems.map((item, index) => (
-            <div key={index} className="relative group">
+            <div key={index} className="relative group" data-tour={`service-${item.id}`}>
               <button
                 onClick={item.action}
                 className={`flex flex-col items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md ${hoverCard} transition-all active:scale-95 group w-full min-h-[110px]`}
@@ -194,6 +206,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
                   onClick={(e) => { e.stopPropagation(); setSharingService({ id: item.id, title: item.title }); }}
                   className="absolute top-1 right-1 bg-green-600 text-white p-1.5 rounded-md shadow-sm hover:bg-green-700 transition-colors z-10"
                   title="Enviar Link para os Pais"
+                  data-tour={`share-link-${item.id}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
                 </button>
@@ -212,6 +225,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           <button
             onClick={() => onNavigate(AppView.DEV_ENVIRONMENT)}
             className={`flex items-center gap-2 px-4 py-3 rounded-lg font-bold shadow transition-colors text-sm ${btnBg} text-white`}
+            data-tour="dev-environment-btn"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01 2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -231,6 +245,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           nucleoId={nucleoId}
         />
       )}
+
+      {/* Tour Guiado Interativo */}
+      <GuidedTour
+        steps={DASHBOARD_TOUR_STEPS}
+        isActive={showTour}
+        onClose={() => setShowTour(false)}
+      />
     </div>
   );
 };
