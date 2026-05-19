@@ -1086,7 +1086,7 @@ const AppContent: React.FC = () => {
           }).eq('id', sid);
           if (updErr) console.warn('Erro ao vincular boletim ao aluno:', updErr);
         }
-        if (data.type === 'DECLARACAO_MATRICULA' || data.type === 'DECLARACAO') {
+        if (data.type === 'DECLARACAO_MATRICULA') {
           const docUrl = data.fileUrl || data.metaData?.imageUrl || data.metaData?.url || '';
           const { error: updErr } = await supabase.from('students').update({
             declaracao_matricula: { url: docUrl, imageUrl: data.metaData?.imageUrl || '', timestamp: new Date().toISOString(), ocrData: data.metaData?.ocrData }
