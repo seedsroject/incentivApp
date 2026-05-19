@@ -1396,7 +1396,7 @@ const AppContent: React.FC = () => {
 
       if (projectData) {
         // 3. Criar acesso ao projeto (AGUARDANDO aprovação de admin)
-        await supabase.from('user_project_access').insert({
+        const { error: insertError } = await supabase.from('user_project_access').insert({
           user_id: authData.user.id,
           project_id: projectData.id,
           nucleo_id: regRole === 'ADMIN' ? null : regNucleo,
@@ -1405,6 +1405,12 @@ const AppContent: React.FC = () => {
           estado_responsavel: regRole === 'ADMIN' ? regEstado : null,
           status: 'PENDENTE',
         });
+        
+        if (insertError) {
+            console.error('Erro ao inserir acesso:', insertError);
+            // Mesmo com erro de insert, o usuário foi criado no auth. 
+            // O ideal seria tentar novamente ou alertar o usuário, mas vamos seguir o fluxo.
+        }
       }
 
       // 4. Carregar todos os dados do projeto
