@@ -136,13 +136,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 if (data) {
                     const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
-                    let filteredData = data;
-                    if (!isSuperAdmin && currentUser.estado_responsavel) {
-                        filteredData = data.filter((req: any) => 
-                            req.estado_responsavel === currentUser.estado_responsavel || 
-                            (req.nucleos && req.nucleos.estado === currentUser.estado_responsavel)
-                        );
-                    }
+                    let filteredData = data.filter((req: any) => {
+                        // 1. Não mostrar o próprio usuário logado
+                        if (req.user_id === currentUser.id || req.profiles?.email === currentUser.email) return false;
+                        
+                        // 2. Não mostrar o Super Admin para os outros admins
+                        if (!isSuperAdmin && req.profiles?.email === 'admin.geral@formandocampeoes.org.br') return false;
+
+                        // 3. Regra de estado para admins regionais
+                        if (!isSuperAdmin && currentUser.estado_responsavel) {
+                            return req.estado_responsavel === currentUser.estado_responsavel || 
+                                   (req.nucleos && req.nucleos.estado === currentUser.estado_responsavel);
+                        }
+
+                        return true;
+                    });
                     setPendingAccesses(filteredData);
                 }
             };
