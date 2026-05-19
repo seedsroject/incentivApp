@@ -123,12 +123,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     React.useEffect(() => {
         if (activeTab === 'acessos') {
             const fetchPending = async () => {
-                const { data } = await supabase
+                const { data, error } = await supabase
                     .from('user_project_access')
                     .select('*, profiles(nome, email), projects!inner(slug), nucleos(estado)')
                     .eq('projects.slug', projectId)
                     .eq('status', 'PENDENTE');
                 
+                if (error) {
+                    console.error("Erro ao buscar acessos pendentes:", error);
+                }
+
                 if (data) {
                     const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
                     let filteredData = data;

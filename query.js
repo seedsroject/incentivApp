@@ -1,15 +1,14 @@
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
 
-dotenv.config()
+const envFile = fs.readFileSync('.env.local', 'utf-8');
+const urlMatch = envFile.match(/VITE_SUPABASE_URL=(.+)/);
+const keyMatch = envFile.match(/VITE_SUPABASE_ANON_KEY=(.+)/);
 
-const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+const supabase = createClient(urlMatch[1], keyMatch[1]);
 
 async function run() {
-  const { data, error } = await supabase
-    .from('user_project_access')
-    .select('id, user_id, status, role, estado_responsavel, project_id, nucleo_id')
-    .eq('status', 'PENDENTE')
-  console.log(data, error)
+  const { data, error } = await supabase.from('user_project_access').select('*, profiles(nome, email), projects!inner(slug)');
+  console.log(JSON.stringify({data, error}, null, 2));
 }
-run()
+run();
