@@ -127,10 +127,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     .from('user_project_access')
                     .select('*, profiles(nome, email), projects!inner(slug), nucleos(estado)')
                     .eq('projects.slug', projectId)
-                    .eq('status', 'PENDENTE');
+                    .in('status', ['PENDENTE', 'APROVADO'])
+                    .order('status', { ascending: false }); // PENDENTE comes before APROVADO because P > A
                 
                 if (error) {
-                    console.error("Erro ao buscar acessos pendentes:", error);
+                    console.error("Erro ao buscar acessos:", error);
                 }
 
                 if (data) {
@@ -155,10 +156,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             .update({ status: 'APROVADO' })
             .eq('id', accessId);
         if (!error) {
-            setPendingAccesses(prev => prev.filter(a => a.id !== accessId));
+            setPendingAccesses(prev => prev.map(a => a.id === accessId ? { ...a, status: 'APROVADO' } : a));
             alert('Acesso aprovado com sucesso!');
         } else {
             alert('Erro ao aprovar acesso.');
+        }
+    };
+
+    const handleRevokeAccess = async (accessId: string) => {
+        const { error } = await supabase
+            .from('user_project_access')
+            .update({ status: 'PENDENTE' })
+            .eq('id', accessId);
+        if (!error) {
+            setPendingAccesses(prev => prev.map(a => a.id === accessId ? { ...a, status: 'PENDENTE' } : a));
+            alert('Acesso revogado (retornou para Pendente)!');
+        } else {
+            alert('Erro ao revogar acesso.');
         }
     };
 
@@ -169,9 +183,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             .eq('id', accessId);
         if (!error) {
             setPendingAccesses(prev => prev.filter(a => a.id !== accessId));
-            alert('Acesso rejeitado/removido.');
+            alert('Cadastro apagado do projeto!');
         } else {
-            alert('Erro ao rejeitar acesso.');
+            alert('Erro ao apagar cadastro.');
         }
     };
 
@@ -783,25 +797,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                             </svg>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Acessos Pendentes</h3>
-                                            <span className={`text-xs ${theme.text} font-bold`}>{pendingAccesses.length} Aguardando Aprovação</span>
+                                            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Gestão de Acessos</h3>
+                                            <span className={`text-xs ${theme.text} font-bold`}>{pendingAccesses.length} Registros</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="max-h-[calc(100vh-300px)] overflow-y-auto space-y-3 pr-1">
                                     {pendingAccesses.length === 0 ? (
                                         <div className="text-center py-6 text-gray-300">
-                                            <p className="text-xs italic">Não há cadastros pendentes no momento</p>
+                                            <p className="text-xs italic">Não há cadastros no momento</p>
                                         </div>
                                     ) : (
                                         pendingAccesses.map((access: any) => {
                                             const nName = nucleos.find(n => n.id === access.nucleo_id)?.nome || 'Sem Núcleo';
+                                            const isApproved = access.status === 'APROVADO';
+                                            
                                             return (
-                                                <div key={access.id} className={`p-4 rounded-xl border bg-white border-yellow-200 shadow-sm transition-all relative overflow-hidden`}>
-                                                    <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+                                                <div key={access.id} className={`p-4 rounded-xl border bg-white ${isApproved ? 'border-green-200' : 'border-yellow-200'} shadow-sm transition-all relative overflow-hidden`}>
+                                                    <div className={`absolute top-0 left-0 w-1 h-full ${isApproved ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
                                                     <div className="flex justify-between items-start mb-2 pl-2">
                                                         <div>
-                                                            <h4 className="font-bold text-gray-800 text-sm leading-tight">{access.profiles?.nome || 'Usuário'}</h4>
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-bold text-gray-800 text-sm leading-tight">{access.profiles?.nome || 'Usuário'}</h4>
+                                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                                    {access.status}
+                                                                </span>
+                                                            </div>
                                                             <p className="text-xs text-gray-500 mt-0.5">{access.profiles?.email}</p>
                                                             <div className="flex items-center gap-2 mt-2">
                                                                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
@@ -814,19 +835,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2 mt-4 pl-2 border-t border-gray-50 pt-3">
+                                                        {!isApproved ? (
+                                                            <button 
+                                                                onClick={() => handleApproveAccess(access.id)}
+                                                                className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-bold py-2 rounded-lg text-xs transition border border-green-200 flex items-center justify-center gap-1"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                                Aprovar Acesso
+                                                            </button>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => { if (window.confirm('Tem certeza que deseja revogar o acesso dessa pessoa?')) handleRevokeAccess(access.id); }}
+                                                                className="flex-1 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 font-bold py-2 rounded-lg text-xs transition border border-yellow-200 flex items-center justify-center gap-1"
+                                                            >
+                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-12a9 9 0 110 18 9 9 0 010-18z" /></svg>
+                                                                Revogar Acesso
+                                                            </button>
+                                                        )}
                                                         <button 
-                                                            onClick={() => handleApproveAccess(access.id)}
-                                                            className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 font-bold py-2 rounded-lg text-xs transition border border-green-200 flex items-center justify-center gap-1"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                                            Aprovar Acesso
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => { if (window.confirm('Tem certeza que deseja rejeitar esse cadastro?')) handleRejectAccess(access.id); }}
+                                                            onClick={() => { if (window.confirm('Tem certeza que deseja APAGAR este cadastro do projeto? Isso não pode ser desfeito.')) handleRejectAccess(access.id); }}
                                                             className="px-3 bg-red-50 text-red-600 hover:bg-red-100 font-bold rounded-lg text-xs transition border border-red-100 flex items-center justify-center"
-                                                            title="Rejeitar"
+                                                            title="Apagar Cadastro"
                                                         >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                         </button>
                                                     </div>
                                                 </div>
