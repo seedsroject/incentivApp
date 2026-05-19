@@ -138,7 +138,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
                     let filteredData = data.filter((req: any) => {
                         // 1. Não mostrar o próprio usuário logado
-                        if (req.user_id === currentUser.id || req.profiles?.email === currentUser.email) return false;
+                        if (req.user_id === currentUser.uid || req.profiles?.email === currentUser.email) return false;
                         
                         // 2. Não mostrar o Super Admin para os outros admins
                         if (!isSuperAdmin && req.profiles?.email === 'admin.geral@formandocampeoes.org.br') return false;
