@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId, User } from '../types';
+import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId, User, InventoryItem } from '../types';
 import { usePDFBuilder } from './PDFBuilderContext';
 import { AdminMap } from './AdminMap';
 import { Logo } from './Logo';
@@ -20,6 +20,7 @@ interface AdminDashboardProps {
     onDischargeStudent?: (studentId: string, nucleoId: string) => void;
     projectLogo?: string;
     projectId?: ProjectId;
+    inventory?: InventoryItem[];
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -33,7 +34,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onAddNucleo,
     onDischargeStudent,
     projectLogo = '/logo.png',
-    projectId = 'FORMANDO_CAMPEOES'
+    projectId = 'FORMANDO_CAMPEOES',
+    inventory = []
 }) => {
     // --- THEME BY PROJECT ---
     const theme = useMemo(() => {
@@ -328,10 +330,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     };
 
     // Statistics for "Heatmap" dashboard summary
-    const totalNucleos = nucleos.length;
-    const criticalStock = nucleos.filter(n => n.stockStatus === 'LOW').length;
-    const warningStock = nucleos.filter(n => n.stockStatus === 'MEDIUM').length;
-    const okStock = nucleos.filter(n => n.stockStatus === 'HIGH').length;
+    // Calcula status do estoque DINAMICAMENTE baseado no inventário real
+    const realStockStatus = useMemo(() => {
+        if (inventory.length === 0) {
+            // Sem inventário cadastrado: usa stockStatus hardcoded dos núcleos
+            return {
+                totalNucleos: nucleos.length,
+                criticalStock: nucleos.filter(n => n.stockStatus === 'LOW').length,
+                warningStock: nucleos.filter(n => n.stockStatus === 'MEDIUM').length,
+                okStock: nucleos.filter(n => n.stockStatus === 'HIGH').length,
+                hasRealData: false,
+            };
+        }
+        // Com inventário real: calcula baseado na porcentagem de estoque
+        const totalItems = inventory.length;
+        const critical = inventory.filter(i => i.quantity <= (i.initialQuantity * 0.05)).length;
+        const warning = inventory.filter(i => i.quantity > (i.initialQuantity * 0.05) && i.quantity <= (i.initialQuantity * 0.15)).length;
+        const ok = inventory.filter(i => i.quantity > (i.initialQuantity * 0.15)).length;
+        return {
+            totalNucleos: nucleos.length,
+            criticalStock: critical,
+            warningStock: warning,
+            okStock: ok,
+            totalItems,
+            hasRealData: true,
+        };
+    }, [nucleos, inventory]);
+
+    const { totalNucleos, criticalStock, warningStock, okStock } = realStockStatus;
 
     // Filtered list for Sidebar
     const filteredNucleos = filterStatus
@@ -436,7 +462,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {activeTab === 'estoque' ? (
                             <>
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Status da Rede</h3>
+                                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                                        {realStockStatus.hasRealData ? `Estoque Real (${realStockStatus.totalItems} itens)` : 'Status da Rede'}
+                                    </h3>
                                     {filterStatus && (
                                         <button onClick={() => setFilterStatus(null)} className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase bg-red-50 px-2 py-1 rounded-md transition-colors">
                                             Limpar Filtro
@@ -453,11 +481,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         <span className={`text-[10px] font-bold ${theme.textLight} uppercase`}>Núcleos</span>
                                     </button>
                                     <button
-                                        onClick={() => setFilterStatus('HIGH')}
+                                        onClick={() => realStockStatus.hasRealData ? null : setFilterStatus('HIGH')}
                                         className={`p-3 rounded-xl text-center transition-all ${filterStatus === 'HIGH' ? 'bg-green-100 ring-2 ring-green-500' : 'bg-green-50 hover:bg-green-100'}`}
                                     >
                                         <span className="block text-2xl font-black text-green-600">{okStock}</span>
-                                        <span className="text-[10px] font-bold text-green-400 uppercase">Estoque OK</span>
+                                        <span className="text-[10px] font-bold text-green-400 uppercase">{realStockStatus.hasRealData ? 'Abastecido' : 'Estoque OK'}</span>
                                     </button>
                                     <button
                                         onClick={() => setFilterStatus('LOW')}

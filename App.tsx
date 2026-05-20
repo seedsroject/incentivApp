@@ -1908,6 +1908,7 @@ const AppContent: React.FC = () => {
             onDischargeStudent={handleDischargeStudent}
             projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'}
             projectId={activeProject}
+            inventory={inventory}
           />
         )}
 
