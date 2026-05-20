@@ -258,11 +258,12 @@ const AppContent: React.FC = () => {
           .from('nucleos').select('*').eq('project_id', projectData.id).order('nome');
         if (nucleosData && nucleosData.length > 0) {
           const mapped: Nucleo[] = nucleosData.map((n: any) => {
-            // Extrair UF do nome ou endereço como fallback (ex: "Horizonte - CE", "São José dos Pinhais – PR")
+            // Extrair UF do nome ou endereço como fallback
             const extractUF = (text: string | null | undefined): string | undefined => {
               if (!text) return undefined;
-              const match = text.match(/[\s\-–]+([A-Z]{2})\s*$/);
-              return match ? match[1] : undefined;
+              // Padrões: "Horizonte - CE", "São José – PR", "Curitiba, PR", "Nucleo|BA", "Local / SP"
+              const match = text.match(/[\s\-–,|\/]+([A-Za-z]{2})\s*$/);
+              return match ? match[1].toUpperCase() : undefined;
             };
             const estado = n.estado || extractUF(n.nome) || extractUF(n.address) || extractUF(n.city) || undefined;
 
@@ -321,6 +322,12 @@ const AppContent: React.FC = () => {
             }
             return Array.from(seen.values());
           })();
+          // Debug: mostrar núcleos carregados e seus estados
+          console.log('[Nucleos] Carregados (' + deduped.length + '):', deduped.map(n => ({
+            nome: n.nome,
+            estado: n.estado || '⚠️ NULL',
+            address: n.address?.substring(0, 40)
+          })));
           // Mescla: núcleos do Supabase para este projeto + fallback de outros projetos
           setNucleos(prev => {
             const otherProjects = prev.filter(n => n.project !== projectSlug);
@@ -740,18 +747,26 @@ const AppContent: React.FC = () => {
     return () => clearTimeout(timer);
   }, [loginEmail]);
 
-  // Núcleos filtrados para a tela de login (por estado do usuário)
+  // Núcleos do projeto ativo (para login)
+  const projectNucleosForLogin = useMemo(() => {
+    return nucleos.filter(n => n.project === activeProject);
+  }, [nucleos, activeProject]);
+
+  // Lista de estados únicos disponíveis nos núcleos
+  const availableEstados = useMemo(() => {
+    const estados = new Set<string>();
+    projectNucleosForLogin.forEach(n => {
+      if (n.estado) estados.add(n.estado);
+    });
+    return Array.from(estados).sort();
+  }, [projectNucleosForLogin]);
+
+  // Núcleos filtrados para a tela de login (por estado selecionado)
   const loginFilteredNucleos = useMemo(() => {
-    const projectNucleos = nucleos.filter(n => n.project === activeProject);
-    if (!loginEstado) return projectNucleos; // Super admin ou sem estado: mostra todos
-    const filtered = projectNucleos.filter(n => n.estado === loginEstado);
-    // Fallback: se nenhum núcleo tem estado mapeado, mostrar todos
-    if (filtered.length === 0 && projectNucleos.length > 0) {
-      console.warn('[Login] Nenhum núcleo com estado "' + loginEstado + '" encontrado. Mostrando todos como fallback.');
-      return projectNucleos;
-    }
-    return filtered;
-  }, [nucleos, activeProject, loginEstado]);
+    if (!loginEstado) return projectNucleosForLogin;
+    const filtered = projectNucleosForLogin.filter(n => n.estado === loginEstado);
+    return filtered.length > 0 ? filtered : projectNucleosForLogin; // Fallback
+  }, [projectNucleosForLogin, loginEstado]);
 
   // Recarregar dados ao trocar projeto (se logado)
   useEffect(() => {
@@ -1623,26 +1638,44 @@ const AppContent: React.FC = () => {
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Núcleo de Atuação</label>
-                    <div className="relative">
-                      <select
-                        value={loginNucleoId}
-                        onChange={(e) => setLoginNucleoId(e.target.value)}
-                        className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-                      >
-                        <option value="">Selecione seu núcleo...</option>
-                        {loginFilteredNucleos.map(nucleo => (
-                          <option key={nucleo.id} value={nucleo.id}>
-                            {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Estado / Região</label>
+                      <div className="relative">
+                        <select
+                          value={loginEstado || ''}
+                          onChange={(e) => {
+                            setLoginEstado(e.target.value || null);
+                            setLoginNucleoId(''); // Reset núcleo quando estado muda
+                          }}
+                          className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                        >
+                          <option value="">Todos</option>
+                          {availableEstados.map(uf => (
+                            <option key={uf} value={uf}>{uf}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
+                      </div>
                     </div>
-                    {loginEstado && (
-                      <p className="text-[9px] text-blue-500 font-medium mt-0.5 ml-1">Mostrando núcleos de {loginEstado}</p>
-                    )}
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Núcleo de Atuação</label>
+                      <div className="relative">
+                        <select
+                          value={loginNucleoId}
+                          onChange={(e) => setLoginNucleoId(e.target.value)}
+                          className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                        >
+                          <option value="">Selecione...</option>
+                          {loginFilteredNucleos.map(nucleo => (
+                            <option key={nucleo.id} value={nucleo.id}>
+                              {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Senha</label>
