@@ -1488,14 +1488,53 @@ const AppContent: React.FC = () => {
 
   // --- RENDER LOGIC ---
 
+  // Estado para núcleo carregado diretamente do Supabase (para formulários públicos sem login)
+  const [publicNucleoFromDb, setPublicNucleoFromDb] = useState<Nucleo | null>(null);
+
+  useEffect(() => {
+    if (view !== AppView.PUBLIC_FORM || !navParams.nucleoId) return;
+    // Se já encontrou nos nucleos locais, não precisa buscar
+    const localMatch = resolveNucleoFromIdOrSlug(navParams.nucleoId, nucleos);
+    if (localMatch) { setPublicNucleoFromDb(null); return; }
+    // Buscar diretamente do Supabase pelo UUID
+    const fetchNucleo = async () => {
+      try {
+        const { data } = await supabase.from('nucleos').select('*').eq('id', navParams.nucleoId).single();
+        if (data) {
+          const extractUF = (text: string | null | undefined): string | undefined => {
+            if (!text) return undefined;
+            const match = text.match(/[\s\-–,|\/]+([A-Za-z]{2})\s*$/);
+            return match ? match[1].toUpperCase() : undefined;
+          };
+          const estado = data.estado || extractUF(data.nome) || extractUF(data.address) || undefined;
+          setPublicNucleoFromDb({
+            id: data.id,
+            nome: data.nome,
+            project: (navParams.project || 'FORMANDO_CAMPEOES') as ProjectId,
+            address: data.address || '',
+            city: data.city,
+            estado,
+            sliNumber: data.sli_number,
+            cnpj: data.cnpj,
+            razaoSocial: data.razao_social,
+          });
+          console.log('[PublicForm] Núcleo carregado do Supabase:', data.nome);
+        }
+      } catch (err) {
+        console.warn('[PublicForm] Erro ao buscar núcleo:', err);
+      }
+    };
+    fetchNucleo();
+  }, [view, navParams.nucleoId, nucleos]);
+
   if (view === AppView.PUBLIC_FORM) {
-    const publicNucleo = resolveNucleoFromIdOrSlug(navParams.nucleoId, nucleos) || resolveNucleoFromIdOrSlug(navParams.nucleoId, filteredNucleos);
+    const publicNucleo = resolveNucleoFromIdOrSlug(navParams.nucleoId, nucleos) || resolveNucleoFromIdOrSlug(navParams.nucleoId, filteredNucleos) || publicNucleoFromDb;
     return (
       <PublicFormView
         serviceId={navParams.service}
         studentId={navParams.studentId}
         projectId={navParams.project as ProjectId | undefined}
-        currentNucleo={publicNucleo}
+        currentNucleo={publicNucleo || undefined}
         onSave={async (data) => {
           if (navParams.service === 'ficha') {
             if (data?.type === 'declaracao_uniformes') {
