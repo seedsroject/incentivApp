@@ -135,7 +135,8 @@ export interface StudentDraft {
   nome_responsavel_organizacao?: string; // Associação/Federação
 
   reportType?: 'REPORT_7' | 'REPORT_8'; // Identifica se é Beneficiado ou Escola
-  nucleo_id?: string; // ID do núcleo onde o aluno está cadastrado
+  nucleo_id?: string; // ID do núcleo onde o aluno está cadastrado (UUID - identificador técnico)
+  nucleo_nome?: string; // Nome do núcleo (identificador visual permanente - não muda)
   turma_id?: string;  // ID da turma (ex: 'A', 'B') dentro do núcleo
 
   timestamp?: string; // Data de criação do registro no sistema

@@ -388,17 +388,22 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     laudo_url: ''
   });
 
+  // Mapeamento de projetos (usado para preencher nome_projeto automaticamente)
+  const PROJECT_NAME_MAP: Record<string, string> = {
+    'FORMANDO_CAMPEOES': 'Escolinha de Triathlon',
+    'DANIEL_DIAS': 'Nadando com Daniel Dias',
+    'FUTEBOL': 'Escolinha de Futebol',
+  };
+
   useEffect(() => {
     if (currentNucleo) {
-      const projectNameMap: Record<string, string> = {
-        'FORMANDO_CAMPEOES': 'Escolinha de Triathlon',
-        'DANIEL_DIAS': 'Nadando com Daniel Dias',
-        'FUTEBOL': 'Escolinha de Futebol',
-      };
       setFormData(prev => ({
         ...prev,
+        // Identificador permanente do núcleo (NÃO muda)
+        nucleo_nome: currentNucleo.nome || prev.nucleo_nome || '',
+        // Dados administrativos (podem mudar anualmente)
         n_sli: currentNucleo.sliNumber || prev.n_sli || '',
-        nome_projeto: projectNameMap[currentNucleo.project] || prev.nome_projeto || '',
+        nome_projeto: PROJECT_NAME_MAP[currentNucleo.project] || prev.nome_projeto || '',
         proponente: currentNucleo.razaoSocial || currentNucleo.cnpj
           ? `${currentNucleo.razaoSocial || ''}${currentNucleo.cnpj ? ` (CNPJ: ${currentNucleo.cnpj})` : ''}`
           : `${currentNucleo.nome}${currentNucleo.address ? ' - ' + currentNucleo.address : ''}`,
@@ -456,14 +461,14 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     if (formData.telefone && isInvalidRepeating(formData.telefone)) return alert("Telefone inválido. Não insira valores repetidos.");
     if (formData.email_contato && (!formData.email_contato.includes('@') || !formData.email_contato.includes('.'))) return alert("Por favor, insira um endereço de e-mail válido.");
 
-    onSave({ ...formData, reportType, nucleo_id: nucleoId });
+    onSave({ ...formData, reportType, nucleo_id: nucleoId, nucleo_nome: currentNucleo?.nome || formData.nucleo_nome });
     setMode('SUCCESS');
   };
 
   const handleScanSubmit = () => {
     if (!formData.nome) return alert("Por favor, identifique o nome do aluno da ficha.");
     // Garante que a imagem original está salva no formData antes de enviar
-    onSave({ ...formData, reportType: 'REPORT_7', nucleo_id: nucleoId }); // Assume Report 7 for scans default
+    onSave({ ...formData, reportType: 'REPORT_7', nucleo_id: nucleoId, nucleo_nome: currentNucleo?.nome || formData.nucleo_nome }); // Assume Report 7 for scans default
     setMode('SUCCESS');
   };
 
@@ -1857,6 +1862,21 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
           </p>
         </div>
 
+        {/* NÚCLEO IDENTIFICADOR (fixo — não editável) */}
+        {currentNucleo && (
+          <div className="bg-gradient-to-r from-blue-50 to-teal-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+            <div className="bg-blue-600 text-white p-2 rounded-lg shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Núcleo de Inscrição</p>
+              <p className="text-sm font-black text-gray-800">{currentNucleo.nome}</p>
+              {currentNucleo.city && <p className="text-xs text-gray-500">{currentNucleo.city}</p>}
+            </div>
+            <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider">✓ Vinculado</div>
+          </div>
+        )}
+
         {/* DADOS DO PROJETO (COMUM) */}
         <div className="space-y-4 border-b border-gray-100 pb-6">
           <h3 className="font-bold text-lg text-gray-800">Dados do Projeto (Comum)</h3>
@@ -1864,7 +1884,6 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
             <div><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Nº SLI</label><input type="text" value={formData.n_sli} onChange={e => setFormData({ ...formData, n_sli: e.target.value })} className={inputStyle} /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Projeto</label><input type="text" value={formData.nome_projeto} onChange={e => setFormData({ ...formData, nome_projeto: e.target.value })} className={inputStyle} /></div>
             <div className="col-span-2"><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Proponente</label><input type="text" value={formData.proponente} onChange={e => setFormData({ ...formData, proponente: e.target.value })} className={inputStyle} /></div>
-
           </div>
         </div>
 

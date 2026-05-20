@@ -1068,6 +1068,7 @@ const AppContent: React.FC = () => {
             id: newStudent.id,
             project_id: supabaseProjectId,
             nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
+            nucleo_nome: data.nucleo_nome || null,
             nome: data.nome,
             data_nascimento: data.data_nascimento || null,
             rg_cpf: data.rg_cpf || null,
