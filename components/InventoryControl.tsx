@@ -233,13 +233,18 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Unidade</label>
-                                <input 
-                                    type="text" 
+                                <select 
                                     value={newItemUnit} 
                                     onChange={e => setNewItemUnit(e.target.value)} 
-                                    className={inputStyle} 
-                                    placeholder="Ex: Kit" 
-                                />
+                                    className={inputStyle}
+                                >
+                                    <option value="Kit">Kit</option>
+                                    <option value="Unidade">Unidade</option>
+                                    <option value="Cx.">Caixa</option>
+                                    <option value="Pct.">Pacote</option>
+                                    <option value="Kg">Quilograma</option>
+                                    <option value="L">Litro</option>
+                                </select>
                             </div>
                         </div>
                         <div>
