@@ -1129,17 +1129,29 @@ const AppContent: React.FC = () => {
   const handleSaveDocument = async (data: DocumentLog) => {
     // LÓGICA DE BAIXA DE ESTOQUE AUTOMÁTICA
     if (data.type === 'LISTA_FREQUENCIA' && data.metaData?.inventoryDeduction) {
-      const { itemId, amount } = data.metaData.inventoryDeduction;
+      const deductions = data.metaData.inventoryDeduction;
+      // inventoryDeduction pode ser um array [{itemId, amount}] ou objeto único {itemId, amount}
+      const deductionList = Array.isArray(deductions) ? deductions : [deductions];
+      
+      let totalDeducted = 0;
+      const itemNames: string[] = [];
+
       setInventory(prev => prev.map(item => {
-        if (item.id === itemId) {
-          const newQty = Math.max(0, item.quantity - amount);
+        const deduction = deductionList.find((d: any) => d.itemId === item.id);
+        if (deduction && deduction.amount > 0) {
+          const newQty = Math.max(0, item.quantity - deduction.amount);
+          totalDeducted += deduction.amount;
+          itemNames.push(`${item.name} (-${deduction.amount})`);
           // Atualizar no Supabase
-          supabase.from('inventory_items').update({ quantity: newQty }).eq('id', itemId);
+          supabase.from('inventory_items').update({ quantity: newQty }).eq('id', item.id);
           return { ...item, quantity: newQty };
         }
         return item;
       }));
-      alert(`Estoque atualizado: -${amount} unidades.`);
+
+      if (totalDeducted > 0) {
+        alert(`✅ Estoque atualizado!\n${itemNames.join('\n')}\nTotal: -${totalDeducted} unidades.`);
+      }
     }
 
     setCollectedDocuments(prev => [...prev, data]);
@@ -1204,15 +1216,23 @@ const AppContent: React.FC = () => {
   const handleUpdateInventory = async (updatedItem: InventoryItem) => {
     setInventory(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
     // Persistir no Supabase
-    const { error } = await supabase.from('inventory_items').update({
+    const payload: any = {
       name: updatedItem.name,
       quantity: updatedItem.quantity,
       initial_quantity: updatedItem.initialQuantity,
       unit: updatedItem.unit,
       min_threshold: updatedItem.minThreshold,
       category: updatedItem.category,
-      purchase_date: updatedItem.purchaseDate || null,
-    }).eq('id', updatedItem.id);
+    };
+    if (updatedItem.purchaseDate) payload.purchase_date = updatedItem.purchaseDate;
+
+    let { error } = await supabase.from('inventory_items').update(payload).eq('id', updatedItem.id);
+    // Fallback sem purchase_date se coluna não existir
+    if (error && updatedItem.purchaseDate) {
+      delete payload.purchase_date;
+      const retry = await supabase.from('inventory_items').update(payload).eq('id', updatedItem.id);
+      error = retry.error;
+    }
     if (error) console.warn('Erro ao atualizar estoque:', error);
   };
 
@@ -1220,7 +1240,7 @@ const AppContent: React.FC = () => {
     setInventory(prev => [...prev, newItem]);
     // Persistir no Supabase
     if (supabaseProjectId) {
-      const { data: inserted, error } = await supabase.from('inventory_items').insert({
+      const payload: any = {
         project_id: supabaseProjectId,
         name: newItem.name,
         quantity: newItem.quantity,
@@ -1228,13 +1248,30 @@ const AppContent: React.FC = () => {
         unit: newItem.unit,
         min_threshold: newItem.minThreshold,
         category: newItem.category,
-        purchase_date: newItem.purchaseDate || null,
-      }).select().single();
+      };
+      // Tenta incluir purchase_date (pode falhar se migração 017 não foi executada)
+      if (newItem.purchaseDate) payload.purchase_date = newItem.purchaseDate;
+
+      let { data: inserted, error } = await supabase.from('inventory_items').insert(payload).select().single();
+      
+      // Se falhou por causa de purchase_date (coluna não existe), tenta sem
+      if (error && newItem.purchaseDate) {
+        console.warn('[Inventory] Tentando sem purchase_date:', error.message);
+        delete payload.purchase_date;
+        const retry = await supabase.from('inventory_items').insert(payload).select().single();
+        inserted = retry.data;
+        error = retry.error;
+      }
+
       if (error) {
-        console.warn('Erro ao adicionar item:', error);
+        console.error('[Inventory] Erro ao adicionar item:', error);
+        alert(`⚠️ Erro ao salvar no banco: ${error.message}`);
       } else if (inserted) {
+        console.log('[Inventory] Item salvo com sucesso, ID:', inserted.id);
         setInventory(prev => prev.map(i => i.id === newItem.id ? { ...i, id: inserted.id } : i));
       }
+    } else {
+      console.warn('[Inventory] supabaseProjectId não definido, item não persistido no banco.');
     }
   };
 
