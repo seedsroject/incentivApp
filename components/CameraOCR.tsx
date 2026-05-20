@@ -404,9 +404,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
         // Dados administrativos (podem mudar anualmente)
         n_sli: currentNucleo.sliNumber || prev.n_sli || '',
         nome_projeto: PROJECT_NAME_MAP[currentNucleo.project] || prev.nome_projeto || '',
-        proponente: currentNucleo.razaoSocial || currentNucleo.cnpj
-          ? `${currentNucleo.razaoSocial || ''}${currentNucleo.cnpj ? ` (CNPJ: ${currentNucleo.cnpj})` : ''}`
-          : `${currentNucleo.nome}${currentNucleo.address ? ' - ' + currentNucleo.address : ''}`,
+        proponente: currentNucleo.nome || prev.proponente || '',
       }));
     }
   }, [currentNucleo]);
