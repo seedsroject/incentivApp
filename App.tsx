@@ -1130,26 +1130,52 @@ const AppContent: React.FC = () => {
     // LÓGICA DE BAIXA DE ESTOQUE AUTOMÁTICA
     if (data.type === 'LISTA_FREQUENCIA' && data.metaData?.inventoryDeduction) {
       const deductions = data.metaData.inventoryDeduction;
-      // inventoryDeduction pode ser um array [{itemId, amount}] ou objeto único {itemId, amount}
       const deductionList = Array.isArray(deductions) ? deductions : [deductions];
       
-      let totalDeducted = 0;
-      const itemNames: string[] = [];
-
-      setInventory(prev => prev.map(item => {
-        const deduction = deductionList.find((d: any) => d.itemId === item.id);
-        if (deduction && deduction.amount > 0) {
-          const newQty = Math.max(0, item.quantity - deduction.amount);
-          totalDeducted += deduction.amount;
-          itemNames.push(`${item.name} (-${deduction.amount})`);
-          // Atualizar no Supabase
-          supabase.from('inventory_items').update({ quantity: newQty }).eq('id', item.id);
-          return { ...item, quantity: newQty };
+      // 1. Calcular deduções a partir do estado ATUAL do inventário (síncrono)
+      const currentInventory = [...inventory]; // snapshot do estado atual
+      const updates: { itemId: string; itemName: string; oldQty: number; newQty: number }[] = [];
+      
+      for (const ded of deductionList) {
+        if (!ded?.itemId || !ded?.amount || ded.amount <= 0) continue;
+        const item = currentInventory.find(i => i.id === ded.itemId);
+        if (item) {
+          const newQty = Math.max(0, item.quantity - ded.amount);
+          updates.push({ itemId: item.id, itemName: item.name, oldQty: item.quantity, newQty });
         }
-        return item;
-      }));
+      }
 
-      if (totalDeducted > 0) {
+      if (updates.length > 0) {
+        // 2. Atualizar estado local
+        setInventory(prev => prev.map(item => {
+          const upd = updates.find(u => u.itemId === item.id);
+          return upd ? { ...item, quantity: upd.newQty } : item;
+        }));
+
+        // 3. Persistir no Supabase com await + tratamento de erro
+        const itemNames: string[] = [];
+        let totalDeducted = 0;
+        
+        for (const upd of updates) {
+          totalDeducted += (upd.oldQty - upd.newQty);
+          itemNames.push(`${upd.itemName} (${upd.oldQty} → ${upd.newQty})`);
+          
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(upd.itemId);
+          if (isUUID) {
+            const { error } = await supabase
+              .from('inventory_items')
+              .update({ quantity: upd.newQty })
+              .eq('id', upd.itemId);
+            if (error) {
+              console.error(`[Estoque] ❌ Erro ao atualizar "${upd.itemName}":`, error);
+            } else {
+              console.log(`[Estoque] ✅ "${upd.itemName}" salvo no banco: ${upd.oldQty} → ${upd.newQty}`);
+            }
+          } else {
+            console.warn(`[Estoque] ⚠️ "${upd.itemName}" tem ID temporário (${upd.itemId}), update ignorado.`);
+          }
+        }
+
         alert(`✅ Estoque atualizado!\n${itemNames.join('\n')}\nTotal: -${totalDeducted} unidades.`);
       }
     }
