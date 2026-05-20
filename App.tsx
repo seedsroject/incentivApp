@@ -257,7 +257,16 @@ const AppContent: React.FC = () => {
         const { data: nucleosData } = await supabase
           .from('nucleos').select('*').eq('project_id', projectData.id).order('nome');
         if (nucleosData && nucleosData.length > 0) {
-          const mapped: Nucleo[] = nucleosData.map((n: any) => ({
+          const mapped: Nucleo[] = nucleosData.map((n: any) => {
+            // Extrair UF do nome ou endereço como fallback (ex: "Horizonte - CE", "São José dos Pinhais – PR")
+            const extractUF = (text: string | null | undefined): string | undefined => {
+              if (!text) return undefined;
+              const match = text.match(/[\s\-–]+([A-Z]{2})\s*$/);
+              return match ? match[1] : undefined;
+            };
+            const estado = n.estado || extractUF(n.nome) || extractUF(n.address) || extractUF(n.city) || undefined;
+
+            return {
             id: n.id,
             nome: n.nome,
             project: projectSlug,
@@ -268,6 +277,7 @@ const AppContent: React.FC = () => {
             cnpj: n.cnpj,
             razaoSocial: n.razao_social,
             city: n.city,
+            estado,
             sliNumber: n.sli_number,
             dias_aulas: n.dias_aulas,
             horario_aulas: n.horario_aulas,
@@ -277,7 +287,8 @@ const AppContent: React.FC = () => {
             stockStatus: (n.stock_status || 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH',
             stockDetails: generateStockDetails((n.stock_status || 'MEDIUM') as any),
             employees: [],
-          }));
+          };
+          });
           // Deduplicar núcleos: manter apenas o que tem UF no final do endereço
           const deduped = (() => {
             const seen = new Map<string, Nucleo>();
@@ -1452,8 +1463,13 @@ const AppContent: React.FC = () => {
         
         if (insertError) {
             console.error('Erro ao inserir acesso:', insertError);
-            // Mesmo com erro de insert, o usuário foi criado no auth. 
-            // O ideal seria tentar novamente ou alertar o usuário, mas vamos seguir o fluxo.
+        }
+
+        // Espelhar estado_responsavel na tabela profiles para lookup pré-login
+        if (regRole === 'ADMIN' && regEstado) {
+          await supabase.from('profiles')
+            .update({ estado_responsavel: regEstado })
+            .eq('id', authData.user.id);
         }
       }
 
