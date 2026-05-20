@@ -125,7 +125,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             const fetchPending = async () => {
                 const { data, error } = await supabase
                     .from('user_project_access')
-                    .select('*, profiles(nome, email), projects!inner(slug), nucleos(estado)')
+                    .select('*, profiles(nome, email), projects!inner(slug), nucleos(nome, estado)')
                     .eq('projects.slug', projectId)
                     .in('status', ['PENDENTE', 'APROVADO'])
                     .order('status', { ascending: false }); // PENDENTE comes before APROVADO because P > A
@@ -136,6 +136,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 if (data) {
                     const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
+                    const adminEstado = currentUser.estado_responsavel;
+
                     let filteredData = data.filter((req: any) => {
                         // 1. Não mostrar o próprio usuário logado
                         if (req.user_id === currentUser.uid || req.profiles?.email === currentUser.email) return false;
@@ -143,10 +145,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         // 2. Não mostrar o Super Admin para os outros admins
                         if (!isSuperAdmin && req.profiles?.email === 'admin.geral@formandocampeoes.org.br') return false;
 
-                        // 3. Regra de estado para admins regionais
-                        if (!isSuperAdmin && currentUser.estado_responsavel) {
-                            return req.estado_responsavel === currentUser.estado_responsavel || 
-                                   (req.nucleos && req.nucleos.estado === currentUser.estado_responsavel);
+                        // 3. Super Admin vê tudo
+                        if (isSuperAdmin) return true;
+
+                        // 4. Admin regional: filtrar por estado
+                        if (adminEstado) {
+                            // a) Se o solicitante tem estado_responsavel (é admin), comparar estados
+                            if (req.estado_responsavel) {
+                                return req.estado_responsavel === adminEstado;
+                            }
+
+                            // b) Se o solicitante tem nucleo_id (é professor/coordenador),
+                            //    verificar se o núcleo pertence ao estado do admin
+                            if (req.nucleo_id) {
+                                // Primeiro tentar pelo JOIN do Supabase
+                                const nucleoEstadoFromJoin = req.nucleos?.estado;
+                                if (nucleoEstadoFromJoin) {
+                                    return nucleoEstadoFromJoin === adminEstado;
+                                }
+                                // Fallback: buscar no array local de núcleos
+                                const localNucleo = nucleos.find(n => n.id === req.nucleo_id);
+                                if (localNucleo?.estado) {
+                                    return localNucleo.estado === adminEstado;
+                                }
+                                // Se não conseguiu resolver o estado do núcleo, não mostrar
+                                return false;
+                            }
+
+                            // c) Solicitante sem estado e sem núcleo → não mostrar para admin regional
+                            return false;
                         }
 
                         return true;
@@ -156,7 +183,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             };
             fetchPending();
         }
-    }, [activeTab, projectId]);
+    }, [activeTab, projectId, currentUser, nucleos]);
 
     const handleApproveAccess = async (accessId: string) => {
         const { error } = await supabase
@@ -807,6 +834,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         <div>
                                             <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Gestão de Acessos</h3>
                                             <span className={`text-xs ${theme.text} font-bold`}>{pendingAccesses.length} Registros</span>
+                                            {currentUser.estado_responsavel && currentUser.email !== 'admin.geral@formandocampeoes.org.br' && (
+                                                <span className="text-[9px] text-purple-600 font-medium">📍 Região {currentUser.estado_responsavel}</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -817,7 +847,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         </div>
                                     ) : (
                                         pendingAccesses.map((access: any) => {
-                                            const nName = nucleos.find(n => n.id === access.nucleo_id)?.nome || 'Sem Núcleo';
+                                            const localNucleo = nucleos.find(n => n.id === access.nucleo_id);
+                                            const nName = localNucleo?.nome || access.nucleos?.nome || 'Sem Núcleo';
+                                            const reqEstado = access.estado_responsavel || access.nucleos?.estado || localNucleo?.estado || null;
                                             const isApproved = access.status === 'APROVADO';
                                             
                                             return (
@@ -832,12 +864,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                                 </span>
                                                             </div>
                                                             <p className="text-xs text-gray-500 mt-0.5">{access.profiles?.email}</p>
-                                                            <div className="flex items-center gap-2 mt-2">
+                                                            <div className="flex items-center gap-2 mt-2 flex-wrap">
                                                                 <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
                                                                     Cargo: {access.role}
                                                                 </span>
+                                                                {reqEstado && (
+                                                                    <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
+                                                                        📍 {reqEstado}
+                                                                    </span>
+                                                                )}
                                                                 <span className="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-md">
-                                                                    {access.estado_responsavel ? `Região: ${access.estado_responsavel}` : nName.split(' - ')[0]}
+                                                                    {access.nucleo_id ? nName.split(' - ')[0] : 'Admin Regional'}
                                                                 </span>
                                                             </div>
                                                         </div>
