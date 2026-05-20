@@ -1498,8 +1498,27 @@ const AppContent: React.FC = () => {
     if (localMatch) { setPublicNucleoFromDb(null); return; }
     // Buscar diretamente do Supabase pelo UUID
     const fetchNucleo = async () => {
+      console.log('[PublicForm] Buscando núcleo no Supabase, ID:', navParams.nucleoId);
       try {
-        const { data } = await supabase.from('nucleos').select('*').eq('id', navParams.nucleoId).single();
+        const { data, error } = await supabase.from('nucleos').select('*').eq('id', navParams.nucleoId).single();
+        if (error) {
+          console.warn('[PublicForm] Erro Supabase ao buscar núcleo:', error.message, error.code);
+          // Tentar busca por nome parcial como fallback
+          const { data: fallbackData } = await supabase.from('nucleos').select('*').limit(50);
+          if (fallbackData) {
+            const match = fallbackData.find((n: any) => n.id === navParams.nucleoId);
+            if (match) {
+              console.log('[PublicForm] Fallback: núcleo encontrado na lista geral:', match.nome);
+              setPublicNucleoFromDb({
+                id: match.id, nome: match.nome,
+                project: (navParams.project || 'FORMANDO_CAMPEOES') as ProjectId,
+                address: match.address || '', city: match.city,
+                sliNumber: match.sli_number, cnpj: match.cnpj, razaoSocial: match.razao_social,
+              });
+            }
+          }
+          return;
+        }
         if (data) {
           const extractUF = (text: string | null | undefined): string | undefined => {
             if (!text) return undefined;
@@ -1518,10 +1537,12 @@ const AppContent: React.FC = () => {
             cnpj: data.cnpj,
             razaoSocial: data.razao_social,
           });
-          console.log('[PublicForm] Núcleo carregado do Supabase:', data.nome);
+          console.log('[PublicForm] ✅ Núcleo carregado do Supabase:', data.nome);
+        } else {
+          console.warn('[PublicForm] Núcleo não encontrado no Supabase para ID:', navParams.nucleoId);
         }
       } catch (err) {
-        console.warn('[PublicForm] Erro ao buscar núcleo:', err);
+        console.warn('[PublicForm] Exceção ao buscar núcleo:', err);
       }
     };
     fetchNucleo();
