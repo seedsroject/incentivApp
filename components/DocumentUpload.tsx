@@ -592,7 +592,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
         let distributedItems: { studentName: string; itemName: string; itemId: string }[] = [];
 
         if (distributeItem && selectedInventoryItems.length > 0 && totalItemsDistributed > 0) {
-            const deductions: { itemId: string; amount: number }[] = [];
+            const deductions: { itemId: string; itemName: string; amount: number }[] = [];
             let stockInfoParts: string[] = [];
             
             selectedInventoryItems.forEach(itemId => {
@@ -601,7 +601,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({ docType, title, 
                     const itemPattern = inventory.find(i => i.id === itemId);
                     if (itemPattern) {
                         stockInfoParts.push(`${itemPattern.name} (${count} un)`);
-                        deductions.push({ itemId, amount: count });
+                        deductions.push({ itemId, itemName: itemPattern.name, amount: count });
                     }
                 }
             });

@@ -1136,69 +1136,101 @@ const AppContent: React.FC = () => {
       
       console.log('[Estoque] 📋 deductionList:', JSON.stringify(deductionList));
       console.log('[Estoque] 📦 inventory.length:', inventory.length);
-      console.log('[Estoque] 📦 inventory IDs:', inventory.map(i => ({ id: i.id, name: i.name, qty: i.quantity })));
+      console.log('[Estoque] 📦 inventory items:', inventory.map(i => `${i.name}(${i.id.substring(0,8)}...) qty=${i.quantity}`));
 
-      // 1. Calcular deduções a partir do estado ATUAL do inventário
       const currentInventory = [...inventory];
-      const updates: { itemId: string; itemName: string; oldQty: number; newQty: number }[] = [];
+      const updates: { localId: string; dbId: string; itemName: string; oldQty: number; newQty: number; amount: number }[] = [];
       
       for (const ded of deductionList) {
-        console.log('[Estoque] 🔍 Procurando item:', ded?.itemId, 'amount:', ded?.amount);
+        console.log('[Estoque] 🔍 Buscando item para dedução:', ded);
         if (!ded?.itemId || !ded?.amount || ded.amount <= 0) {
-          console.warn('[Estoque] ⏭️ Dedução inválida, pulando:', ded);
+          console.warn('[Estoque] ⏭️ Dedução inválida, pulando');
           continue;
         }
-        const item = currentInventory.find(i => i.id === ded.itemId);
+
+        // Match por ID exato primeiro, depois fallback por nome
+        let item = currentInventory.find(i => i.id === ded.itemId);
+        if (!item && ded.itemName) {
+          item = currentInventory.find(i => i.name === ded.itemName);
+          if (item) console.log(`[Estoque] 🔄 Fallback por nome: "${ded.itemName}" → ID: ${item.id}`);
+        }
+        
         if (item) {
           const newQty = Math.max(0, item.quantity - ded.amount);
           console.log(`[Estoque] ✅ Match: "${item.name}" ${item.quantity} → ${newQty}`);
-          updates.push({ itemId: item.id, itemName: item.name, oldQty: item.quantity, newQty });
+          updates.push({ localId: item.id, dbId: item.id, itemName: item.name, oldQty: item.quantity, newQty, amount: ded.amount });
         } else {
-          console.error(`[Estoque] ❌ Item NÃO encontrado no inventory! ID buscado: "${ded.itemId}"`);
-          console.error('[Estoque] IDs disponíveis:', currentInventory.map(i => i.id));
+          console.error(`[Estoque] ❌ Item NÃO encontrado! ID: "${ded.itemId}", Name: "${ded.itemName}"`);
+          console.error('[Estoque] Itens disponíveis:', currentInventory.map(i => `${i.name}=${i.id}`));
         }
       }
 
-      console.log('[Estoque] 📊 Total updates preparados:', updates.length);
+      console.log('[Estoque] 📊 Total updates:', updates.length);
 
       if (updates.length > 0) {
-        // 2. Atualizar estado local
+        // Atualizar estado local
         setInventory(prev => prev.map(item => {
-          const upd = updates.find(u => u.itemId === item.id);
+          const upd = updates.find(u => u.localId === item.id);
           return upd ? { ...item, quantity: upd.newQty } : item;
         }));
 
-        // 3. Persistir no Supabase com await + tratamento de erro
+        // Persistir CADA dedução no Supabase
         const itemNames: string[] = [];
         let totalDeducted = 0;
         
         for (const upd of updates) {
-          totalDeducted += (upd.oldQty - upd.newQty);
+          totalDeducted += upd.amount;
           itemNames.push(`${upd.itemName} (${upd.oldQty} → ${upd.newQty})`);
           
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(upd.itemId);
-          console.log(`[Estoque] 🔑 ID: "${upd.itemId}" é UUID válido: ${isUUID}`);
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(upd.dbId);
           
           if (isUUID) {
-            const { data: respData, error, status, statusText } = await supabase
+            // ID é UUID válido — update direto
+            console.log(`[Estoque] 📡 UPDATE direto: id=${upd.dbId}, qty=${upd.newQty}`);
+            const { data: respData, error } = await supabase
               .from('inventory_items')
               .update({ quantity: upd.newQty })
-              .eq('id', upd.itemId)
+              .eq('id', upd.dbId)
               .select();
-            console.log(`[Estoque] 📡 Supabase response: status=${status} ${statusText}`, 'data:', respData, 'error:', error);
             if (error) {
-              console.error(`[Estoque] ❌ Erro ao atualizar "${upd.itemName}":`, error);
+              console.error(`[Estoque] ❌ Supabase erro:`, error);
             } else {
-              console.log(`[Estoque] ✅ "${upd.itemName}" PERSISTIDO no banco: ${upd.oldQty} → ${upd.newQty}`);
+              console.log(`[Estoque] ✅ PERSISTIDO:`, respData);
             }
           } else {
-            console.warn(`[Estoque] ⚠️ "${upd.itemName}" tem ID temporário (${upd.itemId}), update IGNORADO.`);
+            // ID temporário — buscar UUID real por nome + project
+            console.warn(`[Estoque] ⚠️ ID temporário: "${upd.dbId}". Buscando UUID real por nome...`);
+            if (supabaseProjectId) {
+              const { data: found } = await supabase
+                .from('inventory_items')
+                .select('id, quantity')
+                .eq('project_id', supabaseProjectId)
+                .eq('name', upd.itemName)
+                .single();
+              
+              if (found) {
+                console.log(`[Estoque] 🔑 UUID real encontrado: ${found.id}`);
+                const { error } = await supabase
+                  .from('inventory_items')
+                  .update({ quantity: Math.max(0, found.quantity - upd.amount) })
+                  .eq('id', found.id);
+                if (error) {
+                  console.error(`[Estoque] ❌ Erro no update por nome:`, error);
+                } else {
+                  console.log(`[Estoque] ✅ PERSISTIDO via busca por nome!`);
+                  // Atualizar ID local para futuras operações
+                  setInventory(prev => prev.map(i => i.id === upd.localId ? { ...i, id: found.id } : i));
+                }
+              } else {
+                console.error(`[Estoque] ❌ Item "${upd.itemName}" não encontrado no banco por nome.`);
+              }
+            }
           }
         }
 
         alert(`✅ Estoque atualizado!\n${itemNames.join('\n')}\nTotal: -${totalDeducted} unidades.`);
       } else {
-        console.warn('[Estoque] ⚠️ Nenhum update preparado — itens não encontrados no inventário.');
+        console.warn('[Estoque] ⚠️ Nenhum update — itens não encontrados.');
       }
     }
 
