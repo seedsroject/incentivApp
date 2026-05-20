@@ -109,6 +109,7 @@ export interface InventoryItem {
   minThreshold: number; // Para alerta de estoque baixo (manual)
   category: 'ALIMENTACAO' | 'VESTUARIO' | 'EQUIPAMENTO' | 'OUTROS';
   projectId?: ProjectId;
+  purchaseDate?: string; // Data de compra/cadastro (YYYY-MM-DD) para previsão de renovação
 }
 
 export interface StudentDraft {

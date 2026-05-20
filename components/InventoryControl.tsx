@@ -20,6 +20,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
   const [newItemUnit, setNewItemUnit] = useState('Kit');
   const [newItemCategory, setNewItemCategory] = useState<'ALIMENTACAO' | 'VESTUARIO' | 'EQUIPAMENTO' | 'OUTROS'>('ALIMENTACAO');
   const [newItemInitialQty, setNewItemInitialQty] = useState('');
+  const [newItemPurchaseDate, setNewItemPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleAddNew = () => {
     if (!newItemName || !newItemInitialQty) return alert("Preencha o nome e a quantidade inicial.");
@@ -30,15 +31,17 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
         id: `item_${Date.now()}`,
         name: newItemName,
         quantity: qty,
-        initialQuantity: qty, // Define a base para o cálculo de 10%
+        initialQuantity: qty,
         unit: newItemUnit,
-        minThreshold: Math.ceil(qty * 0.1), // Sugere 10% como mínimo padrão
-        category: newItemCategory
+        minThreshold: Math.ceil(qty * 0.1),
+        category: newItemCategory,
+        purchaseDate: newItemPurchaseDate || new Date().toISOString().split('T')[0],
     };
     
     onAddItem(newItem);
     setNewItemName('');
     setNewItemInitialQty('');
+    setNewItemPurchaseDate(new Date().toISOString().split('T')[0]);
     setShowAddModal(false);
   };
 
@@ -51,8 +54,6 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
           quantity: selectedItem.quantity + amount
       };
       
-      // Se for entrada positiva, podemos optar por atualizar o initialQuantity se for um "reabastecimento total"
-      // Por simplicidade, mantemos o initialQuantity original a menos que o novo estoque supere ele significativamente
       if (updatedItem.quantity > updatedItem.initialQuantity) {
           updatedItem.initialQuantity = updatedItem.quantity;
       }
@@ -64,43 +65,101 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
       setAdjustAmount('');
   };
 
-  // --- LÓGICA DE PREVISÃO ---
-  const calculateEstimate = (item: InventoryItem) => {
-      // 1. Filtrar histórico de consumo deste item
-      const usageLogs = history.filter(doc => 
-          doc.type === 'LISTA_FREQUENCIA' && 
-          doc.metaData?.inventoryDeduction?.itemId === item.id
-      ).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-      if (usageLogs.length < 1) return { daysLeft: null, avgPerDay: 0 };
-
-      // 2. Calcular consumo total e intervalo de dias
-      let totalConsumed = 0;
-      usageLogs.forEach(log => {
-          totalConsumed += (log.metaData?.inventoryDeduction?.amount || 0);
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ALGORITMO DE PREVISÃO DE RENOVAÇÃO INTELIGENTE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const calculateRenewalForecast = (item: InventoryItem) => {
+      // 1. Coletar TODOS os logs de consumo deste item (deduções via chamada digital)
+      const allDeductions: { date: Date; amount: number }[] = [];
+      
+      history.forEach(doc => {
+          if (doc.type !== 'LISTA_FREQUENCIA' || !doc.metaData) return;
+          
+          // Suporta formato antigo (single deduction) e novo (array de deductions)
+          const deductions = doc.metaData.inventoryDeduction;
+          if (!deductions) return;
+          
+          if (Array.isArray(deductions)) {
+              deductions.forEach((d: any) => {
+                  if (d.itemId === item.id && d.amount > 0) {
+                      allDeductions.push({
+                          date: new Date(doc.metaData.date || doc.timestamp),
+                          amount: d.amount
+                      });
+                  }
+              });
+          } else if (deductions.itemId === item.id && deductions.amount > 0) {
+              allDeductions.push({
+                  date: new Date(doc.metaData.date || doc.timestamp),
+                  amount: deductions.amount
+              });
+          }
       });
 
-      const firstDate = new Date(usageLogs[0].timestamp);
-      const lastDate = new Date(); // Até hoje
-      const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1; // Pelo menos 1 dia para evitar divisão por zero
+      if (allDeductions.length < 1) {
+          return { 
+              daysLeft: null, 
+              avgPerDay: 0, 
+              renewalDate: null, 
+              urgency: 'waiting' as const,
+              totalConsumed: 0,
+              daysTracked: 0
+          };
+      }
 
-      // 3. Média por dia
-      const avgPerDay = totalConsumed / diffDays;
+      // 2. Ordenar por data
+      allDeductions.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-      if (avgPerDay <= 0) return { daysLeft: null, avgPerDay: 0 };
+      // 3. Calcular consumo total e intervalo
+      const totalConsumed = allDeductions.reduce((sum, d) => sum + d.amount, 0);
+      const firstDate = allDeductions[0].date;
+      const now = new Date();
+      const diffMs = Math.abs(now.getTime() - firstDate.getTime());
+      const daysTracked = Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)), 1);
 
-      // 4. Dias restantes
-      const daysLeft = Math.ceil(item.quantity / avgPerDay);
+      // 4. Média ponderada (últimas distribuições pesam mais)
+      let weightedSum = 0;
+      let weightTotal = 0;
+      allDeductions.forEach((d, i) => {
+          const weight = 1 + (i / allDeductions.length); // Mais recentes pesam mais
+          weightedSum += d.amount * weight;
+          weightTotal += weight;
+      });
+      const weightedAvg = weightTotal > 0 ? weightedSum / weightTotal : 0;
+      const avgPerDay = weightedAvg / Math.max(daysTracked / allDeductions.length, 1);
 
-      return { daysLeft, avgPerDay };
+      if (avgPerDay <= 0) {
+          return { daysLeft: null, avgPerDay: 0, renewalDate: null, urgency: 'waiting' as const, totalConsumed, daysTracked };
+      }
+
+      // 5. Dias até esgotar (considerando threshold mínimo)
+      const effectiveStock = Math.max(item.quantity - item.minThreshold, 0);
+      const daysLeft = Math.ceil(effectiveStock / avgPerDay);
+
+      // 6. Data estimada de renovação (quando chega no limiar de 10%)
+      const renewalDate = new Date();
+      renewalDate.setDate(renewalDate.getDate() + daysLeft);
+
+      // 7. Classificação de urgência
+      let urgency: 'critical' | 'warning' | 'ok' | 'waiting' = 'ok';
+      if (daysLeft <= 7) urgency = 'critical';
+      else if (daysLeft <= 21) urgency = 'warning';
+
+      return { daysLeft, avgPerDay, renewalDate, urgency, totalConsumed, daysTracked };
   };
 
   const categories = {
-      'ALIMENTACAO': { label: 'Alimentação (Lanches)', color: 'bg-orange-100 text-orange-800' },
-      'VESTUARIO': { label: 'Vestuário', color: 'bg-purple-100 text-purple-800' },
-      'EQUIPAMENTO': { label: 'Equipamentos', color: 'bg-blue-100 text-blue-800' },
-      'OUTROS': { label: 'Outros', color: 'bg-gray-100 text-gray-800' }
+      'ALIMENTACAO': { label: 'Alimentação (Lanches)', color: 'bg-orange-100 text-orange-800', icon: '🍎' },
+      'VESTUARIO': { label: 'Vestuário', color: 'bg-purple-100 text-purple-800', icon: '👕' },
+      'EQUIPAMENTO': { label: 'Equipamentos', color: 'bg-blue-100 text-blue-800', icon: '🏋️' },
+      'OUTROS': { label: 'Outros', color: 'bg-gray-100 text-gray-800', icon: '📦' }
+  };
+
+  const urgencyStyles = {
+      critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: '🔴', label: 'URGENTE — Renovar Agora' },
+      warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: '🟡', label: 'ATENÇÃO — Renovar em breve' },
+      ok: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: '🟢', label: 'Estoque Saudável' },
+      waiting: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-500', icon: '⏳', label: 'Aguardando dados' },
   };
 
   const inputStyle = "w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-gray-800 focus:outline-none focus:bg-white focus:border-blue-500 transition-colors shadow-sm";
@@ -128,18 +187,30 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
         <div className="p-4 md:p-8 flex-1 overflow-auto max-w-5xl mx-auto w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {inventory.map(item => {
-                    const { daysLeft } = calculateEstimate(item);
-                    const isLowStock = item.quantity <= (item.initialQuantity * 0.10); // Lógica de 10%
+                    const forecast = calculateRenewalForecast(item);
+                    const isLowStock = item.quantity <= (item.initialQuantity * 0.10);
+                    const urg = urgencyStyles[forecast.urgency];
                     
                     return (
-                        <div key={item.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col transition-all ${isLowStock ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-200'}`}>
+                        <div key={item.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col transition-all ${
+                            isLowStock || forecast.urgency === 'critical' 
+                                ? 'border-red-300 ring-2 ring-red-100' 
+                                : forecast.urgency === 'warning'
+                                    ? 'border-amber-300 ring-1 ring-amber-100'
+                                    : 'border-gray-200'
+                        }`}>
                             <div className="p-4 flex justify-between items-start">
                                 <div>
                                     <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${categories[item.category].color}`}>
-                                        {categories[item.category].label}
+                                        {categories[item.category].icon} {categories[item.category].label}
                                     </span>
                                     <h3 className="font-bold text-gray-800 text-lg mt-2 leading-tight">{item.name}</h3>
                                     <p className="text-xs text-gray-500">Unidade: {item.unit}</p>
+                                    {item.purchaseDate && (
+                                        <p className="text-[10px] text-gray-400 mt-0.5">
+                                            📅 Cadastrado: {new Date(item.purchaseDate + 'T12:00:00').toLocaleDateString('pt-BR')}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="text-right">
                                     <span className={`block text-3xl font-black ${isLowStock ? 'text-red-600' : 'text-gray-800'}`}>
@@ -160,17 +231,52 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
                                 </div>
                             )}
 
-                            {/* PREVISÃO */}
-                            <div className="px-4 py-2 bg-blue-50 border-t border-blue-100 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <div>
-                                    <p className="text-[10px] font-bold text-blue-800 uppercase">Estimativa de Duração</p>
-                                    <p className="text-xs text-blue-600 font-medium">
-                                        {daysLeft !== null 
-                                            ? `${daysLeft} dias (baseado no uso)` 
-                                            : "Aguardando dados de consumo..."}
-                                    </p>
+                            {/* ━━━ BLOCO DE RENOVAÇÃO INTELIGENTE ━━━ */}
+                            <div className={`px-4 py-3 border-t ${urg.border} ${urg.bg}`}>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-sm">{urg.icon}</span>
+                                    <p className={`text-[10px] font-bold uppercase tracking-wide ${urg.text}`}>{urg.label}</p>
                                 </div>
+                                {forecast.daysLeft !== null ? (
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-baseline">
+                                            <p className={`text-sm font-bold ${urg.text}`}>
+                                                {forecast.daysLeft <= 0 ? 'Esgotado!' : `${forecast.daysLeft} dias restantes`}
+                                            </p>
+                                            <p className="text-[10px] text-gray-500">
+                                                ~{forecast.avgPerDay.toFixed(1)}/dia
+                                            </p>
+                                        </div>
+                                        {forecast.renewalDate && forecast.daysLeft > 0 && (
+                                            <div className={`flex items-center gap-1.5 ${forecast.urgency === 'critical' ? 'animate-pulse' : ''}`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3.5 w-3.5 ${urg.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <p className={`text-xs font-semibold ${urg.text}`}>
+                                                    Renovar até: <span className="font-black">{forecast.renewalDate.toLocaleDateString('pt-BR')}</span>
+                                                </p>
+                                            </div>
+                                        )}
+                                        {/* Barra de progresso visual */}
+                                        <div className="mt-1.5 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-500 ${
+                                                    forecast.urgency === 'critical' ? 'bg-red-500' 
+                                                    : forecast.urgency === 'warning' ? 'bg-amber-500' 
+                                                    : 'bg-green-500'
+                                                }`}
+                                                style={{ width: `${Math.min(100, Math.max(3, (item.quantity / item.initialQuantity) * 100))}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-[9px] text-gray-400">
+                                            Consumo rastreado: {forecast.totalConsumed} un em {forecast.daysTracked} dias
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-gray-500 italic">
+                                        Distribua itens via Chamada Digital para gerar previsão.
+                                    </p>
+                                )}
                             </div>
 
                             <div className="mt-auto border-t border-gray-100 p-2 grid grid-cols-2 gap-2 bg-gray-50">
@@ -247,15 +353,33 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({ onBack, inve
                                 </select>
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Quantidade Inicial</label>
-                            <input 
-                                type="number" 
-                                value={newItemInitialQty} 
-                                onChange={e => setNewItemInitialQty(e.target.value)} 
-                                className={inputStyle} 
-                                placeholder="0" 
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Quantidade Inicial</label>
+                                <input 
+                                    type="number" 
+                                    value={newItemInitialQty} 
+                                    onChange={e => setNewItemInitialQty(e.target.value)} 
+                                    className={inputStyle} 
+                                    placeholder="0" 
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">📅 Data de Compra</label>
+                                <input 
+                                    type="date" 
+                                    value={newItemPurchaseDate} 
+                                    onChange={e => setNewItemPurchaseDate(e.target.value)} 
+                                    className={inputStyle}
+                                />
+                            </div>
+                        </div>
+                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                            <p className="text-[10px] font-bold text-blue-800 uppercase mb-1">📊 Como funciona a previsão?</p>
+                            <p className="text-[10px] text-blue-600 leading-relaxed">
+                                O sistema analisa automaticamente a distribuição via Chamada Digital
+                                e calcula a data ideal para renovar o estoque baseado no consumo médio diário.
+                            </p>
                         </div>
                     </div>
                     <div className="mt-6 flex gap-3">

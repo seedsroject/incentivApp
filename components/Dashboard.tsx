@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { AppView, ProjectId } from '../types';
+import { AppView, ProjectId, InventoryItem } from '../types';
 import { ExternalLinkModal } from './ExternalLinkModal';
 import { GuidedTour, DASHBOARD_TOUR_STEPS } from './GuidedTour';
 
@@ -10,9 +10,10 @@ interface DashboardProps {
   onBack?: () => void;
   projectId?: ProjectId;
   nucleoId?: string;
+  inventory?: InventoryItem[];
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId, inventory = [] }) => {
   const iconColor = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'text-green-600';
     if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
@@ -30,6 +31,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
   }, [projectId]);
   const [sharingService, setSharingService] = useState<{ id: string, title: string } | null>(null);
   const [showTour, setShowTour] = useState(false);
+
+  // Alerta de renovação de estoque
+  const stockAlert = useMemo(() => {
+    if (inventory.length === 0) return null;
+    const lowItems = inventory.filter(i => i.quantity <= (i.initialQuantity * 0.10));
+    if (lowItems.length > 0) return { count: lowItems.length, urgency: 'critical' as const };
+    const medItems = inventory.filter(i => i.quantity <= (i.initialQuantity * 0.25));
+    if (medItems.length > 0) return { count: medItems.length, urgency: 'warning' as const };
+    return null;
+  }, [inventory]);
 
   const menuItems = [
     {
@@ -102,7 +113,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       subtitle: 'Bens de Consumo (Lanches)',
       icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
       action: () => onNavigate(AppView.FEATURE_INVENTORY),
-      canShare: false
+      canShare: false,
+      badge: stockAlert ? (
+        <span className={`absolute -top-1 -right-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black shadow-sm z-20 animate-pulse ${
+          stockAlert.urgency === 'critical' 
+            ? 'bg-red-500 text-white' 
+            : 'bg-amber-400 text-amber-900'
+        }`}>
+          {stockAlert.urgency === 'critical' ? '🔴' : '🟡'} {stockAlert.count}
+        </span>
+      ) : null
     },
     {
       id: 'rel_7',
@@ -211,6 +231,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
                 </button>
               )}
+
+              {/* Badge de alerta de estoque */}
+              {(item as any).badge}
             </div>
           ))}
         </div>

@@ -484,6 +484,7 @@ const AppContent: React.FC = () => {
           minThreshold: i.min_threshold || 0,
           category: i.category || 'OUTROS',
           projectId: projectSlug,
+          purchaseDate: i.purchase_date || undefined,
         }));
         setInventory(mapped);
       }
@@ -1210,6 +1211,7 @@ const AppContent: React.FC = () => {
       unit: updatedItem.unit,
       min_threshold: updatedItem.minThreshold,
       category: updatedItem.category,
+      purchase_date: updatedItem.purchaseDate || null,
     }).eq('id', updatedItem.id);
     if (error) console.warn('Erro ao atualizar estoque:', error);
   };
@@ -1226,6 +1228,7 @@ const AppContent: React.FC = () => {
         unit: newItem.unit,
         min_threshold: newItem.minThreshold,
         category: newItem.category,
+        purchase_date: newItem.purchaseDate || null,
       }).select().single();
       if (error) {
         console.warn('Erro ao adicionar item:', error);
@@ -1878,6 +1881,7 @@ const AppContent: React.FC = () => {
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
             projectId={activeProject}
             nucleoId={user?.nucleo_id || undefined}
+            inventory={inventory}
           />
         )}
 
