@@ -379,9 +379,9 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     escola_tipo: '',
     fichaUrl: '',
     assinatura: '',
-    n_sli: '2201254',
-    nome_projeto: 'Escolinha de Triathlon',
-    proponente: 'Associação de Pais e Amigos da Natação Ituana',
+    n_sli: '',
+    nome_projeto: '',
+    proponente: '',
     nome_responsavel_organizacao: '', // Responsável da Associação/Federação
     data_assinatura: new Date().toLocaleDateString('pt-BR'),
     portador_necessidade_especial: false,
@@ -390,10 +390,18 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
 
   useEffect(() => {
     if (currentNucleo) {
+      const projectNameMap: Record<string, string> = {
+        'FORMANDO_CAMPEOES': 'Escolinha de Triathlon',
+        'DANIEL_DIAS': 'Nadando com Daniel Dias',
+        'FUTEBOL': 'Escolinha de Futebol',
+      };
       setFormData(prev => ({
         ...prev,
-        proponente: `${currentNucleo.nome}${currentNucleo.address ? ' - ' + currentNucleo.address : ''}`,
-        nome_responsavel_organizacao: currentNucleo.responsavel_nome || prev.nome_responsavel_organizacao
+        n_sli: currentNucleo.sliNumber || prev.n_sli || '',
+        nome_projeto: projectNameMap[currentNucleo.project] || prev.nome_projeto || '',
+        proponente: currentNucleo.razaoSocial || currentNucleo.cnpj
+          ? `${currentNucleo.razaoSocial || ''}${currentNucleo.cnpj ? ` (CNPJ: ${currentNucleo.cnpj})` : ''}`
+          : `${currentNucleo.nome}${currentNucleo.address ? ' - ' + currentNucleo.address : ''}`,
       }));
     }
   }, [currentNucleo]);
