@@ -574,6 +574,7 @@ const AppContent: React.FC = () => {
               nucleo_id: defaultAccess.nucleo_id,
               nucleo_nome: selectedNucleo?.nome,
               projectId: projectSlug,
+              estado_responsavel: defaultAccess.estado_responsavel || undefined,
             });
             // Carregar dados do projeto
             await loadNucleosFromSupabase(projectSlug);
@@ -692,23 +693,49 @@ const AppContent: React.FC = () => {
     }
 
     const timer = setTimeout(async () => {
+      const email = loginEmail.trim().toLowerCase();
       try {
-        const { data } = await supabase
+        // Tentativa 1: Buscar estado direto da profiles (requer migração 016)
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('estado_responsavel')
-          .eq('email', loginEmail.trim().toLowerCase())
+          .select('id, estado_responsavel')
+          .eq('email', email)
           .maybeSingle();
         
-        if (data?.estado_responsavel) {
-          setLoginEstado(data.estado_responsavel);
-          setLoginNucleoId(''); // Reset seleção quando estado muda
-        } else {
-          setLoginEstado(null);
+        if (profileData?.estado_responsavel) {
+          console.log('[Login] Estado encontrado em profiles:', profileData.estado_responsavel);
+          setLoginEstado(profileData.estado_responsavel);
+          setLoginNucleoId('');
+          return;
         }
-      } catch {
+
+        // Tentativa 2: Se achou o perfil mas sem estado, buscar via user_project_access
+        // (requer que o user tenha um session ativa, pode falhar sem auth)
+        if (profileData?.id) {
+          const { data: accessData } = await supabase
+            .from('user_project_access')
+            .select('estado_responsavel')
+            .eq('user_id', profileData.id)
+            .not('estado_responsavel', 'is', null)
+            .limit(1)
+            .maybeSingle();
+          
+          if (accessData?.estado_responsavel) {
+            console.log('[Login] Estado encontrado em user_project_access:', accessData.estado_responsavel);
+            setLoginEstado(accessData.estado_responsavel);
+            setLoginNucleoId('');
+            return;
+          }
+        }
+
+        // Nenhum estado encontrado — mostrar todos os núcleos
+        console.log('[Login] Nenhum estado encontrado para:', email, profileError?.message || '');
+        setLoginEstado(null);
+      } catch (err) {
+        console.warn('[Login] Erro ao buscar estado:', err);
         setLoginEstado(null);
       }
-    }, 600); // Debounce de 600ms
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [loginEmail]);
@@ -717,7 +744,13 @@ const AppContent: React.FC = () => {
   const loginFilteredNucleos = useMemo(() => {
     const projectNucleos = nucleos.filter(n => n.project === activeProject);
     if (!loginEstado) return projectNucleos; // Super admin ou sem estado: mostra todos
-    return projectNucleos.filter(n => n.estado === loginEstado);
+    const filtered = projectNucleos.filter(n => n.estado === loginEstado);
+    // Fallback: se nenhum núcleo tem estado mapeado, mostrar todos
+    if (filtered.length === 0 && projectNucleos.length > 0) {
+      console.warn('[Login] Nenhum núcleo com estado "' + loginEstado + '" encontrado. Mostrando todos como fallback.');
+      return projectNucleos;
+    }
+    return filtered;
   }, [nucleos, activeProject, loginEstado]);
 
   // Recarregar dados ao trocar projeto (se logado)
