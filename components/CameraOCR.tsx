@@ -870,7 +870,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                       {field('Nº SLI', 'n_sli')}
                       {field('Nome Projeto', 'nome_projeto')}
                       {field('Proponente', 'proponente')}
-                      {field('Resp. Organização', 'nome_responsavel_organizacao')}
+
 
                       {/* Assinatura */}
                       {detailStudent.assinatura && (
@@ -1856,7 +1856,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
             <div><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Nº SLI</label><input type="text" value={formData.n_sli} onChange={e => setFormData({ ...formData, n_sli: e.target.value })} className={inputStyle} /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Projeto</label><input type="text" value={formData.nome_projeto} onChange={e => setFormData({ ...formData, nome_projeto: e.target.value })} className={inputStyle} /></div>
             <div className="col-span-2"><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Proponente</label><input type="text" value={formData.proponente} onChange={e => setFormData({ ...formData, proponente: e.target.value })} className={inputStyle} /></div>
-            <div className="col-span-2"><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Nome Responsável (Organização)</label><input type="text" value={formData.nome_responsavel_organizacao} onChange={e => setFormData({ ...formData, nome_responsavel_organizacao: e.target.value })} className={inputStyle} placeholder="Associação/Federação" /></div>
+
           </div>
         </div>
 

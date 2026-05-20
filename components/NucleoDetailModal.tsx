@@ -97,12 +97,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                             placeholder="Número de inscrição do projeto"
                             className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                     </div>
-                    <div className="md:col-span-2">
-                        <label className="text-xs font-bold text-gray-500 block mb-1">Responsável pelo Núcleo</label>
-                        <input value={geralData.responsavel_nome} onChange={e => setGeralData(p => ({ ...p, responsavel_nome: e.target.value }))}
-                            placeholder="Nome do Responsável"
-                            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
-                    </div>
+
                     <div>
                         <label className="text-xs font-bold text-gray-500 block mb-1">Cidade / Estado</label>
                         <input value={geralData.city} onChange={e => setGeralData(p => ({ ...p, city: e.target.value }))}
