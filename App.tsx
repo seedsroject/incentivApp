@@ -167,15 +167,22 @@ const MOCK_NUCLEOS: Nucleo[] = [
   { id: 'nuc_itu', nome: 'Itu | SP - C. Aquático Fiori Marcello Amantéa – Praça Washington Luiz, s/nº, Itu - SP', coordinates: [-23.2667, -47.3], stockStatus: 'HIGH' },
   { id: 'nuc_jundiai', nome: 'Jundiaí | SP - CECE Dr. Nicolino de Luca (Bolão) – Rua Rodrigo Soares de Oliveira, s/n, Jundiaí - SP', coordinates: [-23.1864, -46.8842], stockStatus: 'MEDIUM' },
   { id: 'nuc_ribeirao', nome: 'Ribeirão Preto | SP - Ginásio Cava do Bosque – Rua Camilo de Mattos, nº 627, Rib. Preto - SP', coordinates: [-21.1775, -47.8103], stockStatus: 'LOW' },
-].map(n => ({
-  ...n,
-  project: 'FORMANDO_CAMPEOES' as const,
-  stockDetails: generateStockDetails(n.stockStatus as any),
-  address: n.nome.split(' - ')[1] || 'Endereço não cadastrado',
-  phone: '(00) 3333-4444',
-  email: `contato.${n.id}@esporte.gov.br`,
-  employees: generateMockEmployees(n.id, n.nome)
-})) as Nucleo[];
+].map(n => {
+  // Extrair UF do nome (ex: "Ilhéus | BA -..." → "BA", "Curitiba - PR" → "PR")
+  const ufMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})[\s\-–]/);
+  const trailingMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})\s*$/);
+  const estado = ufMatch?.[1] || trailingMatch?.[1] || undefined;
+  return {
+    ...n,
+    project: 'FORMANDO_CAMPEOES' as const,
+    estado,
+    stockDetails: generateStockDetails(n.stockStatus as any),
+    address: n.nome.split(' - ')[1] || 'Endereço não cadastrado',
+    phone: '(00) 3333-4444',
+    email: `contato.${n.id}@esporte.gov.br`,
+    employees: generateMockEmployees(n.id, n.nome)
+  };
+}) as Nucleo[];
 
 // --- NÚCLEOS DANIEL DIAS ---
 const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
@@ -203,14 +210,20 @@ const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
   { id: 'dd_canaa', nome: 'Canaã dos Carajás | PA - Polo de Natação Municipal – Av. Weyne Cavalcante, s/n, Canaã dos Carajás - PA', project: 'DANIEL_DIAS', coordinates: [-6.4967, -49.8783], stockStatus: 'HIGH' },
   { id: 'dd_belo_jardim', nome: 'Belo Jardim | PE - SESC Belo Jardim (Parceria) – Rua Pedro Rocha, s/n, Centro, Belo Jardim - PE', project: 'DANIEL_DIAS', coordinates: [-8.3361, -36.4244], stockStatus: 'MEDIUM' },
 
-].map(n => ({
-  ...n,
-  stockDetails: generateStockDetails(n.stockStatus as any),
-  address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
-  phone: '(00) 3333-4444',
-  email: `contato.${n.id}@danieldias.org.br`,
-  employees: generateMockEmployees(n.id, n.nome)
-})) as Nucleo[];
+].map(n => {
+  const ufMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})[\s\-–]/);
+  const trailingMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})\s*$/);
+  const estado = ufMatch?.[1] || trailingMatch?.[1] || undefined;
+  return {
+    ...n,
+    estado,
+    stockDetails: generateStockDetails(n.stockStatus as any),
+    address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+    phone: '(00) 3333-4444',
+    email: `contato.${n.id}@danieldias.org.br`,
+    employees: generateMockEmployees(n.id, n.nome)
+  };
+}) as Nucleo[];
 
 // --- NÚCLEOS FUTEBOL ---
 const FUTEBOL_NUCLEOS: Nucleo[] = [
@@ -219,14 +232,20 @@ const FUTEBOL_NUCLEOS: Nucleo[] = [
   { id: 'fut_pacajus', nome: 'Pacajus | CE - Sede Pacajus, Pacajus - CE', project: 'FUTEBOL', coordinates: [-4.1722, -38.4617], stockStatus: 'HIGH' },
   { id: 'fut_itaitinga', nome: 'Itaitinga | CE - Sede Itaitinga, Itaitinga - CE', project: 'FUTEBOL', coordinates: [-3.9667, -38.5278], stockStatus: 'MEDIUM' },
   { id: 'fut_maranguape', nome: 'Maranguape | CE - Sede Maranguape, Maranguape - CE', project: 'FUTEBOL', coordinates: [-3.8914, -38.6836], stockStatus: 'HIGH' },
-].map(n => ({
-  ...n,
-  stockDetails: generateStockDetails(n.stockStatus as any),
-  address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
-  phone: '(00) 3333-4444',
-  email: `contato.${n.id}@futebol.org.br`,
-  employees: generateMockEmployees(n.id, n.nome)
-})) as Nucleo[];
+].map(n => {
+  const ufMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})[\s\-–]/);
+  const trailingMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})\s*$/);
+  const estado = ufMatch?.[1] || trailingMatch?.[1] || undefined;
+  return {
+    ...n,
+    estado,
+    stockDetails: generateStockDetails(n.stockStatus as any),
+    address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+    phone: '(00) 3333-4444',
+    email: `contato.${n.id}@futebol.org.br`,
+    employees: generateMockEmployees(n.id, n.nome)
+  };
+}) as Nucleo[];
 
 // ALL_NUCLEOS mantido como fallback para modo Demo/offline
 const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS, ...FUTEBOL_NUCLEOS];
