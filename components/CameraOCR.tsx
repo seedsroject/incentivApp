@@ -317,6 +317,20 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     return val;
   };
 
+  const isoToBR = (iso: string) => {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return iso;
+  };
+
+  const brToISO = (br: string) => {
+    if (!br) return '';
+    const parts = br.split('/');
+    if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    return br;
+  };
+
   const formatCPF = (val: string) => {
     val = val.replace(/\D/g, '');
     if (val.length > 11) val = val.substring(0, 11);
@@ -452,12 +466,21 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   };
 
   const handleDigitalSubmit = () => {
-    // Validação mínima — apenas nome é obrigatório
-    // Demais dados podem ser complementados depois no cadastro do aluno
-    if (!formData.nome) return alert("O nome do aluno é obrigatório.");
-    if (formData.rg_cpf && isInvalidRepeating(formData.rg_cpf)) return alert("CPF/RG inválido. Não insira valores repetidos como 000.000.000-00.");
-    if (formData.telefone && isInvalidRepeating(formData.telefone)) return alert("Telefone inválido. Não insira valores repetidos.");
-    if (formData.email_contato && (!formData.email_contato.includes('@') || !formData.email_contato.includes('.'))) return alert("Por favor, insira um endereço de e-mail válido.");
+    const errors: string[] = [];
+
+    if (!formData.nome || formData.nome.trim().length < 3) errors.push("- O nome do aluno é obrigatório.");
+    if (!formData.data_nascimento) errors.push("- A data de nascimento é obrigatória.");
+    if (formData.rg_cpf && isInvalidRepeating(formData.rg_cpf)) errors.push("- RG/CPF do aluno apresenta formato inválido.");
+    if (!formData.nome_responsavel || formData.nome_responsavel.trim().length < 3) errors.push("- O nome do responsável é obrigatório.");
+    if (formData.telefone && isInvalidRepeating(formData.telefone)) errors.push("- O telefone de contato apresenta formato inválido.");
+    if (formData.email_contato && (!formData.email_contato.includes('@') || !formData.email_contato.includes('.'))) errors.push("- O e-mail de contato informado é inválido.");
+    if (!formData.data_assinatura) errors.push("- A data da assinatura é obrigatória.");
+    if (!formData.assinatura) errors.push("- A assinatura do responsável é obrigatória.");
+
+    if (errors.length > 0) {
+      alert("⚠️ Existem erros ou campos obrigatórios não preenchidos:\n\n" + errors.join('\n'));
+      return;
+    }
 
     onSave({ ...formData, reportType, nucleo_id: nucleoId, nucleo_nome: currentNucleo?.nome || formData.nucleo_nome });
     setMode('SUCCESS');
@@ -1896,7 +1919,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Data de Nascimento</label>
-              <input type="text" value={formData.data_nascimento} placeholder="DD/MM/AAAA" onChange={e => setFormData({ ...formData, data_nascimento: formatDate(e.target.value) })} className={inputStyle} />
+              <input type="date" value={brToISO(formData.data_nascimento)} onChange={e => setFormData({ ...formData, data_nascimento: isoToBR(e.target.value) })} className={inputStyle} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">RG/CPF do aluno(a)</label>
@@ -2030,7 +2053,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
             <div className="mt-4 animate-fade-in space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Data da Assinatura</label>
-                <input type="text" value={formData.data_assinatura} onChange={e => setFormData({ ...formData, data_assinatura: e.target.value })} placeholder="DD/MM/AAAA" className={inputStyle} />
+                <input type="date" value={brToISO(formData.data_assinatura)} onChange={e => setFormData({ ...formData, data_assinatura: isoToBR(e.target.value) })} className={inputStyle} />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Assinatura do Responsável Legal</label>
