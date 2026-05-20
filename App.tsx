@@ -665,6 +665,49 @@ const AppContent: React.FC = () => {
   const [loginEmail, setLoginEmail] = useState<string>('');
   const [loginPassword, setLoginPassword] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
+  const [loginEstado, setLoginEstado] = useState<string | null>(null); // Estado do usuário sendo logado
+
+  // Buscar estado_responsavel do usuário quando ele digita o e-mail
+  useEffect(() => {
+    if (!loginEmail || !loginEmail.includes('@')) {
+      setLoginEstado(null);
+      return;
+    }
+
+    // Super admin vê todos
+    if (loginEmail.trim().toLowerCase() === 'admin.geral@formandocampeoes.org.br') {
+      setLoginEstado(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('estado_responsavel')
+          .eq('email', loginEmail.trim().toLowerCase())
+          .maybeSingle();
+        
+        if (data?.estado_responsavel) {
+          setLoginEstado(data.estado_responsavel);
+          setLoginNucleoId(''); // Reset seleção quando estado muda
+        } else {
+          setLoginEstado(null);
+        }
+      } catch {
+        setLoginEstado(null);
+      }
+    }, 600); // Debounce de 600ms
+
+    return () => clearTimeout(timer);
+  }, [loginEmail]);
+
+  // Núcleos filtrados para a tela de login (por estado do usuário)
+  const loginFilteredNucleos = useMemo(() => {
+    const projectNucleos = nucleos.filter(n => n.project === activeProject);
+    if (!loginEstado) return projectNucleos; // Super admin ou sem estado: mostra todos
+    return projectNucleos.filter(n => n.estado === loginEstado);
+  }, [nucleos, activeProject, loginEstado]);
 
   // Recarregar dados ao trocar projeto (se logado)
   useEffect(() => {
@@ -819,6 +862,7 @@ const AppContent: React.FC = () => {
         nucleo_id: nucleoId,
         nucleo_nome: selectedNucleoObj?.nome,
         projectId: activeProject,
+        estado_responsavel: accessData?.estado_responsavel || loginEstado || undefined,
       });
 
       // 5. Redirecionar
@@ -1521,24 +1565,6 @@ const AppContent: React.FC = () => {
                 // --- LOGIN FORM ---
                 <form onSubmit={handleLogin} className="space-y-3 animate-fade-in">
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Núcleo de Atuação</label>
-                    <div className="relative">
-                      <select
-                        value={loginNucleoId}
-                        onChange={(e) => setLoginNucleoId(e.target.value)}
-                        className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-                      >
-                        <option value="">Selecione seu núcleo...</option>
-                        {filteredNucleos.map(nucleo => (
-                          <option key={nucleo.id} value={nucleo.id}>
-                            {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
-                    </div>
-                  </div>
-                  <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">E-mail</label>
                     <input
                       type="email"
@@ -1547,6 +1573,27 @@ const AppContent: React.FC = () => {
                       placeholder="seu.email@exemplo.com"
                       className="block w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 text-gray-800 font-medium text-sm focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Núcleo de Atuação</label>
+                    <div className="relative">
+                      <select
+                        value={loginNucleoId}
+                        onChange={(e) => setLoginNucleoId(e.target.value)}
+                        className="block w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 font-medium py-2.5 px-3 pr-8 rounded-xl text-sm leading-tight focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                      >
+                        <option value="">Selecione seu núcleo...</option>
+                        {loginFilteredNucleos.map(nucleo => (
+                          <option key={nucleo.id} value={nucleo.id}>
+                            {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg></div>
+                    </div>
+                    {loginEstado && (
+                      <p className="text-[9px] text-blue-500 font-medium mt-0.5 ml-1">Mostrando núcleos de {loginEstado}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase mb-0.5 ml-1">Senha</label>
