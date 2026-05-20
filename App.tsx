@@ -1012,6 +1012,16 @@ const AppContent: React.FC = () => {
   };
 
   // --- Data Handlers (Supabase-Integrated) ---
+  const formatDateForDb = (dateStr: string | null | undefined): string | null => {
+    if (!dateStr) return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr;
+  };
+
   const handleSaveStudent = async (data: StudentDraft): Promise<string | undefined> => {
     const timestamp = new Date().toISOString();
     const existingIndex = students.findIndex(s => s.id === data.id);
@@ -1031,7 +1041,7 @@ const AppContent: React.FC = () => {
           const assinaturaValue = data.assinatura && data.assinatura.length < 500000 ? data.assinatura : null;
           const { error } = await supabase.from('students').update({
             nome: data.nome,
-            data_nascimento: data.data_nascimento || null,
+            data_nascimento: formatDateForDb(data.data_nascimento),
             rg_cpf: data.rg_cpf || null,
             nome_responsavel: data.nome_responsavel || null,
             endereco: data.endereco || null,
@@ -1045,7 +1055,7 @@ const AppContent: React.FC = () => {
             materiais_pendentes: data.materiais_pendentes || false,
             portador_necessidade_especial: data.portador_necessidade_especial || false,
             assinatura: assinaturaValue,
-            data_assinatura: data.data_assinatura || null,
+            data_assinatura: formatDateForDb(data.data_assinatura),
           }).eq('id', data.id);
           if (error) {
             console.error('❌ Erro ao atualizar aluno:', error.message, error.details);
@@ -1089,7 +1099,7 @@ const AppContent: React.FC = () => {
             nucleo_id: isValidUUID(data.nucleo_id) ? data.nucleo_id : null,
             nucleo_nome: data.nucleo_nome || null,
             nome: data.nome,
-            data_nascimento: data.data_nascimento || null,
+            data_nascimento: formatDateForDb(data.data_nascimento),
             rg_cpf: data.rg_cpf || null,
             nome_responsavel: data.nome_responsavel || null,
             endereco: data.endereco || null,
@@ -1105,7 +1115,7 @@ const AppContent: React.FC = () => {
             materiais_pendentes: data.materiais_pendentes || false,
             portador_necessidade_especial: data.portador_necessidade_especial || false,
             assinatura: assinaturaValue,
-            data_assinatura: data.data_assinatura || null,
+            data_assinatura: formatDateForDb(data.data_assinatura),
             ficha_url: fichaForDb,
           };
           console.log('[Supabase] Inserindo aluno:', data.nome, 'projeto:', supabaseProjectId, 'ID:', newStudent.id);
