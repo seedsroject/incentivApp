@@ -10,10 +10,11 @@ interface DashboardProps {
   onBack?: () => void;
   projectId?: ProjectId;
   nucleoId?: string;
+  professorName?: string;
   inventory?: InventoryItem[];
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId, inventory = [] }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId, professorName, inventory = [] }) => {
   const iconColor = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'text-green-600';
     if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
@@ -266,6 +267,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           onClose={() => setSharingService(null)}
           projectId={projectId}
           nucleoId={nucleoId}
+          professorName={professorName}
         />
       )}
 

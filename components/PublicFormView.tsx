@@ -226,9 +226,11 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
               <SuccessScreen skipped={[]} logoSrc={projectLogo} />
             ) : serviceId === 'meta' ? (
               <MetaQualitativa key="public-meta" onBack={() => { }} initialMode="DIGITAL_FORM"
+                nucleoId={currentNucleo?.id} nucleoNome={currentNucleo?.nome} projectId={projectUuid} defaultProfessorName={professorName || (currentNucleo?.nome ? currentNucleo.nome.split('-')[0].trim() : '')}
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'socio' ? (
               <SocioeconomicForm key="public-socio" onBack={() => { }} initialMode="DIGITAL_FORM"
+                nucleoId={currentNucleo?.id} nucleoNome={currentNucleo?.nome} projectId={projectUuid}
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'precadastro' ? (
               <PublicPreCadastroForm key="public-precadastro"
@@ -443,11 +445,14 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
               </div>
               <MetaQualitativa
                 key="wizard-meta"
-                onBack={() => { }}
+                onBack={() => setWizardStep(6)}
                 initialMode="DIGITAL_FORM"
-                defaultStudentName={wizardStudentName || ''}
+                defaultStudentName={wizardStudentName}
                 defaultResponsibleName={wizardStudentData?.nome_responsavel || ''}
-                defaultProfessorName={currentNucleo?.nome ? currentNucleo.nome.split('-')[0].trim() : ''}
+                defaultProfessorName={professorName || (currentNucleo?.nome ? currentNucleo.nome.split('-')[0].trim() : '')}
+                nucleoId={currentNucleo?.id}
+                nucleoNome={currentNucleo?.nome}
+                projectId={projectId}
                 headerImage={projectHeader}
                 onSave={(data: DocumentLog) => {
                   onSave({ ...data, studentId: wizardStudentId || '', nucleoId: currentNucleo?.id || '' });

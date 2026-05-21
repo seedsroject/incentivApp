@@ -1,7 +1,8 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DocumentLog, SocioeconomicData, PDFItemType } from '../types';
 import { SmartCamera } from './SmartCamera';
+import { supabase } from '../services/supabaseClient';
 
 interface SocioeconomicFormProps {
     onBack: () => void;
@@ -10,6 +11,9 @@ interface SocioeconomicFormProps {
     history?: DocumentLog[];
     headerImage?: string;
     defaultStudentName?: string;
+    nucleoId?: string;
+    nucleoNome?: string;
+    projectId?: string;
 }
 
 type QuestionField = keyof SocioeconomicData;
@@ -103,8 +107,34 @@ const SocioTemplate: React.FC<{ data: SocioeconomicData, headerImage: string }> 
 
 type FormMode = 'MENU' | 'DIGITAL_FORM' | 'HISTORY' | 'CAMERA_SCAN' | 'SCAN_PREVIEW';
 
-export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [], headerImage = '/header_full.png', defaultStudentName = '' }) => {
+export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, onSave, initialMode = 'MENU', history = [], headerImage = '/header_full.png', defaultStudentName = '', nucleoId, nucleoNome, projectId }) => {
     const [mode, setMode] = useState<FormMode>(initialMode);
+
+    const [studentsList, setStudentsList] = useState<{ id: string, nome: string }[]>([]);
+    const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!projectId) return;
+            try {
+                let query = supabase.from('students').select('id, nome').eq('project_id', projectId).eq('status', 'ATIVO');
+                if (nucleoId) {
+                    if (nucleoNome) {
+                        query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq."${nucleoNome}"`);
+                    } else {
+                        query = query.eq('nucleo_id', nucleoId);
+                    }
+                }
+                const { data, error } = await query.order('nome');
+                if (data && !error) {
+                    setStudentsList(data);
+                }
+            } catch (err) {
+                console.warn('Erro ao buscar alunos para seleção:', err);
+            }
+        };
+        fetchStudents();
+    }, [nucleoId, nucleoNome, projectId]);
 
     // State for Form Data
     const [formData, setFormData] = useState<SocioeconomicData>({
@@ -171,7 +201,10 @@ export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, on
             type: 'INDICADORES_SAUDE',
             title: 'Indicadores Socioeconômico e de Saúde',
             description: `Pesquisa Digital: ${formData.nome}`,
-            metaData: formData
+            metaData: {
+                ...formData,
+                nome: selectedStudentId ? studentsList.find(s => s.id === selectedStudentId)?.nome || formData.nome : formData.nome
+            }
         };
 
         onSave(docData);
@@ -254,6 +287,37 @@ export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, on
 
     // --- RENDERIZADORES DE CAMPO ---
     const renderField = (q: QuestionConfig) => {
+        if (q.id === 'nome') {
+            return (
+                <div>
+                    {studentsList.length > 0 && !defaultStudentName ? (
+                        <select
+                            value={selectedStudentId}
+                            onChange={e => {
+                                setSelectedStudentId(e.target.value);
+                                const sName = studentsList.find(s => s.id === e.target.value)?.nome;
+                                if (sName) handleChange('nome', sName);
+                            }}
+                            className="w-full border border-gray-300 rounded p-3 text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-colors outline-none"
+                        >
+                            <option value="">Selecione o Aluno...</option>
+                            {studentsList.map(s => (
+                                <option key={s.id} value={s.id}>{s.nome}</option>
+                            ))}
+                        </select>
+                    ) : (
+                        <input
+                            type="text"
+                            value={formData.nome}
+                            onChange={(e) => handleChange('nome', e.target.value)}
+                            className="w-full border border-gray-300 rounded p-3 text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-colors outline-none"
+                            placeholder="Sua resposta"
+                        />
+                    )}
+                </div>
+            );
+        }
+
         if (q.type === 'text' || q.type === 'number') {
             return (
                 <input

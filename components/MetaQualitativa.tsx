@@ -1,7 +1,8 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { DocumentLog, PDFItemType } from '../types';
 import { SmartCamera } from './SmartCamera';
+import { supabase } from '../services/supabaseClient';
 
 interface MetaQualitativaProps {
   onBack: () => void;
@@ -13,6 +14,9 @@ interface MetaQualitativaProps {
   initialMode?: Mode; // Adicionado para pular menu
   headerImage?: string;
   projectName?: string;
+  nucleoId?: string;
+  nucleoNome?: string;
+  projectId?: string;
 }
 
 type Mode = 'MENU' | 'DIGITAL_FORM' | 'CAMERA_SCAN' | 'SCAN_PREVIEW' | 'SUCCESS' | 'HISTORY' | 'DETAIL_VIEW';
@@ -101,7 +105,7 @@ const MetaTemplate: React.FC<{
   );
 }
 
-export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, defaultStudentName, defaultResponsibleName, history = [], initialMode, headerImage, projectName = 'ESCOLINHA DE TRIATHLON' }) => {
+export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave, defaultProfessorName, defaultStudentName, defaultResponsibleName, history = [], initialMode, headerImage, projectName = 'ESCOLINHA DE TRIATHLON', nucleoId, nucleoNome, projectId }) => {
   const [mode, setMode] = useState<Mode>(initialMode || 'MENU');
 
   // Form State
@@ -109,6 +113,31 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
   const [responsibleName, setResponsibleName] = useState(defaultResponsibleName || '');
   const [professorName, setProfessorName] = useState(defaultProfessorName || '');
   const [answers, setAnswers] = useState<Record<string, Option>>({});
+  const [studentsList, setStudentsList] = useState<{ id: string, nome: string }[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!projectId) return;
+      try {
+        let query = supabase.from('students').select('id, nome').eq('project_id', projectId).eq('status', 'ATIVO');
+        if (nucleoId) {
+          if (nucleoNome) {
+            query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq."${nucleoNome}"`);
+          } else {
+            query = query.eq('nucleo_id', nucleoId);
+          }
+        }
+        const { data, error } = await query.order('nome');
+        if (data && !error) {
+          setStudentsList(data);
+        }
+      } catch (err) {
+        console.warn('Erro ao buscar alunos para seleção:', err);
+      }
+    };
+    fetchStudents();
+  }, [nucleoId, nucleoNome, projectId]);
 
   // File/Scan State
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -157,7 +186,7 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
         : `Digitalizado: ${file ? file.name : 'Foto Câmera Avançada'}`,
       fileUrl: capturedImage || undefined,
       metaData: mode === 'DIGITAL_FORM' ? {
-        studentName,
+        studentName: selectedStudentId ? studentsList.find(s => s.id === selectedStudentId)?.nome || studentName : studentName,
         responsibleName,
         professorName,
         answers // Store all answers
@@ -467,7 +496,27 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
       <div className="p-4 flex-1 max-w-2xl mx-auto w-full pb-24 space-y-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
           <h3 className="font-bold text-gray-800 border-b pb-2">Identificação</h3>
-          <div><label className="block text-sm font-semibold text-gray-700 mb-1">Nome completo do Aluno</label><input type="text" value={studentName} onChange={e => setStudentName(e.target.value)} className={inputStyle} /></div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Nome completo do Aluno</label>
+            {studentsList.length > 0 && !defaultStudentName ? (
+              <select
+                value={selectedStudentId}
+                onChange={e => {
+                  setSelectedStudentId(e.target.value);
+                  const sName = studentsList.find(s => s.id === e.target.value)?.nome;
+                  if (sName) setStudentName(sName);
+                }}
+                className={inputStyle}
+              >
+                <option value="">Selecione o Aluno...</option>
+                {studentsList.map(s => (
+                  <option key={s.id} value={s.id}>{s.nome}</option>
+                ))}
+              </select>
+            ) : (
+              <input type="text" value={studentName} onChange={e => setStudentName(e.target.value)} className={inputStyle} />
+            )}
+          </div>
           <div><label className="block text-sm font-semibold text-gray-700 mb-1">Nome do Responsável</label><input type="text" value={responsibleName} onChange={e => setResponsibleName(e.target.value)} className={inputStyle} /></div>
           <div><label className="block text-sm font-semibold text-gray-700 mb-1">Nome do Professor</label><input type="text" value={professorName} onChange={e => setProfessorName(e.target.value)} className={inputStyle} /></div>
         </div>

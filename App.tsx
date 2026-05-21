@@ -819,6 +819,7 @@ const AppContent: React.FC = () => {
       const studentId = searchParams.get('studentId') || hashParams.get('studentId');
       const project = searchParams.get('project') || hashParams.get('project');
       const nucleoId = searchParams.get('nucleoId') || hashParams.get('nucleoId');
+      const prof = searchParams.get('prof') || hashParams.get('prof');
 
       if (token && service) {
         console.log("Rota pública detectada:", { token, service, studentId, project, nucleoId });
@@ -832,7 +833,7 @@ const AppContent: React.FC = () => {
           }
         }
         setView(AppView.PUBLIC_FORM);
-        setNavParams({ token, service, studentId, project, nucleoId });
+        setNavParams({ token, service, studentId, project, nucleoId, prof });
       }
     };
 
@@ -1590,6 +1591,7 @@ const AppContent: React.FC = () => {
         projectId={navParams.project as ProjectId | undefined}
         projectUuid={supabaseProjectId || publicProjectUuid || undefined}
         currentNucleo={publicNucleo || undefined}
+        professorName={navParams.prof || undefined}
         onSave={async (data) => {
           if (navParams.service === 'ficha') {
             if (data?.type === 'declaracao_uniformes') {
@@ -2088,6 +2090,7 @@ const AppContent: React.FC = () => {
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
             projectId={activeProject}
             nucleoId={user?.nucleo_id || undefined}
+            professorName={user?.nome || undefined}
             inventory={inventory}
           />
         )}
