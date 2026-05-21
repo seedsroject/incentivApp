@@ -779,7 +779,11 @@ const AppContent: React.FC = () => {
 
   // Núcleos do projeto ativo (para login)
   const projectNucleosForLogin = useMemo(() => {
-    return nucleos.filter(n => n.project === activeProject);
+    return nucleos.filter(n => 
+      n.project === activeProject && 
+      n.id !== 'c5d6165c-6200-4b35-8e31-8bf056852f0f' && // Boqueirão (Triathlon) sem endereço duplicado
+      n.id !== '8b4dc4ab-5583-49a8-9475-d20ba05fb461'    // Boqueirão (Futebol) sem endereço duplicado
+    );
   }, [nucleos, activeProject]);
 
   // Lista de estados únicos disponíveis nos núcleos
