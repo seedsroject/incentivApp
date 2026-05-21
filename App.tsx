@@ -545,6 +545,119 @@ const AppContent: React.FC = () => {
     ]);
   }, [loadStudentsFromSupabase, loadDocumentsFromSupabase, loadEvidencesFromSupabase, loadInventoryFromSupabase, loadPreCadastrosFromSupabase]);
 
+  // --- SUPABASE REALTIME: Atualização automática ao receber dados externos ---
+  useEffect(() => {
+    if (!supabaseProjectId) return;
+
+    const channel = supabase
+      .channel(`project-realtime-${supabaseProjectId}`)
+      // Novos documentos (meta qualitativa, socioeconômico, boletim, etc.)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'documents',
+        filter: `project_id=eq.${supabaseProjectId}`,
+      }, (payload) => {
+        console.log('[Realtime] Novo documento recebido:', payload.new?.type);
+        const doc = payload.new as any;
+        
+        // Adicionar ao estado de documentos
+        const newDoc: DocumentLog = {
+          id: doc.id,
+          timestamp: doc.created_at,
+          type: doc.type,
+          title: doc.title || '',
+          description: doc.description || '',
+          fileUrl: doc.file_url || undefined,
+          metaData: doc.metadata || undefined,
+          studentId: doc.student_id || undefined,
+          nucleoId: doc.nucleo_id || undefined,
+          projectId: activeProject,
+        };
+        setCollectedDocuments(prev => {
+          // Evitar duplicatas
+          if (prev.some(d => d.id === newDoc.id)) return prev;
+          return [...prev, newDoc];
+        });
+
+        // Atualizar badge do aluno (questionário/socioeconômico/boletim)
+        if (doc.student_id && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM'].includes(doc.type)) {
+          setStudents(prev => prev.map(s => {
+            if (s.id !== doc.student_id) return s;
+            const docUrl = doc.file_url || doc.metadata?.url || '';
+            if (doc.type === 'PESQUISA_META') {
+              return { ...s, questionario_quantitativo: { url: docUrl, timestamp: doc.created_at, metadata: doc.metadata } };
+            }
+            if (doc.type === 'INDICADORES_SAUDE') {
+              return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: doc.created_at, metadata: doc.metadata } };
+            }
+            if (doc.type === 'BOLETIM') {
+              return { ...s, boletim_escolar: { url: docUrl, timestamp: doc.created_at, ...doc.metadata } };
+            }
+            return s;
+          }));
+        }
+      })
+      // Novos alunos ou atualizações de alunos
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'students',
+        filter: `project_id=eq.${supabaseProjectId}`,
+      }, (payload) => {
+        console.log('[Realtime] Mudança em students:', payload.eventType);
+        if (payload.eventType === 'INSERT') {
+          const s = payload.new as any;
+          setStudents(prev => {
+            if (prev.some(st => st.id === s.id)) return prev;
+            return [...prev, {
+              id: s.id, projectId: activeProject, nucleo_id: s.nucleo_id, nucleo_nome: s.nucleo_nome,
+              turma_id: s.turma_id, nome: s.nome, data_nascimento: s.data_nascimento || '',
+              rg_cpf: s.rg_cpf || '', nome_responsavel: s.nome_responsavel || '',
+              endereco: s.endereco || '', telefone: s.telefone || '', email_contato: s.email_contato || '',
+              escola_nome: s.escola_nome || '', escola_tipo: s.escola_tipo || '',
+              status: s.status || 'ATIVO', timestamp: s.created_at,
+            } as StudentDraft];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          const s = payload.new as any;
+          setStudents(prev => prev.map(st => st.id === s.id ? {
+            ...st, nome: s.nome, status: s.status || st.status,
+            nucleo_id: s.nucleo_id || st.nucleo_id, nucleo_nome: s.nucleo_nome || st.nucleo_nome,
+            boletim_escolar: s.boletim_escolar || st.boletim_escolar,
+            declaracao_matricula: s.declaracao_matricula || st.declaracao_matricula,
+          } : st));
+        }
+      })
+      // Novas declarações
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'student_declarations',
+        filter: `project_id=eq.${supabaseProjectId}`,
+      }, (payload) => {
+        console.log('[Realtime] Nova declaração recebida:', payload.new?.type);
+        const dec = payload.new as any;
+        if (dec.student_id) {
+          setStudents(prev => prev.map(s => {
+            if (s.id !== dec.student_id) return s;
+            if (dec.type === 'UNIFORMES') return { ...s, declaracao_uniformes: dec.data };
+            if (dec.type === 'PRONTIDAO') return { ...s, declaracao_prontidao: dec.data };
+            if (dec.type === 'AUTORIZACAO_VIAGEM') return { ...s, autorizacao_viagem: dec.data };
+            return s;
+          }));
+        }
+      })
+      .subscribe((status) => {
+        console.log('[Realtime] Status da subscription:', status);
+      });
+
+    return () => {
+      console.log('[Realtime] Removendo subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [supabaseProjectId, activeProject]);
+
   // --- SUPABASE: Verificar sessão existente ao montar ---
   useEffect(() => {
     const checkSession = async () => {
