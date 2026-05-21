@@ -624,6 +624,49 @@ const AppContent: React.FC = () => {
                 setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
               }
             }
+          } else {
+            // Sem user_project_access — tentar restaurar como PROFESSOR usando perfil
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('nome, estado_responsavel')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            
+            // Buscar nucleo salvo ou usar o primeiro do projeto
+            const savedNucleoId = localStorage.getItem('lastNucleoId');
+            const projectSlug = activeProject;
+            await loadNucleosFromSupabase(projectSlug);
+            
+            const { data: projectData } = await supabase
+              .from('projects').select('id').eq('slug', projectSlug).single();
+            
+            if (projectData) {
+              setSupabaseProjectId(projectData.id);
+              await loadAllProjectData(projectData.id, projectSlug);
+            }
+
+            // Resolver nucleo pelo ID salvo ou buscar direto
+            let nucNome: string | undefined;
+            if (savedNucleoId) {
+              const nuc = nucleos.find(n => n.id === savedNucleoId);
+              nucNome = nuc?.nome;
+              if (!nucNome) {
+                const { data: nucData } = await supabase.from('nucleos').select('nome').eq('id', savedNucleoId).maybeSingle();
+                nucNome = nucData?.nome;
+              }
+            }
+
+            setUser({
+              uid: session.user.id,
+              nome: profileData?.nome || session.user.user_metadata?.nome || session.user.email?.split('@')[0] || 'Usuário',
+              email: session.user.email || '',
+              role: 'PROFESSOR',
+              nucleo_id: savedNucleoId || null,
+              nucleo_nome: nucNome,
+              projectId: projectSlug,
+              estado_responsavel: profileData?.estado_responsavel || undefined,
+            });
+            setView(AppView.DASHBOARD);
           }
         }
       } catch (err) {
@@ -661,18 +704,23 @@ const AppContent: React.FC = () => {
 
   // Alunos filtrados pelo núcleo do usuário logado
   const nucleoStudents = useMemo(() => {
-    if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo ou com estado_responsavel: vê todos (do estado, já filtrado acima)
-    const userNuc = filteredNucleos.find(n => n.id === user.nucleo_id);
-    const userNucBaseName = userNuc?.nome?.split(' - ')[0]?.split(' | ')[0]?.trim();
+    if (!user?.nucleo_id && !user?.nucleo_nome) return projectStudents;
+    const userNuc = filteredNucleos.find(n => n.id === user?.nucleo_id);
+    const userNucNome = user?.nucleo_nome || userNuc?.nome;
+    const userNucBaseName = (userNucNome || '').split(' - ')[0]?.split(' | ')[0]?.trim();
     return projectStudents.filter(s => {
-      if (s.nucleo_id === user.nucleo_id) return true;
-      if (userNuc && s.nucleo_nome === userNuc.nome) return true;
-      // Match by base name prefix (e.g. "Boqueirão" matches "Boqueirão - Rua Pastor...")
-      if (userNucBaseName && s.nucleo_nome && s.nucleo_nome.split(' - ')[0]?.split(' | ')[0]?.trim() === userNucBaseName) return true;
-      if (userNuc && s.nucleo_id === `nuc_${userNuc.nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`) return true;
+      // Match by nucleo_id (primary)
+      if (user?.nucleo_id && s.nucleo_id === user.nucleo_id) return true;
+      // Match by exact nucleo_nome
+      if (userNucNome && s.nucleo_nome === userNucNome) return true;
+      // Match by base name (e.g. "Boqueirão" matches "Boqueirão - Rua Pastor...")
+      if (userNucBaseName && s.nucleo_nome) {
+        const studentBase = s.nucleo_nome.split(' - ')[0]?.split(' | ')[0]?.trim();
+        if (studentBase === userNucBaseName) return true;
+      }
       return false;
     });
-  }, [projectStudents, user?.nucleo_id, filteredNucleos]);
+  }, [projectStudents, user?.nucleo_id, user?.nucleo_nome, filteredNucleos]);
 
   // Navigation Params
   const [navParams, setNavParams] = useState<any>({});
@@ -961,13 +1009,10 @@ const AppContent: React.FC = () => {
       setSupabaseProjectId(projectData.id);
       await loadAllProjectData(projectData.id, activeProject);
 
-      // 4. Definir usuário — buscar nome do núcleo (nucleos pode não ter atualizado ainda por ser async state)
-      let selectedNucleoObj = nucleos.find(n => n.id === nucleoId);
-      if (!selectedNucleoObj && nucleoId) {
-        // Fallback: buscar direto do Supabase se o state ainda não atualizou
-        const { data: nucData } = await supabase.from('nucleos').select('nome').eq('id', nucleoId).maybeSingle();
-        if (nucData) selectedNucleoObj = { nome: nucData.nome } as any;
-      }
+      // 4. Definir usuário — usar loginFilteredNucleos (já em memória) para resolver o nome
+      const selectedNucleoObj = loginFilteredNucleos.find(n => n.id === nucleoId)
+        || nucleos.find(n => n.id === nucleoId);
+      if (nucleoId) localStorage.setItem('lastNucleoId', nucleoId);
       setUser({
         uid: authData.user.id,
         nome: authData.user.user_metadata?.nome || authData.user.email?.split('@')[0] || 'Usuário',
