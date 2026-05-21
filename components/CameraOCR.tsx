@@ -319,14 +319,14 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     return val;
   };
 
-  const isoToBR = (iso: string) => {
+  const isoToBR = (iso?: string | null) => {
     if (!iso) return '';
     const parts = iso.split('-');
     if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
     return iso;
   };
 
-  const brToISO = (br: string) => {
+  const brToISO = (br?: string | null) => {
     if (!br) return '';
     const parts = br.split('/');
     if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
