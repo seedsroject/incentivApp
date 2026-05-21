@@ -17,6 +17,7 @@ interface PublicFormViewProps {
   studentId?: string;
   onSave: (data: any) => any | Promise<any>;
   projectId?: ProjectId;
+  projectUuid?: string;
   currentNucleo?: import('../types').Nucleo;
 }
 
@@ -136,7 +137,7 @@ const SuccessScreen: React.FC<{ skipped: number[]; logoSrc?: string }> = ({ skip
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId, currentNucleo }) => {
+export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId, projectUuid, currentNucleo }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [skippedSteps, setSkippedSteps] = useState<number[]>([]);
@@ -237,7 +238,7 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 studentId={studentId || undefined}
                 nucleoId={currentNucleo?.id}
                 nucleoNome={currentNucleo?.nome}
-                projectId={projectId}
+                projectId={projectUuid}
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'declaracao' ? (
               student ? (

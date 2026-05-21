@@ -1520,7 +1520,8 @@ const AppContent: React.FC = () => {
   // --- RENDER LOGIC ---
 
   // Estado para núcleo carregado diretamente do Supabase (para formulários públicos sem login)
-  const [publicNucleoFromDb, setPublicNucleoFromDb] = useState<Nucleo | null>(null);
+  const [publicNucleoFromDb, setPublicNucleoFromDb] = useState<any>(null);
+  const [publicProjectUuid, setPublicProjectUuid] = useState<string | null>(null);
 
   useEffect(() => {
     if (view !== AppView.PUBLIC_FORM || !navParams.nucleoId) return;
@@ -1557,6 +1558,7 @@ const AppContent: React.FC = () => {
             return match ? match[1].toUpperCase() : undefined;
           };
           const estado = data.estado || extractUF(data.nome) || extractUF(data.address) || undefined;
+          setPublicProjectUuid(data.project_id);
           setPublicNucleoFromDb({
             id: data.id,
             nome: data.nome,
@@ -1586,6 +1588,7 @@ const AppContent: React.FC = () => {
         serviceId={navParams.service}
         studentId={navParams.studentId}
         projectId={navParams.project as ProjectId | undefined}
+        projectUuid={supabaseProjectId || publicProjectUuid || undefined}
         currentNucleo={publicNucleo || undefined}
         onSave={async (data) => {
           if (navParams.service === 'ficha') {
