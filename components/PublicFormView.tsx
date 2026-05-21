@@ -19,6 +19,7 @@ interface PublicFormViewProps {
   projectId?: ProjectId;
   projectUuid?: string;
   currentNucleo?: import('../types').Nucleo;
+  professorName?: string;
 }
 
 // ─── WIZARD STEPS ───────────────────────────────────────────────────────────
@@ -137,7 +138,7 @@ const SuccessScreen: React.FC<{ skipped: number[]; logoSrc?: string }> = ({ skip
 
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId, projectUuid, currentNucleo }) => {
+export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, studentId, onSave, projectId, projectUuid, currentNucleo, professorName }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
   const [skippedSteps, setSkippedSteps] = useState<number[]>([]);
