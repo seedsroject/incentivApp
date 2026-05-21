@@ -647,7 +647,12 @@ const AppContent: React.FC = () => {
     let list = students.filter(s => !s.projectId || s.projectId === activeProject);
     if (user && user.role === 'ADMIN' && user.estado_responsavel && user.email !== 'admin.geral@formandocampeoes.org.br') {
       const allowedNucleos = new Set(filteredNucleos.map(n => n.id));
-      list = list.filter(s => s.nucleo_id && allowedNucleos.has(s.nucleo_id));
+      const allowedNomes = new Set(filteredNucleos.map(n => n.nome));
+      list = list.filter(s => 
+        (s.nucleo_id && allowedNucleos.has(s.nucleo_id)) || 
+        (s.nucleo_nome && allowedNomes.has(s.nucleo_nome)) ||
+        (s.nucleo_id && s.nucleo_id.startsWith('nuc_') && allowedNomes.has(s.nucleo_nome))
+      );
     }
     return list;
   }, [students, activeProject, user, filteredNucleos]);
@@ -656,8 +661,13 @@ const AppContent: React.FC = () => {
   // Alunos filtrados pelo núcleo do usuário logado
   const nucleoStudents = useMemo(() => {
     if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo ou com estado_responsavel: vê todos (do estado, já filtrado acima)
-    return projectStudents.filter(s => s.nucleo_id === user.nucleo_id);
-  }, [projectStudents, user?.nucleo_id]);
+    const userNuc = filteredNucleos.find(n => n.id === user.nucleo_id);
+    return projectStudents.filter(s => 
+      s.nucleo_id === user.nucleo_id || 
+      (userNuc && s.nucleo_nome === userNuc.nome) ||
+      (userNuc && s.nucleo_id === `nuc_${userNuc.nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`)
+    );
+  }, [projectStudents, user?.nucleo_id, filteredNucleos]);
 
   // Navigation Params
   const [navParams, setNavParams] = useState<any>({});
