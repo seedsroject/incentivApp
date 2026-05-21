@@ -1,18 +1,48 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { processSchoolReport } from '../services/geminiService';
 import { DocumentLog } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 interface PublicBoletimUploadProps {
     onSave: (doc: DocumentLog) => void;
     studentId?: string;
+    nucleoId?: string;
+    nucleoNome?: string;
+    projectId?: string;
 }
 
-export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave, studentId }) => {
+export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave, studentId, nucleoId, nucleoNome, projectId }) => {
     const [loading, setLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [inputName, setInputName] = useState('');
+    const [studentsList, setStudentsList] = useState<{ id: string, nome: string }[]>([]);
+    const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || '');
     const [errorStatus, setErrorStatus] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!projectId) return;
+            try {
+                // Tenta buscar usando o UUID do núcleo ou o nome do núcleo como fallback
+                let query = supabase.from('students').select('id, nome').eq('project_id', projectId);
+                if (nucleoId) {
+                    if (nucleoNome) {
+                        query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq.${nucleoNome},nucleo_id.eq.nuc_${nucleoNome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')}`);
+                    } else {
+                        query = query.eq('nucleo_id', nucleoId);
+                    }
+                }
+                const { data, error } = await query.order('nome');
+                if (data && !error) {
+                    setStudentsList(data);
+                }
+            } catch (err) {
+                console.warn('Erro ao buscar alunos para seleção:', err);
+            }
+        };
+        fetchStudents();
+    }, [nucleoId, nucleoNome, projectId]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,8 +85,9 @@ export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave
                 // OCR Processing
                 const ocrResult = await processSchoolReport(base64, selectedFile.type);
 
-                // Monta o nome preferindo o que o usuário digitou, senão o OCR
-                const finalStudentName = inputName.trim() || ocrResult.studentName || 'Nome não identificado';
+                // Monta o nome
+                const selectedStudent = studentsList.find(s => s.id === selectedStudentId);
+                const finalStudentName = selectedStudent ? selectedStudent.nome : (inputName.trim() || ocrResult.studentName || 'Nome não identificado');
 
                 // Funções auxiliares para avaliar a nota (Escala 0 a 10)
                 const getAvaliacaoConceito = (nota: number): 'Bom' | 'Regular' | 'Insatisfatório' | 'Péssimo' | undefined => {
@@ -79,7 +110,7 @@ export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave
                     title: `Boletim - ${finalStudentName}`,
                     description: `Boletim enviado via portal público. Classificação: ${ocrResult.periodType || 'PARCIAL'}`,
                     fileUrl: base64, // ideal era storage cloud, mas usa base64 como fallback igual resto do projeto
-                    studentId: studentId || undefined,
+                    studentId: selectedStudentId || undefined,
                     metaData: {
                         studentName: finalStudentName,
                         url: base64,
@@ -120,17 +151,35 @@ export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave
             )}
 
             <div className="space-y-4">
-                <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Nome do Aluno (Opcional)</label>
-                    <input
-                        type="text"
-                        placeholder="Se vazio, tentaremos ler do documento"
-                        value={inputName}
-                        onChange={e => setInputName(e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        disabled={loading}
-                    />
-                </div>
+                {studentsList.length > 0 ? (
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Selecione o Aluno <span className="text-red-500">*</span></label>
+                        <select
+                            value={selectedStudentId}
+                            onChange={e => setSelectedStudentId(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            disabled={loading}
+                        >
+                            <option value="">-- Selecione o Aluno --</option>
+                            {studentsList.map(s => (
+                                <option key={s.id} value={s.id}>{s.nome}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Ao selecionar o aluno, o boletim será salvo diretamente no perfil dele.</p>
+                    </div>
+                ) : (
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Nome do Aluno (Opcional)</label>
+                        <input
+                            type="text"
+                            placeholder="Se vazio, tentaremos ler do documento"
+                            value={inputName}
+                            onChange={e => setInputName(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            disabled={loading}
+                        />
+                    </div>
+                )}
 
                 <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Anexar Documento</label>
