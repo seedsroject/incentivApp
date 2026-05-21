@@ -658,6 +658,58 @@ const AppContent: React.FC = () => {
     };
   }, [supabaseProjectId, activeProject]);
 
+  // --- POLLING FALLBACK: Verificar novos dados a cada 30s (caso Realtime não esteja habilitado) ---
+  useEffect(() => {
+    if (!supabaseProjectId || !user) return;
+
+    const pollForUpdates = async () => {
+      try {
+        // Verificar novos documentos desde o último polling
+        const { data: newDocs } = await supabase
+          .from('documents')
+          .select('id, type, title, description, file_url, metadata, student_id, nucleo_id, created_at')
+          .eq('project_id', supabaseProjectId)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (newDocs && newDocs.length > 0) {
+          setCollectedDocuments(prev => {
+            const existingIds = new Set(prev.map(d => d.id));
+            const brandNew = newDocs.filter(d => !existingIds.has(d.id));
+            if (brandNew.length === 0) return prev;
+            console.log(`[Polling] ${brandNew.length} novos documentos detectados`);
+            
+            // Atualizar badges dos alunos
+            for (const doc of brandNew) {
+              if (doc.student_id && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM'].includes(doc.type)) {
+                setStudents(prevStudents => prevStudents.map(s => {
+                  if (s.id !== doc.student_id) return s;
+                  const docUrl = doc.file_url || doc.metadata?.url || '';
+                  if (doc.type === 'PESQUISA_META') return { ...s, questionario_quantitativo: { url: docUrl, timestamp: doc.created_at, metadata: doc.metadata } };
+                  if (doc.type === 'INDICADORES_SAUDE') return { ...s, pesquisa_socioeconomica: { url: docUrl, timestamp: doc.created_at, metadata: doc.metadata } };
+                  if (doc.type === 'BOLETIM') return { ...s, boletim_escolar: { url: docUrl, timestamp: doc.created_at, ...doc.metadata } };
+                  return s;
+                }));
+              }
+            }
+
+            return [...prev, ...brandNew.map(d => ({
+              id: d.id, timestamp: d.created_at, type: d.type, title: d.title || '',
+              description: d.description || '', fileUrl: d.file_url || undefined,
+              metaData: d.metadata || undefined, studentId: d.student_id || undefined,
+              nucleoId: d.nucleo_id || undefined, projectId: activeProject,
+            }))];
+          });
+        }
+      } catch (err) {
+        // Silenciar erros de polling para não incomodar o usuário
+      }
+    };
+
+    const interval = setInterval(pollForUpdates, 30000); // A cada 30 segundos
+    return () => clearInterval(interval);
+  }, [supabaseProjectId, user, activeProject]);
+
   // --- SUPABASE: Verificar sessão existente ao montar ---
   useEffect(() => {
     const checkSession = async () => {
@@ -907,13 +959,42 @@ const AppContent: React.FC = () => {
     return () => clearTimeout(timer);
   }, [loginEmail]);
 
-  // Núcleos do projeto ativo (para login)
+  // Núcleos do projeto ativo (para login) — deduplicado por nome base
   const projectNucleosForLogin = useMemo(() => {
-    return nucleos.filter(n => 
-      n.project === activeProject && 
-      n.id !== 'c5d6165c-6200-4b35-8e31-8bf056852f0f' && // Boqueirão (Triathlon) sem endereço duplicado
-      n.id !== '8b4dc4ab-5583-49a8-9475-d20ba05fb461'    // Boqueirão (Futebol) sem endereço duplicado
-    );
+    const projectNucleos = nucleos.filter(n => n.project === activeProject);
+    // Deduplicar: agrupar por nome base (primeira parte antes de separadores)
+    const groups = new Map<string, typeof projectNucleos>();
+    for (const n of projectNucleos) {
+      const baseName = (n.nome || '')
+        .split(' - ')[0]
+        .split(' | ')[0]
+        .split(' (')[0]
+        .trim()
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const key = baseName || n.id;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(n);
+    }
+    // Para cada grupo, manter o que tem o UUID real (Supabase) em vez de nuc_xxx
+    const deduped: typeof projectNucleos = [];
+    for (const [, items] of groups) {
+      if (items.length === 1) {
+        deduped.push(items[0]);
+      } else {
+        // Preferir: 1) UUID real, 2) Com endereço, 3) Primeiro da lista
+        const isUUID = (id: string) => /^[0-9a-f]{8}-/.test(id);
+        const sorted = items.sort((a, b) => {
+          if (isUUID(a.id) && !isUUID(b.id)) return -1;
+          if (!isUUID(a.id) && isUUID(b.id)) return 1;
+          if (a.address && !b.address) return -1;
+          if (!a.address && b.address) return 1;
+          return 0;
+        });
+        deduped.push(sorted[0]);
+      }
+    }
+    return deduped.sort((a, b) => a.nome.localeCompare(b.nome));
   }, [nucleos, activeProject]);
 
   // Lista de estados únicos disponíveis nos núcleos
