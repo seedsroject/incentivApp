@@ -181,6 +181,8 @@ export const MetaQualitativa: React.FC<MetaQualitativaProps> = ({ onBack, onSave
       timestamp: new Date().toISOString(),
       type: 'PESQUISA_META',
       title: '6. Pesquisa Meta Qualitativa',
+      studentId: selectedStudentId || undefined,
+      nucleoId: nucleoId || undefined,
       description: mode === 'DIGITAL_FORM'
         ? `Digital: Aluno ${studentName} - Resp. ${responsibleName}`
         : `Digitalizado: ${file ? file.name : 'Foto Câmera Avançada'}`,

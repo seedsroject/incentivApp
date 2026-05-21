@@ -200,6 +200,8 @@ export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, on
             timestamp: new Date().toISOString(),
             type: 'INDICADORES_SAUDE',
             title: 'Indicadores Socioeconômico e de Saúde',
+            studentId: selectedStudentId || undefined,
+            nucleoId: nucleoId || undefined,
             description: `Pesquisa Digital: ${formData.nome}`,
             metaData: {
                 ...formData,
@@ -226,6 +228,8 @@ export const SocioeconomicForm: React.FC<SocioeconomicFormProps> = ({ onBack, on
             timestamp: new Date().toISOString(),
             type: 'INDICADORES_SAUDE',
             title: 'Indicadores Socioeconômico (Scan)',
+            studentId: selectedStudentId || undefined,
+            nucleoId: nucleoId || undefined,
             description: `Digitalização: ${formData.nome}`,
             fileUrl: capturedImage || undefined,
             metaData: {

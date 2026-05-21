@@ -673,35 +673,19 @@ const AppContent: React.FC = () => {
 
   // Alunos filtrados pelo núcleo do usuário logado
   const nucleoStudents = useMemo(() => {
-    console.log('[DEBUG nucleoStudents] user?.nucleo_id:', user?.nucleo_id, 'user?.nucleo_nome:', user?.nucleo_nome);
-    console.log('[DEBUG nucleoStudents] projectStudents.length:', projectStudents.length);
-    console.log('[DEBUG nucleoStudents] students.length:', students.length);
-    console.log('[DEBUG nucleoStudents] filteredNucleos:', filteredNucleos.map(n => n.id + '=' + n.nome));
-    if (projectStudents.length > 0) {
-      console.log('[DEBUG nucleoStudents] sample student:', { nucleo_id: projectStudents[0].nucleo_id, nucleo_nome: projectStudents[0].nucleo_nome, nome: projectStudents[0].nome, projectId: projectStudents[0].projectId });
-    }
-    if (!user?.nucleo_id && !user?.nucleo_nome) {
-      console.log('[DEBUG nucleoStudents] No nucleo filter -> returning all projectStudents');
-      return projectStudents;
-    }
+    if (!user?.nucleo_id && !user?.nucleo_nome) return projectStudents;
     const userNuc = filteredNucleos.find(n => n.id === user?.nucleo_id);
     const userNucNome = user?.nucleo_nome || userNuc?.nome;
     const userNucBaseName = (userNucNome || '').split(' - ')[0]?.split(' | ')[0]?.trim();
-    console.log('[DEBUG nucleoStudents] userNucNome:', userNucNome, 'userNucBaseName:', userNucBaseName);
-    const result = projectStudents.filter(s => {
-      // Match by nucleo_id (primary)
+    return projectStudents.filter(s => {
       if (user?.nucleo_id && s.nucleo_id === user.nucleo_id) return true;
-      // Match by exact nucleo_nome
       if (userNucNome && s.nucleo_nome === userNucNome) return true;
-      // Match by base name (e.g. "Boqueirão" matches "Boqueirão - Rua Pastor...")
       if (userNucBaseName && s.nucleo_nome) {
         const studentBase = s.nucleo_nome.split(' - ')[0]?.split(' | ')[0]?.trim();
         if (studentBase === userNucBaseName) return true;
       }
       return false;
     });
-    console.log('[DEBUG nucleoStudents] result.length:', result.length);
-    return result;
   }, [projectStudents, user?.nucleo_id, user?.nucleo_nome, filteredNucleos]);
 
   // Navigation Params
@@ -932,7 +916,6 @@ const AppContent: React.FC = () => {
 
       let role: string = 'PROFESSOR';
       let nucleoId: string | null = loginNucleoId || null;
-      console.log('[DEBUG handleLogin] loginNucleoId:', loginNucleoId, 'nucleoId:', nucleoId, 'accessData:', !!accessData);
 
       if (accessData) {
         role = accessData.role;
@@ -990,8 +973,6 @@ const AppContent: React.FC = () => {
       const selectedNucleoObj = loginFilteredNucleos.find(n => n.id === nucleoId)
         || nucleos.find(n => n.id === nucleoId);
       if (nucleoId) localStorage.setItem('lastNucleoId', nucleoId);
-      console.log('[DEBUG handleLogin] FINAL nucleoId:', nucleoId, 'selectedNucleoObj:', selectedNucleoObj?.nome, 'role:', role);
-      console.log('[DEBUG handleLogin] loginFilteredNucleos:', loginFilteredNucleos.map(n => n.id));
       setUser({
         uid: authData.user.id,
         nome: authData.user.user_metadata?.nome || authData.user.email?.split('@')[0] || 'Usuário',
@@ -1321,9 +1302,10 @@ const AppContent: React.FC = () => {
     }
 
     // Persistir no Supabase
-    if (supabaseProjectId) {
+    const effectiveProjectId = supabaseProjectId || publicProjectUuid;
+    if (effectiveProjectId) {
       const { error } = await supabase.from('documents').insert({
-        project_id: supabaseProjectId,
+        project_id: effectiveProjectId,
         nucleo_id: isValidUUID(data.nucleoId) ? data.nucleoId : (isValidUUID(user?.nucleo_id) ? user?.nucleo_id : null),
         student_id: data.studentId || null,
         uploaded_by: user?.uid || null,
