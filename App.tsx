@@ -1387,6 +1387,17 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const handleDeleteStudent = async (studentId: string) => {
+    setStudents(prev => prev.filter(s => s.id !== studentId));
+    const { error } = await supabase.from('students').delete().eq('id', studentId);
+    if (error) {
+      console.error('Erro ao deletar aluno:', error);
+      alert('Erro ao excluir aluno do banco de dados.');
+    } else {
+      console.log('Aluno deletado do banco de dados:', studentId);
+    }
+  };
+
   const handleInactivateStudent = async (studentIdOrNome: string, checklist: { id: string; name: string; returned: boolean }[], replacementCandidateId?: string, replacementName?: string) => {
     const hasPending = checklist.some(c => !c.returned);
     const targetStudent = students.find(s => s.id === studentIdOrNome || s.nome === studentIdOrNome);
@@ -2140,6 +2151,7 @@ const AppContent: React.FC = () => {
             currentNucleo={nucleos.find(n => n.id === user?.nucleo_id)}
             onInactivateStudent={handleInactivateStudent}
             onReactivateStudent={handleReactivateStudent}
+            onDeleteStudent={handleDeleteStudent}
             collectedDocuments={collectedDocuments}
             onSaveDeclaracao={handleSaveDeclaracao}
             onSaveDeclaracaoProntidao={handleSaveDeclaracaoProntidao}
