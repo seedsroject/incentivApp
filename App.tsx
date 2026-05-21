@@ -397,6 +397,7 @@ const AppContent: React.FC = () => {
             id: s.id,
             projectId: projectSlug,
             nucleo_id: s.nucleo_id,
+            nucleo_nome: s.nucleo_nome,
             turma_id: s.turma_id,
             nome: s.nome,
             data_nascimento: s.data_nascimento || '',
@@ -942,10 +943,16 @@ const AppContent: React.FC = () => {
             return;
           }
         } else {
-          setLoginError('Você não tem acesso a nenhum projeto. Contate o administrador.');
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
+          // Sem acesso a nenhum projeto — permitir login como PROFESSOR se tem núcleo selecionado
+          if (loginNucleoId) {
+            role = 'PROFESSOR';
+            nucleoId = loginNucleoId;
+          } else {
+            setLoginError('Você não tem acesso a nenhum projeto. Selecione um núcleo ou contate o administrador.');
+            await supabase.auth.signOut();
+            setLoading(false);
+            return;
+          }
         }
       }
 
@@ -954,8 +961,13 @@ const AppContent: React.FC = () => {
       setSupabaseProjectId(projectData.id);
       await loadAllProjectData(projectData.id, activeProject);
 
-      // 4. Definir usuário
-      const selectedNucleoObj = nucleos.find(n => n.id === nucleoId);
+      // 4. Definir usuário — buscar nome do núcleo (nucleos pode não ter atualizado ainda por ser async state)
+      let selectedNucleoObj = nucleos.find(n => n.id === nucleoId);
+      if (!selectedNucleoObj && nucleoId) {
+        // Fallback: buscar direto do Supabase se o state ainda não atualizou
+        const { data: nucData } = await supabase.from('nucleos').select('nome').eq('id', nucleoId).maybeSingle();
+        if (nucData) selectedNucleoObj = { nome: nucData.nome } as any;
+      }
       setUser({
         uid: authData.user.id,
         nome: authData.user.user_metadata?.nome || authData.user.email?.split('@')[0] || 'Usuário',
