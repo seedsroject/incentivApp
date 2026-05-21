@@ -662,11 +662,15 @@ const AppContent: React.FC = () => {
   const nucleoStudents = useMemo(() => {
     if (!user?.nucleo_id) return projectStudents; // Admin sem núcleo ou com estado_responsavel: vê todos (do estado, já filtrado acima)
     const userNuc = filteredNucleos.find(n => n.id === user.nucleo_id);
-    return projectStudents.filter(s => 
-      s.nucleo_id === user.nucleo_id || 
-      (userNuc && s.nucleo_nome === userNuc.nome) ||
-      (userNuc && s.nucleo_id === `nuc_${userNuc.nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`)
-    );
+    const userNucBaseName = userNuc?.nome?.split(' - ')[0]?.split(' | ')[0]?.trim();
+    return projectStudents.filter(s => {
+      if (s.nucleo_id === user.nucleo_id) return true;
+      if (userNuc && s.nucleo_nome === userNuc.nome) return true;
+      // Match by base name prefix (e.g. "Boqueirão" matches "Boqueirão - Rua Pastor...")
+      if (userNucBaseName && s.nucleo_nome && s.nucleo_nome.split(' - ')[0]?.split(' | ')[0]?.trim() === userNucBaseName) return true;
+      if (userNuc && s.nucleo_id === `nuc_${userNuc.nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`) return true;
+      return false;
+    });
   }, [projectStudents, user?.nucleo_id, filteredNucleos]);
 
   // Navigation Params
@@ -741,8 +745,10 @@ const AppContent: React.FC = () => {
         
         if (profileData?.estado_responsavel) {
           console.log('[Login] Estado encontrado em profiles:', profileData.estado_responsavel);
-          setLoginEstado(profileData.estado_responsavel);
-          setLoginNucleoId('');
+          setLoginEstado(prev => {
+            if (prev !== profileData.estado_responsavel) setLoginNucleoId('');
+            return profileData.estado_responsavel;
+          });
           return;
         }
 
@@ -759,8 +765,10 @@ const AppContent: React.FC = () => {
           
           if (accessData?.estado_responsavel) {
             console.log('[Login] Estado encontrado em user_project_access:', accessData.estado_responsavel);
-            setLoginEstado(accessData.estado_responsavel);
-            setLoginNucleoId('');
+            setLoginEstado(prev => {
+              if (prev !== accessData.estado_responsavel) setLoginNucleoId('');
+              return accessData.estado_responsavel;
+            });
             return;
           }
         }
