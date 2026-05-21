@@ -651,7 +651,7 @@ const AppContent: React.FC = () => {
       list = list.filter(s => 
         (s.nucleo_id && allowedNucleos.has(s.nucleo_id)) || 
         (s.nucleo_nome && allowedNomes.has(s.nucleo_nome)) ||
-        (s.nucleo_id && s.nucleo_id.startsWith('nuc_') && allowedNomes.has(s.nucleo_nome))
+        (s.nucleo_id && s.nucleo_id.startsWith('nuc_') && s.nucleo_nome && allowedNomes.has(s.nucleo_nome))
       );
     }
     return list;
