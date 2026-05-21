@@ -309,48 +309,17 @@ const AppContent: React.FC = () => {
             employees: [],
           };
           });
-          // Deduplicar núcleos: manter apenas o que tem UF no final do endereço
-          const deduped = (() => {
-            const seen = new Map<string, Nucleo>();
-            for (const n of mapped) {
-              // Chave normalizada: primeira parte do nome
-              const baseName = (n.nome || '')
-                .split('-')[0]
-                .split('|')[0]
-                .toLowerCase()
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                .trim();
-              
-              const normAddr = baseName || 'desconhecido';
-              
-              const existing = seen.get(normAddr);
-              if (!existing) {
-                seen.set(normAddr, n);
-              } else {
-                // Preferir o que tem UF no endereço (ex: "- CE" ou "– CE")
-                const ufRegex = /\s*[-–]\s*[A-Z]{2}\s*$/i;
-                const hasUF = ufRegex.test(n.address || '') || ufRegex.test(n.nome || '');
-                const existingHasUF = ufRegex.test(existing.address || '') || ufRegex.test(existing.nome || '');
-                
-                if (hasUF && !existingHasUF) {
-                  seen.set(normAddr, n);
-                } else if (!existingHasUF && n.address && !existing.address) {
-                  seen.set(normAddr, n);
-                }
-              }
-            }
-            return Array.from(seen.values());
-          })();
           // Debug: mostrar núcleos carregados e seus estados
-          console.log('[Nucleos] Carregados (' + deduped.length + '):', deduped.map(n => ({
+          console.log('[Nucleos] Carregados (' + mapped.length + '):', mapped.map(n => ({
+            id: n.id,
             nome: n.nome,
             estado: n.estado || '⚠️ NULL',
             address: n.address?.substring(0, 40)
           })));
-          // Mescla: núcleos do Supabase para este projeto + fallback de outros projetos
+          // Substituir núcleos do projeto atual pelos do Supabase (mantendo outros projetos mock)
           setNucleos(prev => {
             const otherProjects = prev.filter(n => n.project !== projectSlug);
-            return [...deduped, ...otherProjects];
+            return [...mapped, ...otherProjects];
           });
         }
       }
@@ -807,10 +776,7 @@ const AppContent: React.FC = () => {
         
         if (profileData?.estado_responsavel) {
           console.log('[Login] Estado encontrado em profiles:', profileData.estado_responsavel);
-          setLoginEstado(prev => {
-            if (prev !== profileData.estado_responsavel) setLoginNucleoId('');
-            return profileData.estado_responsavel;
-          });
+          setLoginEstado(profileData.estado_responsavel);
           return;
         }
 
@@ -827,10 +793,7 @@ const AppContent: React.FC = () => {
           
           if (accessData?.estado_responsavel) {
             console.log('[Login] Estado encontrado em user_project_access:', accessData.estado_responsavel);
-            setLoginEstado(prev => {
-              if (prev !== accessData.estado_responsavel) setLoginNucleoId('');
-              return accessData.estado_responsavel;
-            });
+            setLoginEstado(accessData.estado_responsavel);
             return;
           }
         }
