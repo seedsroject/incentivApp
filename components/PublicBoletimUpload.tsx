@@ -28,7 +28,7 @@ export const PublicBoletimUpload: React.FC<PublicBoletimUploadProps> = ({ onSave
                 let query = supabase.from('students').select('id, nome').eq('project_id', projectId);
                 if (nucleoId) {
                     if (nucleoNome) {
-                        query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq.${nucleoNome},nucleo_id.eq.nuc_${nucleoNome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')}`);
+                        query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq."${nucleoNome}"`);
                     } else {
                         query = query.eq('nucleo_id', nucleoId);
                     }
