@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { DocumentLog, DeclaracaoMatriculaOCR } from '../types';
 import { processDeclaracaoMatricula } from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
