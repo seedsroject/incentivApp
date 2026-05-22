@@ -29,13 +29,11 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
         contratanteAddress: nucleo.address || 'Rua Al. Doutor Carlos de Carvalho, nº 68, sala 102, CEP: 80.410-180, Centro, Curitiba-PR',
         contratanteCity: (() => {
             if (nucleo.city) return nucleo.city;
-            const parts = nucleo.nome.split('|');
-            if (parts.length >= 2) {
-                const city = parts[0].trim();
-                const state = parts[1].trim().split(/[\s-]/)[0].trim();
-                return `${city}/${state}`;
-            }
-            return nucleo.nome.split(' - ')[0] || 'Curitiba-PR';
+            const rawName = nucleo.nome || '';
+            const city = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim() || 'Curitiba';
+            const stateMatch = rawName.match(/\b([A-Z]{2})\b$/);
+            const state = stateMatch ? stateMatch[1] : (rawName.split('|')[1]?.trim().substring(0, 2) || 'PR');
+            return `${city}/${state}`;
         })(),
 
         // Contratada (Empresa prestadora)

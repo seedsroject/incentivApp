@@ -126,39 +126,11 @@ const A4W = 794, A4H = 1123;
 /* ─── Núcleo location helpers ─── */
 function extractCityUF(nucleo?: { nome?: string; address?: string; city?: string }): string {
   if (!nucleo) return 'Cidade | UF';
-  // If city field exists, use it
-  if (nucleo.city) {
-    // Try to extract UF from address or name
-    const uf = nucleo.address?.match(/\b([A-Z]{2})\b(?:\s*[-–]|\s*$|\s*,)/)?.[1]
-            || nucleo.nome?.match(/\b([A-Z]{2})\b/)?.[1]
-            || '';
-    return uf ? `${nucleo.city} | ${uf}` : nucleo.city;
-  }
-  // Try to extract from nome (e.g. "Ilhéus | BA - CEEP do Chocolate – ...")
-  const nome = nucleo.nome || '';
-  if (nome.includes('|')) {
-    const parts = nome.split('|').map(s => s.trim());
-    const city = parts[0];
-    // Extract just the 2-letter UF from the second part (before any dash/description)
-    const ufPart = parts[1]?.match(/^([A-Z]{2})/)?.[1] || parts[1]?.split(/\s*[-–]\s*/)[0]?.trim() || '';
-    return `${city} | ${ufPart}`;
-  }
-  // Try address
-  if (nucleo.address) {
-    const parts = nucleo.address.split(',').map(s => s.trim());
-    const last = parts[parts.length - 1];
-    const penult = parts.length >= 2 ? parts[parts.length - 2] : '';
-    // Try to find UF pattern in last or penultimate part
-    const ufMatch = last.match(/\b([A-Z]{2})\b/) || penult.match(/\b([A-Z]{2})\b/);
-    const cityMatch = penult.match(/([\wÀ-ú\s]+)/);
-    if (ufMatch && cityMatch) return `${cityMatch[1].trim()} | ${ufMatch[1]}`;
-  }
-  // For nomes like "Bairro Novo - Rua..., Curitiba - PR" try to get city/UF from end
-  const ufFromEnd = nome.match(/,?\s*([\wÀ-ú\s]+)\s*-\s*([A-Z]{2})\s*$/);
-  if (ufFromEnd) return `${ufFromEnd[1].trim()} | ${ufFromEnd[2]}`;
-  // Last resort: just take the part before the first dash
-  const shortName = nome.split(/\s*[-–]\s*/)[0].trim();
-  return shortName || 'Cidade | UF';
+  const rawName = nucleo.nome || '';
+  const city = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim() || 'Núcleo';
+  const stateMatch = rawName.match(/\b([A-Z]{2})\b$/);
+  const state = stateMatch ? stateMatch[1] : (rawName.split('|')[1]?.trim().substring(0, 2) || 'UF');
+  return `${city} | ${state}`;
 }
 
 function nucleoDisplayLabel(n: { nome: string; address?: string; city?: string }): string {

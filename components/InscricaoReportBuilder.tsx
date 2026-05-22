@@ -56,9 +56,10 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   React.useEffect(() => { if (drawState) { window.addEventListener('mousemove', onDrawMouseMove); window.addEventListener('mouseup', onDrawMouseUp); return () => { window.removeEventListener('mousemove', onDrawMouseMove); window.removeEventListener('mouseup', onDrawMouseUp); }; } }, [drawState, onDrawMouseMove, onDrawMouseUp]);
 
   const sel = nucleos.find(n => n.id === selectedNucleoId);
-  const city = sel?.nome.split('|')[0]?.trim() || 'Núcleo';
-  const rawSt = sel?.nome.split('|')[1]?.trim() || 'UF';
-  const uf = rawSt.split(/[\s\-–]/)[0]?.trim() || 'UF';
+  const rawName = sel?.nome || '';
+  const city = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim() || 'Núcleo';
+  const stateMatch = rawName.match(/\b([A-Z]{2})\b$/);
+  const uf = stateMatch ? stateMatch[1] : (rawName.split('|')[1]?.trim().substring(0, 2) || 'UF');
   const year = new Date().getFullYear();
   const pName = projectName.toUpperCase();
 

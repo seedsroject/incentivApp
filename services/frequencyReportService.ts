@@ -87,17 +87,19 @@ function calcAge(dataNasc: string): number {
   return age;
 }
 
-// ─── HELPER: Extract city/state from nucleo name ───
 function extractCityState(nucleoNome: string): { city: string; state: string } {
-  // Format: "City | ST - Address"
-  const parts = nucleoNome.split('|');
-  if (parts.length >= 2) {
-    const city = parts[0].trim();
-    const stateAndAddress = parts[1].trim();
-    const state = stateAndAddress.split('-')[0]?.trim().split(' ')[0] || '';
-    return { city, state };
+  const rawName = nucleoNome || '';
+  const city = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim();
+  
+  const stateMatch = rawName.match(/\b([A-Z]{2})\b$/);
+  let state = 'UF';
+  if (stateMatch) {
+    state = stateMatch[1];
+  } else if (rawName.includes('|')) {
+    state = rawName.split('|')[1]?.trim().substring(0, 2) || 'UF';
   }
-  return { city: nucleoNome.split('-')[0]?.trim() || nucleoNome, state: '' };
+
+  return { city, state };
 }
 
 // ─── MOCK DATA GENERATOR ───

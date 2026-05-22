@@ -212,7 +212,7 @@ export default function AmbienteDesenvolvimento({ nucleos, students, history, on
               if (selectedNucleoObj) {
                 const normalizedNome = selectedNucleoObj.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 const normalizedCity = report.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/–|-/g, '');
-                const cityPart = normalizedNome.split('|')[0].trim();
+                const cityPart = normalizedNome.split(' - ')[0].split(' | ')[0].split(' (')[0].split('|')[0].trim();
                 if (!normalizedCity.includes(cityPart) && report.city !== 'Cidade') {
                   return false;
                 }

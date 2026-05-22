@@ -33,8 +33,10 @@ export const PDLIEReportBuilder: React.FC<Props> = ({ nucleos, evidences, onBack
   const reportRef = useRef<HTMLDivElement>(null);
 
   const sel = useMemo(() => nucleos.find(n => n.id === selectedNucleoId), [nucleos, selectedNucleoId]);
-  const city = sel?.nome?.split('|')[0]?.trim() || '';
-  const uf = sel?.nome?.match(/\|\s*(\w{2})/)?.[1] || 'SC';
+  const rawName = sel?.nome || '';
+  const city = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim() || 'Núcleo';
+  const stateMatch = rawName.match(/\b([A-Z]{2})\b$/);
+  const uf = stateMatch ? stateMatch[1] : (rawName.split('|')[1]?.trim().substring(0, 2) || 'UF');
   const yr = new Date().getFullYear();
 
   const filtered = useMemo(() => evidences.filter(ev => !!ev.imageUrl), [evidences]);

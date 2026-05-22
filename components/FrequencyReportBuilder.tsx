@@ -187,7 +187,8 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
   }
 
   const { cityLabel, stateLabel, period, enrolledStudents, resumoGeral, monthlyAggregates, monthlyDetails, totals, faltasHistorico, mediaFaltas } = reportData;
-  const nucleoShortName = selectedNucleo.nome.split('|')[0]?.trim() || selectedNucleo.nome;
+  const rawName = selectedNucleo.nome || '';
+  const nucleoShortName = rawName.split(' - ')[0].split(' | ')[0].split(' (')[0].trim() || 'Núcleo';
   const projectTitle = `Escolinha de Triathlon`;
 
   return (
