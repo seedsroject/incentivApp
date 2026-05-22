@@ -1476,7 +1476,7 @@ const AppContent: React.FC = () => {
     setCollectedDocuments(prev => [...prev, data]);
     
     // Atualizar o estado do aluno localmente se for um documento de questionário/boletim
-    if (data.studentId && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM'].includes(data.type)) {
+    if (data.studentId && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM', 'DECLARACAO_MATRICULA'].includes(data.type)) {
       setStudents(prev => prev.map(s => {
         if (s.id === data.studentId || s.nome === data.studentId) {
           const docUrl = data.fileUrl || data.metaData?.url || '';
@@ -1489,6 +1489,9 @@ const AppContent: React.FC = () => {
           if (data.type === 'BOLETIM') {
             const boletimPayload = { url: docUrl, timestamp: new Date().toISOString(), ...data.metaData };
             return { ...s, boletim_escolar: boletimPayload };
+          }
+          if (data.type === 'DECLARACAO_MATRICULA') {
+            return { ...s, declaracao_matricula: { url: docUrl, imageUrl: data.metaData?.imageUrl || '', timestamp: new Date().toISOString(), ocrData: data.metaData?.ocrData } };
           }
         }
         return s;
@@ -1833,6 +1836,7 @@ const AppContent: React.FC = () => {
           if (navParams.service === 'meta') handleSaveDocument(data);
           if (navParams.service === 'socio') handleSaveDocument(data);
           if (navParams.service === 'boletim') handleSaveDocument(data);
+          if (navParams.service === 'declaracao_matricula') handleSaveDocument(data);
           if (navParams.service === 'declaracao') {
             // A assinatura já foi salva diretamente no localStorage pelo PublicFormView
             // Aqui apenas sincronizamos com o estado React
