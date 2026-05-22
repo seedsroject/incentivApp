@@ -61,12 +61,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
       canShare: true
     },
     {
-      id: 'declaracao',
+      id: 'declaracao_matricula',
       title: '2. Declaração de Matrícula',
       subtitle: 'Upload de Comprovante',
       icon: <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${iconColor}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>,
       action: () => onNavigate(AppView.FEATURE_DOC_UPLOAD, { type: 'DECLARACAO_MATRICULA', title: '2. Declaração de Matrícula' }),
-      canShare: false
+      canShare: true
     },
     {
       id: 'boletim',

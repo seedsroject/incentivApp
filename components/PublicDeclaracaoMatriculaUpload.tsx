@@ -1,10 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { DocumentLog, DeclaracaoMatriculaOCR } from '../types';
 import { processDeclaracaoMatricula } from '../services/geminiService';
+import { supabase } from '../services/supabaseClient';
 
 interface PublicDeclaracaoMatriculaUploadProps {
     studentName?: string;
     onSave: (doc: DocumentLog) => void;
+    studentId?: string;
+    nucleoId?: string;
+    nucleoNome?: string;
+    projectId?: string;
 }
 
 const NIVEL_LABELS: Record<string, string> = {
@@ -29,15 +34,41 @@ const SITUACAO_LABELS: Record<string, string> = {
 // Helper to check if OCR value is meaningful (not empty, not DESCONHECIDO)
 const hasValue = (val?: string) => !!val && val !== 'DESCONHECIDO';
 
-export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatriculaUploadProps> = ({ studentName, onSave }) => {
+export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatriculaUploadProps> = ({ studentName, onSave, studentId, nucleoId, nucleoNome, projectId }) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [ocrProcessing, setOcrProcessing] = useState(false);
     const [ocrData, setOcrData] = useState<DeclaracaoMatriculaOCR | null>(null);
     const [errorStatus, setErrorStatus] = useState<string | null>(null);
+    const [studentsList, setStudentsList] = useState<{ id: string, nome: string }[]>([]);
+    const [selectedStudentId, setSelectedStudentId] = useState<string>(studentId || '');
+    const [inputName, setInputName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (!projectId) return;
+            try {
+                let query = supabase.from('students').select('id, nome').eq('project_id', projectId);
+                if (nucleoId) {
+                    if (nucleoNome) {
+                        query = query.or(`nucleo_id.eq.${nucleoId},nucleo_nome.eq."${nucleoNome}"`);
+                    } else {
+                        query = query.eq('nucleo_id', nucleoId);
+                    }
+                }
+                const { data, error } = await query.order('nome');
+                if (data && !error) {
+                    setStudentsList(data);
+                }
+            } catch (err) {
+                console.warn('Erro ao buscar alunos para seleção:', err);
+            }
+        };
+        fetchStudents();
+    }, [nucleoId, nucleoNome, projectId]);
 
     const handleFileSelect = async (file: File) => {
         setSelectedFile(file);
@@ -86,7 +117,8 @@ export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatricula
         }
         setLoading(true);
         try {
-            const finalName = ocrData?.nomeAluno || studentName || 'aluno';
+            const selectedStudent = studentsList.find(s => s.id === selectedStudentId);
+            const finalName = selectedStudent ? selectedStudent.nome : (inputName.trim() || ocrData?.nomeAluno || studentName || 'aluno');
             const doc: DocumentLog = {
                 id: Date.now().toString(),
                 type: 'DECLARACAO_MATRICULA',
@@ -94,6 +126,7 @@ export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatricula
                 description: `Declaração de matrícula escolar de ${finalName}${ocrData?.nomeEscola ? ` — ${ocrData.nomeEscola}` : ''}`,
                 timestamp: new Date().toISOString(),
                 fileUrl: previewUrl || undefined,
+                studentId: selectedStudentId || undefined,
                 metaData: {
                     studentName: finalName,
                     uploadedAt: new Date().toISOString(),
@@ -133,6 +166,38 @@ export const PublicDeclaracaoMatriculaUpload: React.FC<PublicDeclaracaoMatricula
                         </p>
                     </div>
                 </div>
+            </div>
+
+            <div className="space-y-4 mb-4">
+                {studentsList.length > 0 ? (
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Selecione o Aluno <span className="text-red-500">*</span></label>
+                        <select
+                            value={selectedStudentId}
+                            onChange={e => setSelectedStudentId(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            disabled={loading}
+                        >
+                            <option value="">-- Selecione o Aluno --</option>
+                            {studentsList.map(s => (
+                                <option key={s.id} value={s.id}>{s.nome}</option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">Ao selecionar o aluno, a declaração será salva diretamente no perfil dele.</p>
+                    </div>
+                ) : (
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Nome do Aluno (Opcional)</label>
+                        <input
+                            type="text"
+                            placeholder="Se vazio, tentaremos ler do documento"
+                            value={inputName}
+                            onChange={e => setInputName(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            disabled={loading}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Upload area */}

@@ -1482,15 +1482,19 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                                     if (student.declaracao_matricula && (student.declaracao_matricula.imageUrl || student.declaracao_matricula.url)) {
                                       setDocPreviewModal({ title: 'Declaração de Matrícula', imageUrl: student.declaracao_matricula.imageUrl || student.declaracao_matricula.url || '', studentName: student.nome });
                                     } else {
-                                      alert('Declaração de Matrícula ainda não foi enviada para este aluno.');
+                                      const key = student.id || student.nome;
+                                      const url = `${baseUrl}?service=declaracao_matricula&studentId=${encodeURIComponent(key)}&token=nucleo`;
+                                      navigator.clipboard.writeText(url).then(() => {
+                                        alert(`✅ Link copiado!\n\nEnvie para o aluno/responsável enviar a Declaração de Matrícula:\n${url}`);
+                                      }).catch(() => { prompt('Copie o link abaixo:', url); });
                                     }
                                   }}
                                   className={`p-2 rounded-full border transition-colors flex items-center justify-center
                                     ${student.declaracao_matricula
                                       ? 'bg-green-100 border-green-300 text-green-700 hover:bg-green-200'
-                                      : 'bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100'
+                                      : 'bg-amber-50 border-amber-200 text-amber-500 hover:bg-amber-100'
                                     }`}
-                                  title={student.declaracao_matricula ? 'Declaração de Matrícula enviada – clique para ver' : 'Declaração de Matrícula pendente'}
+                                  title={student.declaracao_matricula ? 'Declaração de Matrícula enviada – clique para ver' : 'Declaração de Matrícula pendente – clique para copiar link'}
                                 >
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                 </button>

@@ -243,6 +243,13 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
                 nucleoNome={currentNucleo?.nome}
                 projectId={projectUuid}
                 onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
+            ) : serviceId === 'declaracao_matricula' ? (
+              <PublicDeclaracaoMatriculaUpload key="public-declaracao-matricula"
+                studentId={studentId || undefined}
+                nucleoId={currentNucleo?.id}
+                nucleoNome={currentNucleo?.nome}
+                projectId={projectUuid}
+                onSave={(data: DocumentLog) => { onSave(data); setIsSuccess(true); }} />
             ) : serviceId === 'declaracao' ? (
               student ? (
                 <DeclaracaoUniformesForm key="public-declaracao"
