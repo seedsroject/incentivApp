@@ -178,6 +178,7 @@ export interface StudentDraft {
     avaliacao?: 'Bom' | 'Regular' | 'Insatisfatório' | 'Péssimo';
   };
   declaracao_matricula?: { url?: string; imageUrl?: string; timestamp?: string; dataRegistro?: string; ocrData?: DeclaracaoMatriculaOCR; [key: string]: any }; // Declaração de Matrícula Escolar
+  _heavyLoaded?: boolean; // Flag interna: indica se assinatura/ficha_url foram carregados sob demanda
 }
 
 // Dados extraídos via OCR da Declaração de Matrícula Escolar

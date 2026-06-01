@@ -265,16 +265,20 @@ const AppContent: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false); // Controla se já verificou sessão existente
 
   // --- SUPABASE: Carregar núcleos do banco ---
-  const loadNucleosFromSupabase = useCallback(async (projectSlug: ProjectId) => {
+  const loadNucleosFromSupabase = useCallback(async (projectSlug: ProjectId, existingProjectUUID?: string) => {
     try {
-      // Buscar project UUID pelo slug
-      const { data: projectData } = await supabase
-        .from('projects').select('id').eq('slug', projectSlug).single();
-      if (projectData) {
-        setSupabaseProjectId(projectData.id);
+      // Reutilizar UUID se já disponível, evitando query duplicada
+      let projectId = existingProjectUUID;
+      if (!projectId) {
+        const { data: projectData } = await supabase
+          .from('projects').select('id').eq('slug', projectSlug).single();
+        projectId = projectData?.id;
+      }
+      if (projectId) {
+        setSupabaseProjectId(projectId);
         // Buscar núcleos do projeto
         const { data: nucleosData } = await supabase
-          .from('nucleos').select('*').eq('project_id', projectData.id).order('nome');
+          .from('nucleos').select('*').eq('project_id', projectId).order('nome');
         if (nucleosData && nucleosData.length > 0) {
           const mapped: Nucleo[] = nucleosData.map((n: any) => {
             // Extrair UF do nome ou endereço como fallback
@@ -328,18 +332,44 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
-  // --- SUPABASE: Carregar alunos do banco ---
-  const loadStudentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+  // --- SUPABASE: Carregar campos pesados de um aluno sob demanda ---
+  const fetchStudentHeavyFields = useCallback(async (studentId: string) => {
     try {
       const { data, error } = await supabase
-        .from('students').select('*').eq('project_id', projectUUID).order('nome');
+        .from('students')
+        .select('assinatura, ficha_url')
+        .eq('id', studentId)
+        .single();
+      if (data && !error) {
+        setStudents(prev => prev.map(s =>
+          s.id === studentId
+            ? { ...s, assinatura: data.assinatura, ficha_url: data.ficha_url, _heavyLoaded: true }
+            : s
+        ));
+        return data;
+      }
+    } catch (err) {
+      console.warn('Erro ao carregar campos pesados do aluno:', err);
+    }
+    return null;
+  }, []);
+
+  // --- SUPABASE: Carregar alunos do banco (sem campos pesados base64) ---
+  const loadStudentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
+    try {
+      // Selecionar apenas colunas necessárias — exclui assinatura e ficha_url (base64 pesados)
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, project_id, nucleo_id, nucleo_nome, turma_id, nome, data_nascimento, rg_cpf, nome_responsavel, endereco, telefone, email_contato, escola_nome, escola_tipo, n_sli, nome_projeto, proponente, nome_responsavel_organizacao, status, materiais_pendentes, portador_necessidade_especial, laudo_url, data_assinatura, boletim_escolar, declaracao_matricula, created_at')
+        .eq('project_id', projectUUID)
+        .order('nome');
       if (error) { console.warn('Erro ao carregar alunos:', error); return; }
       if (data && data.length > 0) {
         // Fetch declarations and documents in parallel to enrich the students
         const studentIds = data.map((s: any) => s.id);
         const [decsResult, docsResult] = await Promise.all([
-          supabase.from('student_declarations').select('*').in('student_id', studentIds),
-          supabase.from('documents').select('student_id, type, file_url, metadata, created_at').in('student_id', studentIds)
+          supabase.from('student_declarations').select('student_id, type, data').in('student_id', studentIds),
+          supabase.from('documents').select('student_id, type, file_url, created_at').in('student_id', studentIds)
         ]);
 
         const decs = decsResult.data || [];
@@ -385,18 +415,19 @@ const AppContent: React.FC = () => {
             materiais_pendentes: s.materiais_pendentes || false,
             portador_necessidade_especial: s.portador_necessidade_especial || false,
             laudo_url: s.laudo_url,
-            ficha_url: s.ficha_url,
-            assinatura: s.assinatura,
+            // assinatura e ficha_url são carregados sob demanda (fetchStudentHeavyFields)
+            assinatura: undefined,
+            ficha_url: undefined,
             data_assinatura: s.data_assinatura,
             timestamp: s.created_at,
             declaracao_uniformes: uni ? uni.data : undefined,
             declaracao_prontidao: pron ? pron.data : undefined,
             autorizacao_viagem: auto ? auto.data : undefined,
-            questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at, metadata: meta.metadata } : undefined,
-            pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at, metadata: socio.metadata } : undefined,
+            questionario_quantitativo: meta ? { url: meta.file_url, timestamp: meta.created_at } : undefined,
+            pesquisa_socioeconomica: socio ? { url: socio.file_url, timestamp: socio.created_at } : undefined,
             // Prioridade: campo direto na tabela students > documents table (fallback)
-            boletim_escolar: s.boletim_escolar || (boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, ...boletim.metadata } : undefined),
-            declaracao_matricula: s.declaracao_matricula || (decMatricula ? { url: decMatricula.file_url || decMatricula.metadata?.url, imageUrl: decMatricula.metadata?.imageUrl || decMatricula.file_url || '', timestamp: decMatricula.created_at, ocrData: decMatricula.metadata?.ocrData } : undefined),
+            boletim_escolar: s.boletim_escolar || (boletim ? { url: boletim.file_url, timestamp: boletim.created_at } : undefined),
+            declaracao_matricula: s.declaracao_matricula || (decMatricula ? { url: decMatricula.file_url, imageUrl: decMatricula.file_url || '', timestamp: decMatricula.created_at } : undefined),
           };
         });
         setStudents(mapped);
@@ -406,11 +437,15 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
-  // --- SUPABASE: Carregar documentos do banco ---
+  // --- SUPABASE: Carregar documentos do banco (listagem leve) ---
   const loadDocumentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
     try {
+      // Selecionar apenas colunas necessárias para a listagem — exclui metadata pesado
       const { data, error } = await supabase
-        .from('documents').select('*').eq('project_id', projectUUID).order('created_at', { ascending: false });
+        .from('documents')
+        .select('id, project_id, type, title, description, file_url, status, nucleo_id, student_id, uploaded_by, created_at')
+        .eq('project_id', projectUUID)
+        .order('created_at', { ascending: false });
       if (error) { console.warn('Erro ao carregar documentos:', error); return; }
       if (data && data.length > 0) {
         const mapped: DocumentLog[] = data.map((d: any) => ({
@@ -421,9 +456,10 @@ const AppContent: React.FC = () => {
           title: d.title,
           description: d.description || '',
           fileUrl: d.file_url || '',
-          metaData: d.metadata || {},
+          metaData: {},
           status: d.status || '',
           nucleoId: d.nucleo_id,
+          studentId: d.student_id,
           uploadedBy: d.uploaded_by,
         }));
         setCollectedDocuments(mapped);
@@ -738,11 +774,15 @@ const AppContent: React.FC = () => {
               projectId: projectSlug,
               estado_responsavel: defaultAccess.estado_responsavel || undefined,
             });
-            // Carregar dados do projeto
-            await loadNucleosFromSupabase(projectSlug);
+            // Carregar dados do projeto EM PARALELO
             if (defaultAccess.project_id) {
               setSupabaseProjectId(defaultAccess.project_id);
-              await loadAllProjectData(defaultAccess.project_id, projectSlug);
+              await Promise.all([
+                loadNucleosFromSupabase(projectSlug, defaultAccess.project_id),
+                loadAllProjectData(defaultAccess.project_id, projectSlug),
+              ]);
+            } else {
+              await loadNucleosFromSupabase(projectSlug);
             }
             
             // Se estiver numa rota pública de formulário, não redireciona para o dashboard
@@ -769,14 +809,18 @@ const AppContent: React.FC = () => {
             // Buscar nucleo salvo ou usar o primeiro do projeto
             const savedNucleoId = localStorage.getItem('lastNucleoId');
             const projectSlug = activeProject;
-            await loadNucleosFromSupabase(projectSlug);
             
             const { data: projectData } = await supabase
               .from('projects').select('id').eq('slug', projectSlug).single();
             
             if (projectData) {
               setSupabaseProjectId(projectData.id);
-              await loadAllProjectData(projectData.id, projectSlug);
+              await Promise.all([
+                loadNucleosFromSupabase(projectSlug, projectData.id),
+                loadAllProjectData(projectData.id, projectSlug),
+              ]);
+            } else {
+              await loadNucleosFromSupabase(projectSlug);
             }
 
             // Resolver nucleo pelo ID salvo ou buscar direto
@@ -1158,10 +1202,12 @@ const AppContent: React.FC = () => {
         }
       }
 
-      // 3. Carregar todos os dados do Supabase
-      await loadNucleosFromSupabase(activeProject);
+      // 3. Carregar todos os dados do Supabase EM PARALELO (otimização de performance)
       setSupabaseProjectId(projectData.id);
-      await loadAllProjectData(projectData.id, activeProject);
+      await Promise.all([
+        loadNucleosFromSupabase(activeProject, projectData.id), // Reutiliza UUID existente
+        loadAllProjectData(projectData.id, activeProject),
+      ]);
 
       // 4. Definir usuário — usar loginFilteredNucleos (já em memória) para resolver o nome
       const selectedNucleoObj = loginFilteredNucleos.find(n => n.id === nucleoId)
@@ -2402,6 +2448,7 @@ const AppContent: React.FC = () => {
             baseUrl={window.location.origin + window.location.pathname}
             preCadastros={preCadastros}
             headerImage={projectAssets.header}
+            onFetchStudentHeavyFields={fetchStudentHeavyFields}
           />
         )}
 
@@ -2621,6 +2668,7 @@ const AppContent: React.FC = () => {
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
             history={collectedDocuments}
+            onFetchStudentHeavyFields={fetchStudentHeavyFields}
           />
         )}
 
