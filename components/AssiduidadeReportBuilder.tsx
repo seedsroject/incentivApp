@@ -43,8 +43,8 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
   projectName = 'Escolinha de Triathlon',
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
-  const [periodStart, setPeriodStart] = useState<string>('2024-04-24');
-  const [periodEnd, setPeriodEnd] = useState<string>('2025-12-23');
+  const [periodStart, setPeriodStart] = useState<string>(() => `${new Date().getFullYear()}-01-01`);
+  const [periodEnd, setPeriodEnd] = useState<string>(() => `${new Date().getFullYear()}-12-31`);
   const [isEditing, setIsEditing] = useState(false);
   const [aiResumo, setAiResumo] = useState<string>('');
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -99,8 +99,14 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
     if (now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())) age--;
     return age;
   };
-  // Build student rows for Tabela 5 from selected nucleo
-  const nucleoStudents = (students || []).filter(s => !selectedNucleoId || s.nucleo_id === selectedNucleoId).sort((a, b) => a.nome.localeCompare(b.nome));
+  // Build student rows for Tabela 5 from selected nucleo, filtered by period
+  const nucleoStudents = (students || []).filter(s => {
+    if (selectedNucleoId && s.nucleo_id !== selectedNucleoId) return false;
+    const ts = s.timestamp || s.data_assinatura;
+    if (periodStart && ts) { const start = new Date(periodStart); start.setHours(0,0,0,0); if (new Date(ts) < start) return false; }
+    if (periodEnd && ts) { const end = new Date(periodEnd); end.setHours(23,59,59,999); if (new Date(ts) > end) return false; }
+    return true;
+  }).sort((a, b) => a.nome.localeCompare(b.nome));
 
   // --- Unified mock grade data per student ---
   // Deterministic "hash" based on student name to generate consistent grades

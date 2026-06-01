@@ -19,8 +19,8 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [],
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
-  const [periodStart, setPeriodStart] = useState('2024-04-24');
-  const [periodEnd, setPeriodEnd] = useState('2025-12-23');
+  const [periodStart, setPeriodStart] = useState(() => `${new Date().getFullYear()}-01-01`);
+  const [periodEnd, setPeriodEnd] = useState(() => `${new Date().getFullYear()}-12-31`);
   const [isEditing, setIsEditing] = useState(false);
   const [nSli, setNSli] = useState('2301005');
   const [aiResumo, setAiResumo] = useState('');
@@ -63,11 +63,33 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   const year = new Date().getFullYear();
   const pName = projectName.toUpperCase();
 
-  // Filter students by nucleo (includes students without nucleo assigned)
+  // Filter students by nucleo AND by period (using timestamp = created_at from DB)
   const filtered = useMemo(() => {
-    if (!selectedNucleoId) return students;
-    return students.filter(s => s.nucleo_id === selectedNucleoId);
-  }, [students, selectedNucleoId]);
+    let result = students;
+    if (selectedNucleoId) {
+      result = result.filter(s => s.nucleo_id === selectedNucleoId);
+    }
+    // Filtrar pelo período usando timestamp (data de criação no banco)
+    if (periodStart) {
+      const start = new Date(periodStart);
+      start.setHours(0, 0, 0, 0);
+      result = result.filter(s => {
+        const ts = s.timestamp || s.data_assinatura;
+        if (!ts) return true; // Incluir alunos sem data (legado)
+        return new Date(ts) >= start;
+      });
+    }
+    if (periodEnd) {
+      const end = new Date(periodEnd);
+      end.setHours(23, 59, 59, 999);
+      result = result.filter(s => {
+        const ts = s.timestamp || s.data_assinatura;
+        if (!ts) return true;
+        return new Date(ts) <= end;
+      });
+    }
+    return result;
+  }, [students, selectedNucleoId, periodStart, periodEnd]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => a.nome.localeCompare(b.nome)), [filtered]);
 
