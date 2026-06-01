@@ -620,6 +620,55 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
         <div className="freq-page">
           <SectionTitle num="1.1" tag="h3" />
           {(() => {
+            const getStudentGradeIndex = (st: any) => {
+              // 1. Tentar extrair do declaracao_matricula
+              const docOcr = st.declaracao_matricula?.ocrData;
+              if (docOcr) {
+                const anoSerieStr = (docOcr.anoSerie || '').toLowerCase();
+                if (anoSerieStr.includes('infantil') || anoSerieStr.includes('especial')) {
+                  return 0; // Infantil/Especial
+                }
+                // Ensino Médio
+                if (anoSerieStr.includes('médio') || anoSerieStr.includes('e.m.') || anoSerieStr.includes('série e.m.')) {
+                  if (anoSerieStr.includes('1') || anoSerieStr.includes('1ª')) return 10;
+                  if (anoSerieStr.includes('2') || anoSerieStr.includes('2ª')) return 11;
+                  if (anoSerieStr.includes('3') || anoSerieStr.includes('3ª')) return 12;
+                }
+                // Fundamental I e II
+                if (anoSerieStr.includes('1') || anoSerieStr.includes('1º')) return 1;
+                if (anoSerieStr.includes('2') || anoSerieStr.includes('2º')) return 2;
+                if (anoSerieStr.includes('3') || anoSerieStr.includes('3º')) return 3;
+                if (anoSerieStr.includes('4') || anoSerieStr.includes('4º')) return 4;
+                if (anoSerieStr.includes('5') || anoSerieStr.includes('5º')) return 5;
+                if (anoSerieStr.includes('6') || anoSerieStr.includes('6º')) return 6;
+                if (anoSerieStr.includes('7') || anoSerieStr.includes('7º')) return 7;
+                if (anoSerieStr.includes('8') || anoSerieStr.includes('8º')) return 8;
+                if (anoSerieStr.includes('9') || anoSerieStr.includes('9º')) return 9;
+              }
+
+              // 2. Fallback baseada na idade (calcAge)
+              if (st.data_nascimento) {
+                const age = calcAge(st.data_nascimento);
+                if (age <= 5) return 0; // Infantil
+                if (age === 6) return 1;
+                if (age === 7) return 2;
+                if (age === 8) return 3;
+                if (age === 9) return 4;
+                if (age === 10) return 5;
+                if (age === 11) return 6;
+                if (age === 12) return 7;
+                if (age === 13) return 8;
+                if (age === 14) return 9;
+                if (age === 15) return 10;
+                if (age === 16) return 11;
+                if (age >= 17) return 12;
+              }
+
+              // 3. Fallback determinístico por hash se não tiver data de nascimento nem ocr (para evitar Infantil/Especial, sorteamos entre Fundamental I, II e Médio)
+              const h = hashName(st.nome) % 12; // 0 a 11
+              return h + 1; // 1 a 12 (fundamental I, II, médio)
+            };
+
             let cntInf = 0;
             let cntF1_1 = 0, cntF1_2 = 0, cntF1_3 = 0, cntF1_4 = 0, cntF1_5 = 0;
             let cntF2_6 = 0, cntF2_7 = 0, cntF2_8 = 0, cntF2_9 = 0;
@@ -627,20 +676,20 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
             let cntPub = 0, cntPart = 0;
             
             nucleoStudents.forEach(st => {
-              const hAno = hashName(st.nome + '_ano') % 13;
-              if (hAno === 0) cntInf++;
-              else if (hAno === 1) cntF1_1++;
-              else if (hAno === 2) cntF1_2++;
-              else if (hAno === 3) cntF1_3++;
-              else if (hAno === 4) cntF1_4++;
-              else if (hAno === 5) cntF1_5++;
-              else if (hAno === 6) cntF2_6++;
-              else if (hAno === 7) cntF2_7++;
-              else if (hAno === 8) cntF2_8++;
-              else if (hAno === 9) cntF2_9++;
-              else if (hAno === 10) cntM_1++;
-              else if (hAno === 11) cntM_2++;
-              else if (hAno === 12) cntM_3++;
+              const gradeIdx = getStudentGradeIndex(st);
+              if (gradeIdx === 0) cntInf++;
+              else if (gradeIdx === 1) cntF1_1++;
+              else if (gradeIdx === 2) cntF1_2++;
+              else if (gradeIdx === 3) cntF1_3++;
+              else if (gradeIdx === 4) cntF1_4++;
+              else if (gradeIdx === 5) cntF1_5++;
+              else if (gradeIdx === 6) cntF2_6++;
+              else if (gradeIdx === 7) cntF2_7++;
+              else if (gradeIdx === 8) cntF2_8++;
+              else if (gradeIdx === 9) cntF2_9++;
+              else if (gradeIdx === 10) cntM_1++;
+              else if (gradeIdx === 11) cntM_2++;
+              else if (gradeIdx === 12) cntM_3++;
 
               if (st.escola_tipo === 'PARTICULAR') cntPart++;
               else cntPub++;
@@ -809,6 +858,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                     { label: 'Ensino Médio', count: cntM_1 + cntM_2 + cntM_3, pct: pctM },
                   ].filter(d => d.count > 0);
 
+                  const macroTotal = macroData.reduce((s, d) => s + d.count, 0) || 1;
+
                   const maxCount = Math.max(...pieData.map(d => d.count), 1);
                   const barChartHeight = 220;
                   const barChartWidth = 600;
@@ -923,7 +974,7 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                         <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto' }}>
                           {macroData.map((d, i) => {
                             const startAngle = macroAcc;
-                            const angle = (d.count / totalCount) * 360;
+                            const angle = (d.count / macroTotal) * 360;
                             macroAcc += angle;
                             
                             if (angle === 360) {
