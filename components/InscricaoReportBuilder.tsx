@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { StudentDraft, Nucleo, DocumentLog } from '../types';
 import { ChartDataEditor as SharedChartDataEditor } from './ChartDataEditor';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
@@ -10,14 +10,13 @@ interface Props {
   headerImage?: string;
   projectName?: string;
   history?: DocumentLog[];
-  onFetchStudentHeavyFields?: (studentId: string) => Promise<any>;
 }
 
 // Normalize name helper (inline to avoid circular dep)
 const normName = (n: string) => n ? n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim() : '';
 
 export const InscricaoReportBuilder: React.FC<Props> = ({
-  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [], onFetchStudentHeavyFields,
+  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [],
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
   const [periodStart, setPeriodStart] = useState('2024-04-24');
@@ -71,16 +70,6 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   }, [students, selectedNucleoId]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => a.nome.localeCompare(b.nome)), [filtered]);
-
-  // Carregar campos pesados (assinatura, ficha_url) para todos os alunos filtrados ao montar
-  useEffect(() => {
-    if (!onFetchStudentHeavyFields) return;
-    sorted.forEach(s => {
-      if (s.id && !(s as any)._heavyLoaded) {
-        onFetchStudentHeavyFields(s.id);
-      }
-    });
-  }, [sorted, onFetchStudentHeavyFields]);
 
   // Stats
   const totalAlunos = sorted.length;

@@ -24,7 +24,6 @@ interface CameraOCRProps {
   baseUrl?: string; // Para gerar o link externo da declaração
   preCadastros?: PreCadastroData[]; // Fila de espera inteligente
   headerImage?: string; // Imagem do cabeçalho de acordo com o projeto
-  onFetchStudentHeavyFields?: (studentId: string) => Promise<any>; // Carrega assinatura/ficha sob demanda
 }
 
 type Mode = 'MENU' | 'FORM_DIGITAL' | 'CAMERA_SCAN' | 'SCAN_REVIEW' | 'SUCCESS' | 'LIST_VIEW' | 'DETAIL_VIEW';
@@ -311,7 +310,6 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
   preCadastros = [],
   currentNucleo,
   headerImage = '/header_full.png',
-  onFetchStudentHeavyFields,
 }) => {
   const formatDate = (val: string) => {
     val = val.replace(/\D/g, '');
@@ -1148,7 +1146,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={e => { e.stopPropagation(); setDetailStudent(student); setDetailEdits({ ...student }); if (onFetchStudentHeavyFields && !(student as any)._heavyLoaded) onFetchStudentHeavyFields(student.id!); }}
+                                  onClick={e => { e.stopPropagation(); setDetailStudent(student); setDetailEdits({ ...student }); }}
                                   className="p-0.5 rounded hover:bg-blue-100 transition-colors flex-shrink-0"
                                   title="Ver / editar dados completos do aluno"
                                 >

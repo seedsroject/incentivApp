@@ -332,37 +332,12 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
-  // --- SUPABASE: Carregar campos pesados de um aluno sob demanda ---
-  const fetchStudentHeavyFields = useCallback(async (studentId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('students')
-        .select('assinatura, ficha_url')
-        .eq('id', studentId)
-        .single();
-      if (data && !error) {
-        setStudents(prev => prev.map(s =>
-          s.id === studentId
-            ? { ...s, assinatura: data.assinatura, ficha_url: data.ficha_url, _heavyLoaded: true }
-            : s
-        ));
-        return data;
-      }
-    } catch (err) {
-      console.warn('Erro ao carregar campos pesados do aluno:', err);
-    }
-    return null;
-  }, []);
 
-  // --- SUPABASE: Carregar alunos do banco (sem campos pesados base64) ---
+  // --- SUPABASE: Carregar alunos do banco ---
   const loadStudentsFromSupabase = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
     try {
-      // Selecionar apenas colunas necessárias — exclui assinatura e ficha_url (base64 pesados)
       const { data, error } = await supabase
-        .from('students')
-        .select('id, project_id, nucleo_id, nucleo_nome, turma_id, nome, data_nascimento, rg_cpf, nome_responsavel, endereco, telefone, email_contato, escola_nome, escola_tipo, n_sli, nome_projeto, proponente, nome_responsavel_organizacao, status, materiais_pendentes, portador_necessidade_especial, laudo_url, data_assinatura, boletim_escolar, declaracao_matricula, created_at')
-        .eq('project_id', projectUUID)
-        .order('nome');
+        .from('students').select('*').eq('project_id', projectUUID).order('nome');
       if (error) { console.warn('Erro ao carregar alunos:', error); return; }
       if (data && data.length > 0) {
         // Fetch declarations and documents in parallel to enrich the students
@@ -415,9 +390,8 @@ const AppContent: React.FC = () => {
             materiais_pendentes: s.materiais_pendentes || false,
             portador_necessidade_especial: s.portador_necessidade_especial || false,
             laudo_url: s.laudo_url,
-            // assinatura e ficha_url são carregados sob demanda (fetchStudentHeavyFields)
-            assinatura: undefined,
-            ficha_url: undefined,
+            ficha_url: s.ficha_url,
+            assinatura: s.assinatura,
             data_assinatura: s.data_assinatura,
             timestamp: s.created_at,
             declaracao_uniformes: uni ? uni.data : undefined,
@@ -2448,7 +2422,6 @@ const AppContent: React.FC = () => {
             baseUrl={window.location.origin + window.location.pathname}
             preCadastros={preCadastros}
             headerImage={projectAssets.header}
-            onFetchStudentHeavyFields={fetchStudentHeavyFields}
           />
         )}
 
@@ -2668,7 +2641,6 @@ const AppContent: React.FC = () => {
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
             history={collectedDocuments}
-            onFetchStudentHeavyFields={fetchStudentHeavyFields}
           />
         )}
 
