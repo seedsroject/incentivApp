@@ -27,8 +27,8 @@ const DEFAULT_TOC = (city: string, uf: string, project: string) => [
   { num: '2.2', title: 'Princípios Metodológicos para o Levantamento da Assiduidade Escolar dos Alunos', page: 11, level: 1 },
   { num: '2.3', title: 'Faixa Etária e Etapas de Escolarização', page: 13, level: 1 },
   { num: '3', title: `MÉDIAS GERAIS DAS NOTAS DO 1º E 4º BIMESTRE /DADOS DOS BOLETINS DOS ALUNOS E AVALIAÇÃO DO APROVEITAMENTO ESCOLAR DOS ATLETAS PARTICIPANTES DO PROJETO`, page: 15, level: 0 },
-  { num: '3.1', title: `Médias das notas do 1º e 4º bimestre dos alunos matriculados nas Escolas Públicas e Particulares inscritos no Projeto "${project}" em ${city} (${uf})`, page: 22, level: 1 },
-  { num: '3.2', title: `Desempenho escolar dos alunos matriculados nas Escolas Públicas e Particulares inscritos no Projeto "${project}" em ${city} (${uf})`, page: 23, level: 1 },
+  { num: '3.1', title: `Médias das notas do 1º e 4º bimestre dos alunos matriculados na Rede de Ensino inscritos no Projeto "${project}" em ${city} (${uf})`, page: 22, level: 1 },
+  { num: '3.2', title: `Desempenho escolar dos alunos matriculados na Rede de Ensino inscritos no Projeto "${project}" em ${city} (${uf})`, page: 23, level: 1 },
   { num: '3.3', title: `Dados sobre a melhora, piora ou manutenção das médias escolares dos alunos da Educação Básica inscritos no Projeto "${project}" em ${city} – ${uf}`, page: 25, level: 1 },
   { num: '4', title: 'DADOS DE LEVANTAMENTO DA ASSIDUIDADE ESCOLAR NO 1º e 2º SEMESTRE AVALIADO', page: 27, level: 0 },
   { num: '5', title: 'CONCLUSÃO', page: 32, level: 0 },
@@ -249,7 +249,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               {cityLabel} | {stateLabel}<br/>{currentYear}
             </div>
             <div className="freq-cover-bottom-ref" contentEditable={isEditing} suppressContentEditableWarning style={{ fontSize: 9, lineHeight: 1.6, textAlign: 'justify', maxWidth: '60%' }}>
-              RELATÓRIO ELABORADO A PARTIR DA ANÁLISE DO BOLETIM ESCOLAR — OU DE SISTEMA DE PONTUAÇÃO EQUIVALENTE — REFERENTE ÀS MÉDIAS DO 1º E 4° BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES PARTICIPANTES DO PROJETO "{projectTitleUpper} {nucleoShortName.toUpperCase()}" EM {nucleoShortName.toUpperCase()} ({stateLabel.toUpperCase()}).
+              RELATÓRIO ELABORADO A PARTIR DA ANÁLISE DO BOLETIM ESCOLAR — OU DE SISTEMA DE PONTUAÇÃO EQUIVALENTE — REFERENTE ÀS MÉDIAS DO 1º E 4° BIMESTRE DOS ALUNOS MATRICULADOS na Rede de Ensino PARTICIPANTES DO PROJETO "{projectTitleUpper} {nucleoShortName.toUpperCase()}" EM {nucleoShortName.toUpperCase()} ({stateLabel.toUpperCase()}).
             </div>
           </div>
           <svg className="freq-cover-wave" viewBox="0 0 900 80" preserveAspectRatio="none">
@@ -935,10 +935,10 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               <div className="freq-page">
                 <div contentEditable={isEditing} suppressContentEditableWarning>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 12 }}>
-                    {`As Figuras – 1, 2, 3 e 4 a seguir mostram uma visão geral da média das notas do 1º e 4º bimestre dos alunos matriculados nas escolas públicas e particulares inscritos no projeto "${projectFull}".`}
+                    {`As Figuras – 1, 2, 3 e 4 a seguir mostram uma visão geral da média das notas do 1º e 4º bimestre dos alunos matriculados na Rede de Ensino inscritos no projeto "${projectFull}".`}
                   </p>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
-                    {`Figuras 1 e 2 — Média das notas do 1º Bimestre dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}"`}
+                    {`Figuras 1 e 2 — Média das notas do 1º Bimestre dos alunos matriculados na Rede de Ensino inscritos no projeto "${projectFull}"`}
                   </p>
                 </div>
 
@@ -949,7 +949,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   } onSave={data => setPieOverride1(data)} />
                   <PieChart
                     data={dist1}
-                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
                   />
                 </div>
 
@@ -960,7 +960,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   } onSave={data => setBarOverride1(data)} />
                   <BarChart
                     data={barDist1}
-                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                    title={`MÉDIA DAS NOTAS DO 1º BIMESTRE DOS ALUNOS MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
                   />
                 </div>
 
@@ -973,7 +973,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               <div className="freq-page">
                 <div contentEditable={isEditing} suppressContentEditableWarning>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
-                    {`Figuras 3 e 4 — Média das notas do 4º Bimestre dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}"`}
+                    {`Figuras 3 e 4 — Média das notas do 4º Bimestre dos alunos matriculados na Rede de Ensino inscritos no projeto "${projectFull}"`}
                   </p>
                 </div>
 
@@ -984,7 +984,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   } onSave={data => setPieOverride4(data)} />
                   <PieChart
                     data={dist4}
-                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
                   />
                 </div>
 
@@ -995,7 +995,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                   } onSave={data => setBarOverride4(data)} />
                   <BarChart
                     data={barDist4}
-                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
+                    title={`MÉDIA DAS NOTAS DO 4º BIMESTRE DOS ALUNOS MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`}
                   />
                 </div>
 
@@ -1024,7 +1024,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                     <div className="freq-page">
                       <div contentEditable={isEditing} suppressContentEditableWarning>
                         <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
-                          {`Figura ${figNum} — Média das notas escolar dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}"`}
+                          {`Figura ${figNum} — Média das notas escolar dos alunos matriculados na Rede de Ensino inscritos no projeto "${projectFull}"`}
                         </p>
                       </div>
                       <div style={{ position: 'relative', border: '1px solid #ddd', borderRadius: 8, padding: 16, background: '#fff', marginBottom: 16 }}>
@@ -1035,7 +1035,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                           ])
                         } onSave={() => {}} />
                         <p style={{ textAlign: 'center', fontWeight: 700, fontSize: 10, color: '#333', margin: '0 0 8px' }}>
-                          {`Média das notas do 1° e 4° bimestre de ${currentYear} dos alunos matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                          {`Média das notas do 1° e 4° bimestre de ${currentYear} dos alunos matriculados na Rede de Ensino inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
                         </p>
                         <svg viewBox={`0 0 ${leftMargin + chartW + 50} ${svgH}`} style={{ width: '100%', display: 'block' }}>
                           {/* Grid lines */}
@@ -1190,7 +1190,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               color: CAT_COLORS[cat],
             }));
 
-            const titleUpper = `DESEMPENHO ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
+            const titleUpper = `DESEMPENHO ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
 
             // ── Pie Chart (Figura 7) ──
             const cx = 180, cy = 160, r = 120;
@@ -1284,7 +1284,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
               <>
                 <div contentEditable={isEditing} suppressContentEditableWarning>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.5, textIndent: '2cm', marginBottom: 12 }}>
-                    {`Figuras 7 e 8 — Desempenho escolar dos alunos da Educação Básica matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
+                    {`Figuras 7 e 8 — Desempenho escolar dos alunos da Educação Básica matriculados na Rede de Ensino inscritos no projeto "${projectFull}" em ${cityLabel} (${stateLabel})`}
                   </p>
                 </div>
 
@@ -1629,7 +1629,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
             const pctFaltas = Math.round((totalFaltas / totalAulas) * 100);
             const pctAssiduidade = 100 - pctFaltas;
 
-            const titleUpper = `ASSIDUIDADE ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS NAS ESCOLAS PÚBLICAS E PARTICULARES INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
+            const titleUpper = `ASSIDUIDADE ESCOLAR DOS ALUNOS DA EDUCAÇÃO BÁSICA MATRICULADOS na Rede de Ensino INSCRITOS NO PROJETO "${projectFull.toUpperCase()}" EM ${cityLabel.toUpperCase()} (${stateLabel})`;
 
             // Pie chart data
             const pieData = [
@@ -1695,7 +1695,7 @@ export const AssiduidadeReportBuilder: React.FC<AssiduidadeReportBuilderProps> =
                 {/* ─── Texto 1: Introdução à assiduidade ─── */}
                 <div contentEditable={isEditing} suppressContentEditableWarning style={{ marginTop: 20 }}>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '1.25cm', marginBottom: 6 }}>
-                    {`Os alunos da Educação Básica matriculados nas Escolas Públicas e Particulares inscritos no projeto "${projectFull}" apresentaram um desempenho positivo em relação à assiduidade escolar. O índice de faltas registrado foi de apenas ${pctFaltas}%, enquanto a taxa de assiduidade atingiu ${pctAssiduidade}%. Esses números evidenciam um comprometimento significativo das alunas com a frequência às aulas, o que contribui para a manutenção do bom aproveitamento escolar e fortalece a participação contínua no projeto.`}
+                    {`Os alunos da Educação Básica matriculados na Rede de Ensino inscritos no projeto "${projectFull}" apresentaram um desempenho positivo em relação à assiduidade escolar. O índice de faltas registrado foi de apenas ${pctFaltas}%, enquanto a taxa de assiduidade atingiu ${pctAssiduidade}%. Esses números evidenciam um comprometimento significativo das alunas com a frequência às aulas, o que contribui para a manutenção do bom aproveitamento escolar e fortalece a participação contínua no projeto.`}
                   </p>
                   <p style={{ fontSize: 12, color: '#333', lineHeight: 1.8, textAlign: 'justify', textIndent: '2.5cm', marginBottom: 8 }}>
                     Vejamos:
