@@ -369,7 +369,7 @@ const AppContent: React.FC = () => {
         const studentIds = data.map((s: any) => s.id);
         const [decsResult, docsResult] = await Promise.all([
           supabase.from('student_declarations').select('student_id, type, data').in('student_id', studentIds),
-          supabase.from('documents').select('student_id, type, file_url, created_at').in('student_id', studentIds)
+          supabase.from('documents').select('student_id, type, file_url, metadata, created_at').in('student_id', studentIds)
         ]);
 
         const decs = decsResult.data || [];
@@ -423,11 +423,11 @@ const AppContent: React.FC = () => {
             declaracao_uniformes: uni ? uni.data : undefined,
             declaracao_prontidao: pron ? pron.data : undefined,
             autorizacao_viagem: auto ? auto.data : undefined,
-            questionario_quantitativo: meta ? { url: meta.file_url, timestamp: meta.created_at } : undefined,
-            pesquisa_socioeconomica: socio ? { url: socio.file_url, timestamp: socio.created_at } : undefined,
+            questionario_quantitativo: meta ? { url: meta.file_url || meta.metadata?.url, timestamp: meta.created_at, metadata: meta.metadata } : undefined,
+            pesquisa_socioeconomica: socio ? { url: socio.file_url || socio.metadata?.url, timestamp: socio.created_at, metadata: socio.metadata } : undefined,
             // Prioridade: campo direto na tabela students > documents table (fallback)
-            boletim_escolar: s.boletim_escolar || (boletim ? { url: boletim.file_url, timestamp: boletim.created_at } : undefined),
-            declaracao_matricula: s.declaracao_matricula || (decMatricula ? { url: decMatricula.file_url, imageUrl: decMatricula.file_url || '', timestamp: decMatricula.created_at } : undefined),
+            boletim_escolar: s.boletim_escolar || (boletim ? { url: boletim.file_url || boletim.metadata?.url, timestamp: boletim.created_at, ...boletim.metadata } : undefined),
+            declaracao_matricula: s.declaracao_matricula || (decMatricula ? { url: decMatricula.file_url || decMatricula.metadata?.url, imageUrl: decMatricula.metadata?.imageUrl || decMatricula.file_url || '', timestamp: decMatricula.created_at, ocrData: decMatricula.metadata?.ocrData } : undefined),
           };
         });
         setStudents(mapped);
