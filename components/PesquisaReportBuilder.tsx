@@ -649,8 +649,7 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
               // 2. Fallback baseada na idade (calcAge)
               if (st.data_nascimento) {
                 const age = calcAge(st.data_nascimento);
-                if (age <= 5) return 0; // Infantil
-                if (age === 6) return 1;
+                if (age <= 6) return 1;
                 if (age === 7) return 2;
                 if (age === 8) return 3;
                 if (age === 9) return 4;
@@ -879,7 +878,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                         <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto' }}>
                           {pieData.map((d, i) => {
                             const startAngle = acc;
-                            const angle = (d.count / totalCount) * 360;
+                            const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                            const angle = (d.count / currentTotal) * 360;
                             acc += angle;
                             
                             if (angle === 360) {
@@ -974,7 +974,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                         <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto' }}>
                           {macroData.map((d, i) => {
                             const startAngle = macroAcc;
-                            const angle = (d.count / macroTotal) * 360;
+                            const currentTotal = macroData.reduce((a, b) => a + b.count, 0) || 1;
+                            const angle = (d.count / currentTotal) * 360;
                             macroAcc += angle;
                             
                             if (angle === 360) {
@@ -1091,7 +1092,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                   <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 500, display: 'block', margin: '0 auto' }}>
                     {pieData.map((d, i) => {
                       const startAngle = acc;
-                      const angle = (d.count / total) * 360;
+                      const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                      const angle = (d.count / currentTotal) * 360;
                       acc += angle;
                       
                       if (angle === 360) {
@@ -1301,7 +1303,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                           <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 340, display: 'block', margin: '0 auto' }}>
                             {genderPie.map((d, i) => {
                               const startAngle = gAcc;
-                              const angle = (d.pct / 100) * 360;
+                              const currentTotal = genderPie.reduce((a, b) => a + b.pct, 0) || 1;
+                              const angle = (d.pct / currentTotal) * 360;
                               gAcc += angle;
                               if (angle >= 360) {
                                 return <circle key={i} cx={cx} cy={cy} r={r} fill={d.color} stroke="#fff" strokeWidth="2" />;
@@ -1433,7 +1436,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                       let acc = -90;
                       return ageData.map((d, i) => {
                         const startAngle = acc;
-                        const angle = (d.count / totalAge) * 360;
+                        const currentTotal = ageData.reduce((a, b) => a + b.count, 0) || 1;
+                        const angle = (d.count / currentTotal) * 360;
                         acc += angle;
                         const pctVal = Math.round((d.count / totalAge) * 100);
                         const color = COLORS[i % COLORS.length];
@@ -2176,7 +2180,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                   <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 450, display: 'block', margin: '0 auto' }}>
                     {pieData.map((d, i) => {
                       const startAngle = acc;
-                      const angle = (d.count / total) * 360;
+                      const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                      const angle = (d.count / currentTotal) * 360;
                       acc += angle;
 
                       if (angle >= 359.9) {
@@ -2386,7 +2391,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                   <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 450, display: 'block', margin: '0 auto' }}>
                     {pieData.map((d, i) => {
                       const startAngle = acc;
-                      const angle = (d.count / total) * 360;
+                      const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                      const angle = (d.count / currentTotal) * 360;
                       acc += angle;
                       if (angle >= 359.9) {
                         return (
@@ -2606,7 +2612,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                   <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 450, display: 'block', margin: '0 auto' }}>
                     {pieData.map((d, i) => {
                       const startAngle = acc;
-                      const angle = (d.count / total) * 360;
+                      const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                      const angle = (d.count / currentTotal) * 360;
                       acc += angle;
                       if (angle >= 359.9) {
                         return (
@@ -2806,7 +2813,8 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
                   <svg viewBox="0 0 400 300" style={{ width: '100%', maxWidth: 450, display: 'block', margin: '0 auto' }}>
                     {pieData.map((d, i) => {
                       const startAngle = acc;
-                      const angle = (d.count / total) * 360;
+                      const currentTotal = pieData.reduce((a, b) => a + b.count, 0) || 1;
+                      const angle = (d.count / currentTotal) * 360;
                       acc += angle;
                       if (angle >= 359.9) {
                         return (

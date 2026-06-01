@@ -503,7 +503,7 @@ html, body {
     border: none !important;
     border-radius: 0 !important;
     margin: 0 !important;
-    padding: 10px 0 !important;
+    padding: 15mm 20mm !important;
     width: 100% !important;
     max-width: 100% !important;
     min-height: auto !important;
@@ -535,7 +535,7 @@ html, body {
   }
 
   .freq-monthly-page {
-    padding: 10px 0 !important;
+    padding: 10mm 15mm !important;
   }
 
   /* Make all tables fit within page width */
