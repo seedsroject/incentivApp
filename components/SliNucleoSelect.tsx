@@ -52,10 +52,7 @@ export const SliNucleoSelect: React.FC<SliNucleoSelectProps> = ({
   }, [nucleos, sliGroups]);
 
   const nucleoLabel = (n: Nucleo) => {
-    const parts = n.nome.split('-');
-    const name = parts[0].trim();
-    const suffix = n.address ? ` - ${n.address}` : (n.estado ? ` (${n.estado})` : '');
-    return `${name}${suffix}`;
+    return n.nome;
   };
 
   return (

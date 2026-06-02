@@ -219,7 +219,7 @@ const DANIEL_DIAS_NUCLEOS: Nucleo[] = [
     ...n,
     estado,
     stockDetails: generateStockDetails(n.stockStatus as any),
-    address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+    address: n.nome.split(' - ')[1]?.trim() || 'Endereço não cadastrado',
     phone: '(00) 3333-4444',
     email: `contato.${n.id}@danieldias.org.br`,
     employees: generateMockEmployees(n.id, n.nome)
@@ -241,7 +241,7 @@ const FUTEBOL_NUCLEOS: Nucleo[] = [
     ...n,
     estado,
     stockDetails: generateStockDetails(n.stockStatus as any),
-    address: n.nome.split('–')[1]?.trim() || 'Endereço não cadastrado',
+    address: n.nome.split(' - ')[1]?.trim() || 'Endereço não cadastrado',
     phone: '(00) 3333-4444',
     email: `contato.${n.id}@futebol.org.br`,
     employees: generateMockEmployees(n.id, n.nome)
@@ -936,23 +936,30 @@ const AppContent: React.FC = () => {
   const [loginPassword, setLoginPassword] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
   const [loginEstado, setLoginEstado] = useState<string | null>(null); // Estado do usuário sendo logado
+  const [loginIsAdmin, setLoginIsAdmin] = useState<boolean>(false); // Se o usuário sendo logado é administrador
 
-  // Buscar estado_responsavel do usuário quando ele digita o e-mail
+  // Buscar estado_responsavel e se é admin quando o usuário digita o e-mail
   useEffect(() => {
     if (!loginEmail || !loginEmail.includes('@')) {
       setLoginEstado(null);
+      setLoginIsAdmin(false);
       return;
     }
 
-    // Super admin vê todos
+    // Super admin vê todos e é admin
     if (loginEmail.trim().toLowerCase() === 'admin.geral@formandocampeoes.org.br') {
       setLoginEstado(null);
+      setLoginIsAdmin(true);
       return;
     }
 
     const timer = setTimeout(async () => {
       const email = loginEmail.trim().toLowerCase();
       try {
+        // Verificar se é admin via RPC
+        const { data: isAdmin } = await supabase.rpc('is_admin_email', { p_email: email });
+        setLoginIsAdmin(!!isAdmin);
+
         // Tentativa 1: Buscar estado direto da profiles (requer migração 016)
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -988,8 +995,9 @@ const AppContent: React.FC = () => {
         console.log('[Login] Nenhum estado encontrado para:', email, profileError?.message || '');
         setLoginEstado(null);
       } catch (err) {
-        console.warn('[Login] Erro ao buscar estado:', err);
+        console.warn('[Login] Erro ao buscar dados de login:', err);
         setLoginEstado(null);
+        setLoginIsAdmin(false);
       }
     }, 600);
 
@@ -1043,12 +1051,13 @@ const AppContent: React.FC = () => {
     return Array.from(estados).sort();
   }, [projectNucleosForLogin]);
 
-  // Núcleos filtrados para a tela de login (por estado selecionado)
+  // Núcleos filtrados para a tela de login (por estado selecionado ou admin)
   const loginFilteredNucleos = useMemo(() => {
+    if (loginIsAdmin) return projectNucleosForLogin; // Admin sees all nuclei of Brazil
     if (!loginEstado) return projectNucleosForLogin;
     const filtered = projectNucleosForLogin.filter(n => n.estado === loginEstado);
     return filtered.length > 0 ? filtered : projectNucleosForLogin; // Fallback
-  }, [projectNucleosForLogin, loginEstado]);
+  }, [projectNucleosForLogin, loginEstado, loginIsAdmin]);
 
   // Recarregar dados ao trocar projeto (se logado)
   useEffect(() => {
@@ -2147,7 +2156,7 @@ const AppContent: React.FC = () => {
                           <option value="">Selecione...</option>
                           {loginFilteredNucleos.map(nucleo => (
                             <option key={nucleo.id} value={nucleo.id}>
-                              {nucleo.nome.split('-')[0]} {nucleo.address ? ` - ${nucleo.address}` : ''}
+                              {loginIsAdmin ? nucleo.nome : `${nucleo.nome.split('-')[0]}${nucleo.address ? ` - ${nucleo.address}` : ''}`}
                             </option>
                           ))}
                         </select>
