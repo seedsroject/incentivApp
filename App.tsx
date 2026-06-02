@@ -1109,20 +1109,35 @@ const AppContent: React.FC = () => {
     setLoading(true);
     try {
       // 1. Autenticar com Supabase
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
-      });
-
-      if (authError) {
-        setLoginError(authError.message === 'Invalid login credentials'
-          ? 'E-mail ou senha incorretos.'
-          : authError.message);
+      let authData: any;
+      try {
+        const result = await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: loginPassword,
+        });
+        if (result.error) {
+          const msg = result.error.message;
+          if (msg === 'Invalid login credentials') {
+            setLoginError('E-mail ou senha incorretos.');
+          } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+            setLoginError('Erro de rede. Verifique sua conexão e tente novamente.');
+          } else if (msg.includes('Email not confirmed')) {
+            setLoginError('E-mail não confirmado. Verifique sua caixa de entrada.');
+          } else {
+            setLoginError(msg);
+          }
+          setLoading(false);
+          return;
+        }
+        authData = result.data;
+      } catch (authErr: any) {
+        console.error('[Login] Erro na autenticação:', authErr);
+        setLoginError('Erro de rede ao autenticar. Verifique sua conexão.');
         setLoading(false);
         return;
       }
 
-      if (!authData.user) {
+      if (!authData?.user) {
         setLoginError('Erro ao autenticar. Tente novamente.');
         setLoading(false);
         return;
@@ -1138,12 +1153,18 @@ const AppContent: React.FC = () => {
         return;
       }
 
-      const { data: accessData } = await supabase
-        .from('user_project_access')
-        .select('*')
-        .eq('user_id', authData.user.id)
-        .eq('project_id', projectData.id)
-        .single();
+      let accessData: any = null;
+      try {
+        const { data } = await supabase
+          .from('user_project_access')
+          .select('*')
+          .eq('user_id', authData.user.id)
+          .eq('project_id', projectData.id)
+          .single();
+        accessData = data;
+      } catch (accessErr) {
+        console.warn('[Login] Erro ao buscar user_project_access:', accessErr);
+      }
 
       let role: string = 'PROFESSOR';
       let nucleoId: string | null = loginNucleoId || null;
@@ -1157,38 +1178,55 @@ const AppContent: React.FC = () => {
         }
       } else {
         // Verifica se tem acesso a QUALQUER projeto (pode ser super admin global)
-        const { data: anyAccess } = await supabase
-          .from('user_project_access')
-          .select('*, projects(slug)')
-          .eq('user_id', authData.user.id);
-        
-        if (anyAccess && anyAccess.length > 0) {
-          // Tem acesso a outro projeto — criar acesso cross-project para admins
-          const isAdmin = anyAccess.some((a: any) => a.role === 'ADMIN' || a.role === 'SUPER_ADMIN');
-          if (isAdmin) {
-            // Admin pode acessar qualquer projeto: cria acesso automático
-            role = 'ADMIN';
-            nucleoId = loginNucleoId || null;
-            await supabase.from('user_project_access').insert({
-              user_id: authData.user.id,
-              project_id: projectData.id,
-              nucleo_id: nucleoId,
-              role: 'ADMIN',
-              is_default: false,
-            });
+        try {
+          const { data: anyAccess } = await supabase
+            .from('user_project_access')
+            .select('*')
+            .eq('user_id', authData.user.id);
+          
+          if (anyAccess && anyAccess.length > 0) {
+            // Tem acesso a outro projeto — criar acesso cross-project para admins
+            const isAdmin = anyAccess.some((a: any) => a.role === 'ADMIN' || a.role === 'SUPER_ADMIN');
+            if (isAdmin) {
+              // Admin pode acessar qualquer projeto: cria acesso automático
+              role = 'ADMIN';
+              nucleoId = loginNucleoId || null;
+              try {
+                await supabase.from('user_project_access').insert({
+                  user_id: authData.user.id,
+                  project_id: projectData.id,
+                  nucleo_id: nucleoId,
+                  role: 'ADMIN',
+                  is_default: false,
+                });
+              } catch (insertErr) {
+                console.warn('[Login] Erro ao criar acesso cross-project:', insertErr);
+              }
+            } else {
+              setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
+              setLoading(false);
+              return;
+            }
           } else {
-            setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
-            setLoading(false);
-            return;
+            // Sem acesso a nenhum projeto — permitir login como PROFESSOR se tem núcleo selecionado
+            if (loginNucleoId) {
+              role = 'PROFESSOR';
+              nucleoId = loginNucleoId;
+            } else {
+              setLoginError('Você não tem acesso a nenhum projeto. Selecione um núcleo ou contate o administrador.');
+              await supabase.auth.signOut();
+              setLoading(false);
+              return;
+            }
           }
-        } else {
-          // Sem acesso a nenhum projeto — permitir login como PROFESSOR se tem núcleo selecionado
+        } catch (crossErr) {
+          console.warn('[Login] Erro ao verificar acesso cross-project:', crossErr);
+          // Fallback: permitir como professor com o núcleo selecionado
           if (loginNucleoId) {
             role = 'PROFESSOR';
             nucleoId = loginNucleoId;
           } else {
-            setLoginError('Você não tem acesso a nenhum projeto. Selecione um núcleo ou contate o administrador.');
-            await supabase.auth.signOut();
+            setLoginError('Erro ao verificar permissões. Tente novamente.');
             setLoading(false);
             return;
           }
@@ -1227,7 +1265,9 @@ const AppContent: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Erro no login:', err);
-      setLoginError('Erro de conexão. Verifique sua internet.');
+      setLoginError(err?.message?.includes('Failed to fetch')
+        ? 'Erro de rede. Verifique sua conexão e tente novamente.'
+        : 'Erro inesperado. Tente novamente.');
     } finally {
       setLoading(false);
     }
