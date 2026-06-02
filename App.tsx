@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { User, Nucleo, AppView, StudentDraft, EvidenceLog, DocumentLog, DocumentType, EvidenceType, InventoryItem, ProjectId } from './types';
+import { User, Nucleo, AppView, StudentDraft, EvidenceLog, DocumentLog, DocumentType, EvidenceType, InventoryItem, ProjectId, SliGroup } from './types';
 import { supabase } from './services/supabaseClient';
+import { fetchSliGroups, upsertSliGroup as upsertSliGroupService } from './services/supabaseDataService';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { Onboarding } from './components/Onboarding';
@@ -544,6 +545,22 @@ const AppContent: React.FC = () => {
     }
   }, []);
 
+  // --- Carregar SLI Groups do Supabase ---
+  const loadSliGroupsFromSupabase = useCallback(async (projectUUID: string) => {
+    try {
+      const data = await fetchSliGroups(projectUUID);
+      setSliGroups(data.map(g => ({
+        sliNumber: g.sli_number,
+        year: g.year,
+        nucleoIds: g.nucleo_ids || [],
+        label: g.label || undefined,
+        projectId: g.project_id as ProjectId,
+      })));
+    } catch (err) {
+      console.warn('Supabase SLI groups fallback:', err);
+    }
+  }, []);
+
   // --- Função agregadora: carregar tudo do projeto ---
   const loadAllProjectData = useCallback(async (projectUUID: string, projectSlug: ProjectId) => {
     await Promise.all([
@@ -552,8 +569,9 @@ const AppContent: React.FC = () => {
       loadEvidencesFromSupabase(projectUUID, projectSlug),
       loadInventoryFromSupabase(projectUUID, projectSlug),
       loadPreCadastrosFromSupabase(projectUUID, projectSlug),
+      loadSliGroupsFromSupabase(projectUUID),
     ]);
-  }, [loadStudentsFromSupabase, loadDocumentsFromSupabase, loadEvidencesFromSupabase, loadInventoryFromSupabase, loadPreCadastrosFromSupabase]);
+  }, [loadStudentsFromSupabase, loadDocumentsFromSupabase, loadEvidencesFromSupabase, loadInventoryFromSupabase, loadPreCadastrosFromSupabase, loadSliGroupsFromSupabase]);
 
   // --- SUPABASE REALTIME: Atualização automática ao receber dados externos ---
   useEffect(() => {
@@ -883,6 +901,7 @@ const AppContent: React.FC = () => {
   // (Dados mock removidos — tudo vem do Supabase agora)
 
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [sliGroups, setSliGroups] = useState<SliGroup[]>([]);
 
   // --- PROJECT-SCOPED DOCUMENTS / EVIDENCE / INVENTORY ---
   const projectDocuments = useMemo(() => collectedDocuments.filter(d => !d.projectId || d.projectId === activeProject), [collectedDocuments, activeProject]);
@@ -2328,6 +2347,33 @@ const AppContent: React.FC = () => {
             projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'}
             projectId={activeProject}
             inventory={inventory}
+            sliGroups={sliGroups}
+            onSaveSliGroup={async (group) => {
+              // Update local state
+              setSliGroups(prev => {
+                const idx = prev.findIndex(g => g.sliNumber === group.sliNumber);
+                if (idx >= 0) {
+                  const updated = [...prev];
+                  updated[idx] = group;
+                  return updated;
+                }
+                return [...prev, group];
+              });
+              // Persist to Supabase
+              if (supabaseProjectId) {
+                try {
+                  await upsertSliGroupService({
+                    sli_number: group.sliNumber,
+                    year: group.year,
+                    label: group.label || null,
+                    nucleo_ids: group.nucleoIds,
+                    project_id: supabaseProjectId,
+                  });
+                } catch (err) {
+                  console.warn('Erro ao salvar grupo SLI:', err);
+                }
+              }
+            }}
           />
         )}
 
@@ -2601,6 +2647,7 @@ const AppContent: React.FC = () => {
             nucleos={filteredNucleos}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
+            sliGroups={sliGroups}
           />
         )}
 
@@ -2610,6 +2657,7 @@ const AppContent: React.FC = () => {
             evidences={projectEvidence}
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
+            sliGroups={sliGroups}
           />
         )}
 
@@ -2620,6 +2668,7 @@ const AppContent: React.FC = () => {
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
+            sliGroups={sliGroups}
           />
         )}
 
@@ -2630,6 +2679,7 @@ const AppContent: React.FC = () => {
             onBack={() => setView(AppView.DEV_ENVIRONMENT)}
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
+            sliGroups={sliGroups}
           />
         )}
 
@@ -2641,6 +2691,7 @@ const AppContent: React.FC = () => {
             headerImage={projectAssets.header}
             projectName={projectAssets.name}
             history={collectedDocuments}
+            sliGroups={sliGroups}
           />
         )}
 

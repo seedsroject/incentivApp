@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId, User, InventoryItem } from '../types';
+import { Nucleo, PDFItemType, StudentDraft, DocumentLog, ProjectId, User, InventoryItem, SliGroup } from '../types';
 import { usePDFBuilder } from './PDFBuilderContext';
 import { AdminMap } from './AdminMap';
 import { Logo } from './Logo';
@@ -21,6 +21,8 @@ interface AdminDashboardProps {
     projectLogo?: string;
     projectId?: ProjectId;
     inventory?: InventoryItem[];
+    sliGroups?: SliGroup[];
+    onSaveSliGroup?: (group: SliGroup) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -35,7 +37,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onDischargeStudent,
     projectLogo = '/logo.png',
     projectId = 'FORMANDO_CAMPEOES',
-    inventory = []
+    inventory = [],
+    sliGroups = [],
+    onSaveSliGroup
 }) => {
     // --- THEME BY PROJECT ---
     const theme = useMemo(() => {
@@ -1074,6 +1078,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     nucleo={selectedNucleo}
                     onSave={(updated) => onAddNucleo(updated)}
                     projectId={projectId}
+                    allNucleos={nucleos}
+                    sliGroups={sliGroups}
+                    onSaveSliGroup={onSaveSliGroup}
                 />
             )}
 

@@ -392,6 +392,63 @@ export async function upsertInventoryItem(item: any) {
 }
 
 // ============================================================
+// SLI GROUPS — Vínculo SLI ↔ Múltiplos Núcleos
+// ============================================================
+
+export interface SupabaseSliGroup {
+  id?: string;
+  sli_number: string;
+  year: string;
+  label: string | null;
+  nucleo_ids: string[];
+  project_id: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Lista todos os grupos SLI de um projeto */
+export async function fetchSliGroups(projectId: string): Promise<SupabaseSliGroup[]> {
+  const { data, error } = await supabase
+    .from('sli_groups')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('sli_number');
+
+  if (error) {
+    console.error('Erro ao buscar grupos SLI:', error);
+    return [];
+  }
+  return data || [];
+}
+
+/** Cria ou atualiza um grupo SLI */
+export async function upsertSliGroup(group: Omit<SupabaseSliGroup, 'id' | 'created_at' | 'updated_at'>) {
+  const { data, error } = await supabase
+    .from('sli_groups')
+    .upsert(
+      { ...group, updated_at: new Date().toISOString() },
+      { onConflict: 'sli_number,year,project_id' }
+    )
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/** Remove um grupo SLI */
+export async function deleteSliGroup(sliNumber: string, year: string, projectId: string) {
+  const { error } = await supabase
+    .from('sli_groups')
+    .delete()
+    .eq('sli_number', sliNumber)
+    .eq('year', year)
+    .eq('project_id', projectId);
+
+  if (error) throw error;
+}
+
+// ============================================================
 // AUTH — Login / Signup / Session
 // ============================================================
 

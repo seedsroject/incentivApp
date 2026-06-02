@@ -9,7 +9,8 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { ChartDataEditor } from './ChartDataEditor';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
-import { StudentDraft, DocumentLog, Nucleo } from '../types';
+import { StudentDraft, DocumentLog, Nucleo, SliGroup } from '../types';
+import { SliNucleoSelect } from './SliNucleoSelect';
 import {
   buildFrequencyReportData,
   generateTableOfContents,
@@ -34,6 +35,7 @@ interface FrequencyReportBuilderProps {
   nucleos: Nucleo[];
   onBack: () => void;
   headerImage?: string;
+  sliGroups?: SliGroup[];
 }
 
 // ─── SVG BAR CHART (Print-friendly) ───
@@ -113,7 +115,8 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
   history,
   nucleos,
   onBack,
-  headerImage = '/header_full.png'
+  headerImage = '/header_full.png',
+  sliGroups = [],
 }) => {
   // ─── STATE ───
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
@@ -207,15 +210,7 @@ export const FrequencyReportBuilder: React.FC<FrequencyReportBuilderProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {/* Núcleo */}
-          <select
-            value={selectedNucleoId}
-            onChange={e => setSelectedNucleoId(e.target.value)}
-            className="freq-select"
-          >
-            {nucleos.map(n => (
-              <option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>
-            ))}
-          </select>
+          <SliNucleoSelect nucleos={nucleos} sliGroups={sliGroups} value={selectedNucleoId} onChange={setSelectedNucleoId} className="freq-select" />
 
           {/* Período */}
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />

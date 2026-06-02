@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Nucleo, Employee, Contract, ProjectId } from '../types';
+import { Nucleo, Employee, Contract, ProjectId, SliGroup } from '../types';
 import { extractContractData } from '../services/geminiService';
 import { ContractGenerationModal } from './ContractGenerationModal';
 
@@ -9,6 +9,9 @@ interface NucleoDetailModalProps {
     nucleo: Nucleo;
     onSave?: (updatedNucleo: Nucleo) => void;
     projectId?: ProjectId;
+    allNucleos?: Nucleo[];
+    sliGroups?: SliGroup[];
+    onSaveSliGroup?: (group: SliGroup) => void;
 }
 
 const ROLES = ['COORDENADOR', 'PROFESSOR', 'MONITOR', 'ADMINISTRATIVO', 'PSICOLOGO', 'ASSISTENTE_SOCIAL', 'OUTROS'];
@@ -26,9 +29,12 @@ interface NucleoGeralFormProps {
     employees: import('../types').Employee[];
     onSave?: (updated: import('../types').Nucleo) => void;
     projectId?: ProjectId;
+    allNucleos?: Nucleo[];
+    sliGroups?: SliGroup[];
+    onSaveSliGroup?: (group: SliGroup) => void;
 }
 
-const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, onSave, projectId = 'FORMANDO_CAMPEOES' }) => {
+const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, onSave, projectId = 'FORMANDO_CAMPEOES', allNucleos = [], sliGroups = [], onSaveSliGroup }) => {
     const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [geralData, setGeralData] = useState({
         cnpj: nucleo.cnpj || '',
@@ -44,6 +50,57 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
         turmas: nucleo.turmas ? [...nucleo.turmas] : [] as import('../types').NucleoTurma[],
     });
     const [saved, setSaved] = useState(false);
+
+    // SLI linking state
+    const [sliSearch, setSliSearch] = useState('');
+    const [linkedNucleoIds, setLinkedNucleoIds] = useState<string[]>(() => {
+        const existingGroup = sliGroups.find(g => g.sliNumber === (nucleo.sliNumber || ''));
+        return existingGroup ? [...existingGroup.nucleoIds] : [nucleo.id];
+    });
+    const [sliSaved, setSliSaved] = useState(false);
+
+    // Group nucleos by state for the SLI list
+    const nucleosByEstado = useMemo(() => {
+        const map = new Map<string, Nucleo[]>();
+        allNucleos.forEach(n => {
+            const estado = n.estado || 'Outros';
+            if (!map.has(estado)) map.set(estado, []);
+            map.get(estado)!.push(n);
+        });
+        // Sort by estado and then by name within each estado
+        const sorted = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        sorted.forEach(([, ns]) => ns.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')));
+        return sorted;
+    }, [allNucleos]);
+
+    const filteredNucleosByEstado = useMemo(() => {
+        if (!sliSearch.trim()) return nucleosByEstado;
+        const q = sliSearch.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return nucleosByEstado
+            .map(([estado, ns]) => [estado, ns.filter(n =>
+                n.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(q) ||
+                estado.toLowerCase().includes(q)
+            )] as [string, Nucleo[]])
+            .filter(([, ns]) => ns.length > 0);
+    }, [nucleosByEstado, sliSearch]);
+
+    const toggleNucleoLink = (id: string) => {
+        setLinkedNucleoIds(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const handleSaveSliLinks = () => {
+        if (!geralData.sliNumber.trim() || !onSaveSliGroup) return;
+        onSaveSliGroup({
+            sliNumber: geralData.sliNumber.trim(),
+            year: new Date().getFullYear().toString(),
+            nucleoIds: linkedNucleoIds,
+            projectId,
+        });
+        setSliSaved(true);
+        setTimeout(() => setSliSaved(false), 2000);
+    };
 
     const toggleDia = (dia: string) => setGeralData(prev => ({
         ...prev,
@@ -97,6 +154,64 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                             placeholder="Número de inscrição do projeto"
                             className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                     </div>
+
+                    {/* ══════ SLI LINKED NUCLEOS ══════ */}
+                    {geralData.sliNumber.trim() && allNucleos.length > 0 && (
+                        <div className="md:col-span-2">
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h5 className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                                        Núcleos Vinculados ao SLI: {geralData.sliNumber}
+                                    </h5>
+                                    <span className="text-[10px] font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">
+                                        {linkedNucleoIds.length} selecionado{linkedNucleoIds.length !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                {/* Search */}
+                                <input
+                                    type="text"
+                                    value={sliSearch}
+                                    onChange={e => setSliSearch(e.target.value)}
+                                    placeholder="🔍 Buscar núcleo..."
+                                    className="w-full text-xs bg-white border border-blue-200 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                />
+                                {/* List */}
+                                <div className="max-h-52 overflow-y-auto space-y-3 pr-1">
+                                    {filteredNucleosByEstado.map(([estado, ns]) => (
+                                        <div key={estado}>
+                                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">{estado}</p>
+                                            <div className="space-y-1">
+                                                {ns.map(n => (
+                                                    <label key={n.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-xs ${linkedNucleoIds.includes(n.id) ? 'bg-blue-100 text-blue-800 font-bold' : 'hover:bg-blue-50 text-gray-700'}`}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={linkedNucleoIds.includes(n.id)}
+                                                            onChange={() => toggleNucleoLink(n.id)}
+                                                            className="rounded border-blue-300 text-blue-600 focus:ring-blue-300 h-3.5 w-3.5"
+                                                        />
+                                                        <span className="truncate">{n.nome}</span>
+                                                        {n.id === nucleo.id && <span className="text-[9px] bg-blue-200 text-blue-700 px-1.5 py-0.5 rounded-full ml-auto font-bold">Este núcleo</span>}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {filteredNucleosByEstado.length === 0 && (
+                                        <p className="text-xs text-blue-400 italic text-center py-4">Nenhum núcleo encontrado</p>
+                                    )}
+                                </div>
+                                {/* Save SLI links */}
+                                <button
+                                    onClick={handleSaveSliLinks}
+                                    disabled={!onSaveSliGroup}
+                                    className={`w-full mt-3 py-2 rounded-lg font-bold text-xs transition-all ${sliSaved ? 'bg-green-500 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'}`}
+                                >
+                                    {sliSaved ? '✓ Vínculos SLI salvos!' : `Salvar Vínculos SLI (${linkedNucleoIds.length} núcleos)`}
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <label className="text-xs font-bold text-gray-500 block mb-1">Cidade / Estado</label>
@@ -393,7 +508,10 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
     onClose,
     nucleo,
     onSave,
-    projectId = 'FORMANDO_CAMPEOES'
+    projectId = 'FORMANDO_CAMPEOES',
+    allNucleos = [],
+    sliGroups = [],
+    onSaveSliGroup
 }) => {
     const tc = useMemo(() => getModalTheme(projectId), [projectId]);
     const [activeTab, setActiveTab] = useState<'rh' | 'geral' | 'inventario'>('geral');
@@ -831,6 +949,9 @@ export const NucleoDetailModal: React.FC<NucleoDetailModalProps> = ({
                                     employees={employees}
                                     onSave={onSave}
                                     projectId={projectId}
+                                    allNucleos={allNucleos}
+                                    sliGroups={sliGroups}
+                                    onSaveSliGroup={onSaveSliGroup}
                                 />
                             )}
 

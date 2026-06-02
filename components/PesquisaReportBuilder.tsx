@@ -7,9 +7,10 @@
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Nucleo, StudentDraft } from '../types';
+import { Nucleo, StudentDraft, SliGroup } from '../types';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
 import { ChartDataEditor } from './ChartDataEditor';
+import { SliNucleoSelect, resolveSelectedNucleoIds } from './SliNucleoSelect';
 
 interface PesquisaReportBuilderProps {
   nucleos: Nucleo[];
@@ -17,6 +18,7 @@ interface PesquisaReportBuilderProps {
   onBack: () => void;
   headerImage?: string;
   projectName?: string;
+  sliGroups?: SliGroup[];
 }
 
 // Default TOC structure matching the reference image
@@ -49,6 +51,7 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
   onBack,
   headerImage = '/header_full.png',
   projectName = 'Escolinha de Triathlon',
+  sliGroups = [],
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
   const [periodStart, setPeriodStart] = useState<string>(() => `${new Date().getFullYear()}-01-01`);
@@ -151,8 +154,9 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
     return age;
   };
   // Build student rows from selected nucleo, filtered by period
+  const resolvedIds = resolveSelectedNucleoIds(selectedNucleoId, sliGroups);
   const nucleoStudents = (students || []).filter(s => {
-    if (selectedNucleoId && s.nucleo_id !== selectedNucleoId) return false;
+    if (resolvedIds && !resolvedIds.includes(s.nucleo_id || '')) return false;
     const ts = s.timestamp || s.data_assinatura;
     if (periodStart && ts) { const start = new Date(periodStart); start.setHours(0,0,0,0); if (new Date(ts) < start) return false; }
     if (periodEnd && ts) { const end = new Date(periodEnd); end.setHours(23,59,59,999); if (new Date(ts) > end) return false; }
@@ -255,9 +259,7 @@ export const PesquisaReportBuilder: React.FC<PesquisaReportBuilderProps> = ({
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>))}
-          </select>
+          <SliNucleoSelect nucleos={nucleos} sliGroups={sliGroups} value={selectedNucleoId} onChange={setSelectedNucleoId} className="freq-select" />
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
           <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />

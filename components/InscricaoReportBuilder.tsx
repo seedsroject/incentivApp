@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { StudentDraft, Nucleo, DocumentLog } from '../types';
+import { StudentDraft, Nucleo, DocumentLog, SliGroup } from '../types';
 import { ChartDataEditor as SharedChartDataEditor } from './ChartDataEditor';
 import { ReportEditorToolbar } from './ReportEditorToolbar';
+import { SliNucleoSelect, resolveSelectedNucleoIds } from './SliNucleoSelect';
 
 interface Props {
   students: StudentDraft[];
@@ -10,13 +11,14 @@ interface Props {
   headerImage?: string;
   projectName?: string;
   history?: DocumentLog[];
+  sliGroups?: SliGroup[];
 }
 
 // Normalize name helper (inline to avoid circular dep)
 const normName = (n: string) => n ? n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim() : '';
 
 export const InscricaoReportBuilder: React.FC<Props> = ({
-  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [],
+  students, nucleos, onBack, headerImage = '/header_completo.png', projectName = 'Escolinha de Triathlon', history = [], sliGroups = [],
 }) => {
   const [selectedNucleoId, setSelectedNucleoId] = useState<string>(nucleos[0]?.id || '');
   const [periodStart, setPeriodStart] = useState(() => `${new Date().getFullYear()}-01-01`);
@@ -66,8 +68,9 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
   // Filter students by nucleo AND by period (using timestamp = created_at from DB)
   const filtered = useMemo(() => {
     let result = students;
-    if (selectedNucleoId) {
-      result = result.filter(s => s.nucleo_id === selectedNucleoId);
+    const resolvedIds = resolveSelectedNucleoIds(selectedNucleoId, sliGroups);
+    if (resolvedIds) {
+      result = result.filter(s => resolvedIds.includes(s.nucleo_id || ''));
     }
     // Filtrar pelo período usando timestamp (data de criação no banco)
     if (periodStart) {
@@ -89,7 +92,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
       });
     }
     return result;
-  }, [students, selectedNucleoId, periodStart, periodEnd]);
+  }, [students, selectedNucleoId, periodStart, periodEnd, sliGroups]);
 
   const sorted = useMemo(() => [...filtered].sort((a, b) => a.nome.localeCompare(b.nome)), [filtered]);
 
@@ -244,9 +247,7 @@ export const InscricaoReportBuilder: React.FC<Props> = ({
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <select value={selectedNucleoId} onChange={e => setSelectedNucleoId(e.target.value)} className="freq-select">
-            {nucleos.map(n => (<option key={n.id} value={n.id}>{n.nome.split('-')[0].trim()}{n.address ? ` - ${n.address}` : ''}</option>))}
-          </select>
+          <SliNucleoSelect nucleos={nucleos} sliGroups={sliGroups} value={selectedNucleoId} onChange={setSelectedNucleoId} className="freq-select" />
           <input type="date" value={periodStart} onChange={e => setPeriodStart(e.target.value)} className="freq-input-date" />
           <span style={{ fontSize: 12, color: '#999' }}>a</span>
           <input type="date" value={periodEnd} onChange={e => setPeriodEnd(e.target.value)} className="freq-input-date" />

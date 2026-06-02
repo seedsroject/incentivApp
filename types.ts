@@ -5,6 +5,14 @@
 
 export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS' | 'FUTEBOL';
 
+export interface SliGroup {
+  sliNumber: string;          // Ex: "2201254"
+  year: string;               // Ano do projeto (ex: "2026")
+  nucleoIds: string[];        // IDs dos núcleos vinculados a este SLI
+  label?: string;             // Nome customizado opcional (ex: "Projeto Ceará 2026")
+  projectId?: ProjectId;
+}
+
 export interface User {
   uid: string;
   nome: string;
