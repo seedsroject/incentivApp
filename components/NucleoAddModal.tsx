@@ -290,7 +290,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
                                                 </svg>
                                             </button>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                        <div className="grid grid-cols-3 gap-3 mb-3">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-500 mb-1">Nome da Turma</label>
                                                 <input
@@ -309,6 +309,17 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
                                                     onChange={e => updateTurma(idx, 'horario', e.target.value)}
                                                     placeholder="Ex: 07:00 - 08:30"
                                                     className="w-full border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">Limite de Alunos</label>
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    value={turma.max_alunos || ''}
+                                                    onChange={e => updateTurma(idx, 'max_alunos', e.target.value ? Number(e.target.value) : undefined)}
+                                                    placeholder="Ex: 30"
+                                                    className="w-full border border-amber-200 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                                                 />
                                             </div>
                                         </div>

@@ -274,6 +274,22 @@ const FormTemplate: React.FC<{ data: StudentDraft, reportType: ReportType }> = (
               <span className="font-normal">{data.pne_medicacao_suporte}</span>
             </div>
           )}
+          {data.portador_necessidade_especial && data.pne_necessita_supervisao && (
+            <div className="border-b border-black pb-1">
+              <span className="font-normal mr-2">Supervisão:</span>
+              <span className="font-bold">{data.pne_supervisor_nome}{data.pne_supervisor_e_responsavel ? ' (Responsável)' : ''}</span>
+              {data.pne_supervisor_cpf && <span className="font-normal ml-2">— CPF: {data.pne_supervisor_cpf}</span>}
+            </div>
+          )}
+
+          {/* Turma Selecionada */}
+          {data.turma_nome && (
+            <div className="border-b border-black pb-1">
+              <span className="font-normal mr-2">Turma:</span>
+              <span className="font-bold">{data.turma_nome}</span>
+              {data.turma_horario && <span className="font-normal ml-2">— {data.turma_horario}</span>}
+            </div>
+          )}
 
           {/* Contato de Emergência */}
           {(data.contato_emergencia_nome || data.contato_emergencia_email || data.contato_emergencia_endereco) && (
@@ -445,9 +461,16 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     pne_descricao: '',
     pne_medicacao_suporte: '',
     laudo_url: '',
+    pne_necessita_supervisao: false,
+    pne_supervisor_nome: '',
+    pne_supervisor_cpf: '',
+    pne_supervisor_e_responsavel: false,
     contato_emergencia_nome: '',
     contato_emergencia_email: '',
     contato_emergencia_endereco: '',
+    turma_selecionada: '',
+    turma_nome: '',
+    turma_horario: '',
   });
 
   // Mapeamento de projetos (usado para preencher nome_projeto automaticamente)
@@ -1975,6 +1998,82 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
             <div><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Projeto</label><input type="text" value={formData.nome_projeto} onChange={e => setFormData({ ...formData, nome_projeto: e.target.value })} className={inputStyle} /></div>
             <div className="col-span-2"><label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Proponente</label><input type="text" value={formData.proponente} onChange={e => setFormData({ ...formData, proponente: e.target.value })} className={inputStyle} /></div>
           </div>
+
+          {/* Seleção de Turma e Horário */}
+          {currentNucleo?.turmas && currentNucleo.turmas.length > 0 && (() => {
+            // Contagem local de alunos por turma
+            const allDrafts: any[] = JSON.parse(localStorage.getItem('students_v2') || '[]');
+            const countByTurma = (turmaId: string) =>
+              allDrafts.filter((d: any) => d.turma_selecionada === turmaId && d.nucleo_id === currentNucleo.id).length;
+
+            return (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-4">
+                <h4 className="font-bold text-sm text-indigo-900 flex items-center gap-2 mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Turma e Horário de Aula
+                </h4>
+                <div className="space-y-2">
+                  {currentNucleo.turmas.map(turma => {
+                    const count = countByTurma(turma.id);
+                    const maxAlunos = turma.max_alunos || 999;
+                    const vagasRestantes = Math.max(0, maxAlunos - count);
+                    const isFull = vagasRestantes === 0;
+                    const isSelected = formData.turma_selecionada === turma.id;
+
+                    return (
+                      <button
+                        key={turma.id}
+                        type="button"
+                        disabled={isFull && !isSelected}
+                        onClick={() => {
+                          if (isSelected) {
+                            setFormData(prev => ({ ...prev, turma_selecionada: '', turma_nome: '', turma_horario: '' }));
+                          } else {
+                            setFormData(prev => ({ ...prev, turma_selecionada: turma.id, turma_nome: turma.nome, turma_horario: turma.horario }));
+                          }
+                        }}
+                        className={`w-full text-left p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-100 ring-2 ring-indigo-300'
+                            : isFull
+                              ? 'border-red-200 bg-red-50 opacity-60 cursor-not-allowed'
+                              : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50'
+                        }`}
+                      >
+                        {/* Radio visual */}
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'
+                        }`}>
+                          {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-800">{turma.nome}</p>
+                          <p className="text-xs text-gray-500">
+                            {turma.dias.join(', ')} • {turma.horario}
+                          </p>
+                        </div>
+                        {/* Badge vagas */}
+                        {turma.max_alunos ? (
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap ${
+                            isFull
+                              ? 'bg-red-100 text-red-700'
+                              : vagasRestantes <= 5
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-green-100 text-green-700'
+                          }`}>
+                            {isFull ? 'LOTADA' : `${vagasRestantes} vagas`}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-500">Sem limite</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* DADOS DO ALUNO (DINAMICO) - Unificado conforme solicitação */}
@@ -2114,6 +2213,78 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                         }}
                       />
                     </label>
+                  )}
+                </div>
+
+                {/* Supervisão durante atividades */}
+                <div className="bg-purple-100/50 border border-purple-200 rounded-lg p-3 space-y-3">
+                  <label className="block text-sm font-semibold text-purple-800">Necessita de supervisão durante as atividades?</label>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, pne_necessita_supervisao: false, pne_supervisor_nome: '', pne_supervisor_cpf: '', pne_supervisor_e_responsavel: false }))}
+                      className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-all ${!formData.pne_necessita_supervisao
+                        ? 'bg-gray-200 border-gray-400 text-gray-800'
+                        : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'
+                        }`}
+                    >
+                      Não
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, pne_necessita_supervisao: true }))}
+                      className={`flex-1 py-2 rounded-lg font-bold text-sm border-2 transition-all ${formData.pne_necessita_supervisao
+                        ? 'bg-purple-600 border-purple-700 text-white shadow-md'
+                        : 'bg-white border-purple-200 text-purple-500 hover:border-purple-400'
+                        }`}
+                    >
+                      Sim
+                    </button>
+                  </div>
+                  {formData.pne_necessita_supervisao && (
+                    <div className="space-y-3 mt-2">
+                      {/* Checkbox: é o responsável */}
+                      <label className="flex items-center gap-2 cursor-pointer bg-white border border-purple-200 rounded-lg px-3 py-2.5">
+                        <input
+                          type="checkbox"
+                          checked={formData.pne_supervisor_e_responsavel || false}
+                          onChange={e => {
+                            const isResp = e.target.checked;
+                            setFormData(prev => ({
+                              ...prev,
+                              pne_supervisor_e_responsavel: isResp,
+                              pne_supervisor_nome: isResp ? prev.nome_responsavel : '',
+                              pne_supervisor_cpf: '',
+                            }));
+                          }}
+                          className="h-4 w-4 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm font-medium text-purple-800">O responsável legal é o supervisor</span>
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-purple-700 mb-1">Nome do Supervisor</label>
+                          <input
+                            type="text"
+                            value={formData.pne_supervisor_nome || ''}
+                            onChange={e => setFormData({ ...formData, pne_supervisor_nome: e.target.value })}
+                            readOnly={formData.pne_supervisor_e_responsavel}
+                            className={`${inputStyle} ${formData.pne_supervisor_e_responsavel ? 'bg-gray-100 text-gray-500' : ''}`}
+                            placeholder="Nome completo do supervisor"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-purple-700 mb-1">CPF do Supervisor</label>
+                          <input
+                            type="text"
+                            value={formData.pne_supervisor_cpf || ''}
+                            onChange={e => setFormData({ ...formData, pne_supervisor_cpf: formatCPF(e.target.value) })}
+                            className={inputStyle}
+                            placeholder="000.000.000-00"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

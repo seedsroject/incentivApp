@@ -355,13 +355,19 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
                                         </svg>
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div className="grid grid-cols-3 gap-3 mb-3">
                                     <input value={turma.nome} onChange={e => updateTurma(idx, 'nome', e.target.value)}
                                         placeholder="Nome da Turma"
                                         className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
                                     <input value={turma.horario} onChange={e => updateTurma(idx, 'horario', e.target.value)}
                                         placeholder="Horário (ex: 07:00-08:30)"
                                         className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                                    <div className="relative">
+                                        <input type="number" min={1} value={turma.max_alunos || ''} onChange={e => updateTurma(idx, 'max_alunos', e.target.value ? Number(e.target.value) : undefined)}
+                                            placeholder="Limite"
+                                            className="text-sm bg-white border border-amber-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-300 w-full" />
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-amber-500 font-bold">alunos</span>
+                                    </div>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {DIAS_SEMANA.map(dia => (

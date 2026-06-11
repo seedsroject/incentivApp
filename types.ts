@@ -30,6 +30,7 @@ export interface NucleoTurma {
   nome: string;      // 'Turma A', 'Turma B'
   dias: string[];    // ['Segunda', 'Quarta', 'Sexta']
   horario: string;   // '07:00 - 09:00'
+  max_alunos?: number; // Limite de vagas (ex: 30)
 }
 
 export interface Nucleo {
@@ -146,6 +147,9 @@ export interface StudentDraft {
   nucleo_id?: string; // ID do núcleo onde o aluno está cadastrado (UUID - identificador técnico)
   nucleo_nome?: string; // Nome do núcleo (identificador visual permanente - não muda)
   turma_id?: string;  // ID da turma (ex: 'A', 'B') dentro do núcleo
+  turma_selecionada?: string;  // ID da turma escolhida pelo pai na inscrição
+  turma_nome?: string;         // Nome visual da turma selecionada
+  turma_horario?: string;      // Horário da turma selecionada
 
   timestamp?: string; // Data de criação do registro no sistema
   data_assinatura?: string; // Data que consta na ficha (assinatura)
@@ -157,6 +161,10 @@ export interface StudentDraft {
   pne_descricao?: string; // Qual deficiência/transtorno/condição (até 1000 chars)
   pne_medicacao_suporte?: string; // Medicação contínua ou acompanhamento terapêutico (até 1000 chars)
   laudo_url?: string; // Base64 ou URL do laudo médico
+  pne_necessita_supervisao?: boolean; // Necessita de supervisão durante atividades?
+  pne_supervisor_nome?: string; // Nome do supervisor
+  pne_supervisor_cpf?: string; // CPF do supervisor
+  pne_supervisor_e_responsavel?: boolean; // O supervisor é o próprio responsável?
 
   // Contato de Emergência
   contato_emergencia_nome?: string; // Nome do contato de emergência e parentesco
