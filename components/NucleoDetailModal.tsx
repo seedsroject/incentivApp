@@ -111,7 +111,7 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
 
     const addTurma = () => setGeralData(prev => ({
         ...prev,
-        turmas: [...prev.turmas, { id: String.fromCharCode(65 + prev.turmas.length), nome: `Turma ${String.fromCharCode(65 + prev.turmas.length)}`, dias: [], horario: '' }]
+        turmas: [...prev.turmas, { id: crypto.randomUUID(), nome: `Turma ${String.fromCharCode(65 + prev.turmas.length)}`, dias: [], horario: '' }]
     }));
 
     const updateTurma = (i: number, field: string, val: any) => setGeralData(prev => ({

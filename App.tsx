@@ -281,6 +281,11 @@ const AppContent: React.FC = () => {
         const { data: nucleosData } = await supabase
           .from('nucleos').select('*').eq('project_id', projectId).order('nome');
         if (nucleosData && nucleosData.length > 0) {
+          // Buscar turmas de todos os núcleos
+          const nucleoIds = nucleosData.map((n: any) => n.id);
+          const { data: turmasData } = await supabase
+            .from('nucleo_turmas').select('*').in('nucleo_id', nucleoIds).order('nome');
+
           const mapped: Nucleo[] = nucleosData.map((n: any) => {
             // Extrair UF do nome ou endereço como fallback
             const extractUF = (text: string | null | undefined): string | undefined => {
@@ -290,6 +295,17 @@ const AppContent: React.FC = () => {
               return match ? match[1].toUpperCase() : undefined;
             };
             const estado = n.estado || extractUF(n.nome) || extractUF(n.address) || extractUF(n.city) || undefined;
+
+            // Turmas deste núcleo
+            const nucleoTurmas = (turmasData || [])
+              .filter((t: any) => t.nucleo_id === n.id)
+              .map((t: any) => ({
+                id: t.id,
+                nome: t.nome,
+                dias: t.dias || [],
+                horario: t.horario || '',
+                max_alunos: t.max_alunos,
+              }));
 
             return {
             id: n.id,
@@ -309,6 +325,7 @@ const AppContent: React.FC = () => {
             durabilidade: n.durabilidade,
             dataInicio: n.data_inicio,
             dataTermino: n.data_termino,
+            turmas: nucleoTurmas.length > 0 ? nucleoTurmas : undefined,
             stockStatus: (n.stock_status || 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH',
             stockDetails: generateStockDetails((n.stock_status || 'MEDIUM') as any),
             employees: [],
@@ -2382,7 +2399,66 @@ const AppContent: React.FC = () => {
             onLogout={handleLogout}
             students={projectStudents}
             documents={projectDocuments}
-            onAddNucleo={(newNucleo) => setNucleos([...nucleos, { ...newNucleo, project: activeProject }])}
+            onAddNucleo={async (updatedNucleo) => {
+              // Update local state
+              setNucleos(prev => {
+                const exists = prev.find(n => n.id === updatedNucleo.id);
+                if (exists) {
+                  return prev.map(n => n.id === updatedNucleo.id ? { ...updatedNucleo, project: activeProject } : n);
+                }
+                return [...prev, { ...updatedNucleo, project: activeProject }];
+              });
+
+              // Sync turmas to Supabase
+              try {
+                const nucleoId = updatedNucleo.id;
+                const turmas = updatedNucleo.turmas || [];
+
+                // 1. Upsert nucleo basic fields
+                await supabase.from('nucleos').upsert({
+                  id: nucleoId,
+                  nome: updatedNucleo.nome,
+                  address: updatedNucleo.address,
+                  cnpj: updatedNucleo.cnpj,
+                  city: updatedNucleo.city,
+                  sli_number: updatedNucleo.sliNumber,
+                  dias_aulas: updatedNucleo.dias_aulas,
+                  horario_aulas: updatedNucleo.horario_aulas,
+                  durabilidade: updatedNucleo.durabilidade,
+                  data_inicio: updatedNucleo.dataInicio,
+                  data_termino: updatedNucleo.dataTermino,
+                }, { onConflict: 'id' });
+
+                // 2. Sync turmas: delete removed, upsert existing/new
+                const { data: existingTurmas } = await supabase
+                  .from('nucleo_turmas').select('id').eq('nucleo_id', nucleoId);
+                const existingIds = (existingTurmas || []).map((t: any) => t.id);
+                const currentIds = turmas.map(t => t.id);
+
+                // Delete turmas that were removed
+                const toDelete = existingIds.filter(id => !currentIds.includes(id));
+                if (toDelete.length > 0) {
+                  await supabase.from('nucleo_turmas').delete().in('id', toDelete);
+                }
+
+                // Upsert current turmas
+                if (turmas.length > 0) {
+                  const turmaRows = turmas.map(t => ({
+                    id: t.id,
+                    nucleo_id: nucleoId,
+                    nome: t.nome,
+                    dias: t.dias,
+                    horario: t.horario,
+                    max_alunos: t.max_alunos || null,
+                  }));
+                  await supabase.from('nucleo_turmas').upsert(turmaRows, { onConflict: 'id' });
+                }
+
+                console.log(`[Turmas] Sincronizadas ${turmas.length} turma(s) para núcleo ${nucleoId}`);
+              } catch (err) {
+                console.warn('[Turmas] Erro ao sincronizar turmas:', err);
+              }
+            }}
             onDischargeStudent={handleDischargeStudent}
             projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'}
             projectId={activeProject}

@@ -2218,7 +2218,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
 
                 {/* Supervisão durante atividades */}
                 <div className="bg-purple-100/50 border border-purple-200 rounded-lg p-3 space-y-3">
-                  <label className="block text-sm font-semibold text-purple-800">Necessita de supervisão durante as atividades?</label>
+                  <label className="block text-sm font-semibold text-purple-800">Necessita de Supervisão?</label>
                   <div className="flex gap-3">
                     <button
                       type="button"

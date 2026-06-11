@@ -11,7 +11,7 @@ interface NucleoAddModalProps {
 const DIAS_SEMANA = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 const emptyTurma = (): NucleoTurma => ({
-    id: String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now(),
+    id: crypto.randomUUID(),
     nome: '',
     dias: [],
     horario: '',
@@ -69,7 +69,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
     const handleSubmit = () => {
         if (!validate()) return;
         const newNucleo: Nucleo = {
-            id: `nuc_${Date.now()}`,
+            id: crypto.randomUUID(),
             nome: city ? `${nome} | ${city}` : nome,
             project: projectId,
             sliNumber: sliNumber || undefined,
@@ -84,7 +84,7 @@ export const NucleoAddModal: React.FC<NucleoAddModalProps> = ({ isOpen, onClose,
             dataTermino: dataTermino || undefined,
             turmas: turmas.length > 0 ? turmas.map((t, i) => ({
                 ...t,
-                id: t.id || String.fromCharCode(65 + i),
+                id: t.id || crypto.randomUUID(),
                 nome: t.nome || `Turma ${String.fromCharCode(65 + i)}`,
             })) : undefined,
             stockStatus: 'MEDIUM',
