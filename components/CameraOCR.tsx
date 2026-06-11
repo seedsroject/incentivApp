@@ -31,10 +31,14 @@ type ReportType = 'REPORT_7' | 'REPORT_8';
 
 // --- CONSTANTS ---
 const legalTextParagraphs = [
-  "Declaro que o aluno acima identificado está freqüentando a escola regularmente e está ciente que como critério de permanência no projeto será exigido do aluno, o bom rendimento escolar em regular instituição de ensino da região, através da apresentação freqüente do boletim escolar, declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.",
-  "Os uniformes que serão entregues aos alunos, são de responsabilidade do aluno, e em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso, por isso a boa conservação e cuidado são fundamentais.",
-  "O(a) Responsável legal, infra assinados(s), com fundamento no art. 5o, X e XXVIII da Constituição Federal/ 1988, e no art. 18, da Lei 10.406, de 10/01/2002, AUTORIZA o uso da imagem e/ou nome do aluno inscrito do projeto, para fins de divulgação das atividades e propaganda, podendo, para tanto, reproduzi-la e/ou divulgá-la pela internet, mídia eletrônica, por jornais, revistas, folders; bem como por todo e qualquer material e veículo de comunicação, público e/ou privado, por parceiros e patrocinadores do projeto, com finalidade informativa, de utilidade pública e de marketing, por tempo indeterminado. O(a) Cedente declara ainda que não há nada a ser reclamado, a título de direitos conexos; referentes ao uso de sua imagem e/ou nome. A presente autorização é concedida a título gratuito.",
-  "1. Anexar cópia do último boletim escolar do aluno e declaração de matricula em escola regular;"
+  "Declaro que o aluno acima identificado está frequentando a escola regularmente e está ciente que, como critério de permanência no projeto, será exigido do aluno o bom rendimento escolar em regular instituição de ensino da região, através da apresentação frequente do boletim escolar. Declaro ainda que o atestado médico do aluno está regularmente válido e atestou que está apto a realizar atividades físicas como natação, ciclismo e corrida.",
+  "Os uniformes que serão entregues aos alunos são de responsabilidade do aluno e, em caso de desistência do projeto antes do período de execução do mesmo, deverão ser devolvidos ao coordenador do projeto para que outro aluno possa fazer uso. Por isso, a boa conservação e cuidado são fundamentais.",
+  "Eu, responsável legal pelo(a) aluno(a) inscrito(a) no projeto, com fundamento no art. 5º, incisos X e XXVIII, da Constituição Federal de 1988; nos arts. 11, 18 e 20 da Lei nº 10.406/2002 (Código Civil); nos arts. 15 e 17 da Lei nº 8.069/1990 (Estatuto da Criança e do Adolescente – ECA); e no art. 14 da Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais – LGPD), AUTORIZA o uso da imagem, nome e/ou voz do(a) aluno(a) inscrito(a) no projeto, para fins institucionais, educativos, esportivos, culturais, informativos, de prestação de contas, divulgação e promoção das atividades do projeto.",
+  "A presente autorização compreende a reprodução e divulgação em sites, redes sociais, internet, mídia eletrônica, jornais, revistas, folders, relatórios, apresentações, materiais gráficos e audiovisuais, bem como em quaisquer meios de comunicação públicos ou privados, inclusive por parceiros, apoiadores e patrocinadores vinculados ao projeto.",
+  "O uso da imagem, nome e/ou voz deverá respeitar a dignidade, honra, privacidade, integridade física e emocional e o melhor interesse da criança e do adolescente, sendo vedada qualquer utilização em situação vexatória, discriminatória, ofensiva ou diversa das finalidades institucionais do projeto.",
+  "O(a) responsável legal declara estar ciente de que a presente autorização é concedida a título gratuito, sem geração de qualquer direito a indenização, remuneração ou compensação financeira decorrente do uso autorizado.",
+  "Os dados pessoais e materiais coletados serão tratados em conformidade com a legislação vigente de proteção de dados pessoais, podendo o(a) responsável legal solicitar formalmente, a qualquer momento, a interrupção do uso futuro da imagem, nome e/ou voz do(a) participante, respeitados os materiais já produzidos e divulgados anteriormente no âmbito institucional do projeto.",
+  "Por ser verdade, firmo a presente autorização."
 ];
 
 // --- SUB-COMPONENTE: PAD DE ASSINATURA ---
@@ -256,6 +260,43 @@ const FormTemplate: React.FC<{ data: StudentDraft, reportType: ReportType }> = (
             <span className="font-bold">{data.email_contato}</span>
           </div>
 
+          {/* Necessidade Especial (PNE) */}
+          <div className="border-b border-black pb-1">
+            <span className="font-normal mr-2">Portador de necessidade especial:</span>
+            <span className="font-bold">{data.portador_necessidade_especial ? 'Sim' : 'Não'}</span>
+            {data.portador_necessidade_especial && data.pne_descricao && (
+              <span className="font-normal ml-2">— {data.pne_descricao}</span>
+            )}
+          </div>
+          {data.portador_necessidade_especial && data.pne_medicacao_suporte && (
+            <div className="border-b border-black pb-1">
+              <span className="font-normal mr-2">Medicação / Suporte:</span>
+              <span className="font-normal">{data.pne_medicacao_suporte}</span>
+            </div>
+          )}
+
+          {/* Contato de Emergência */}
+          {(data.contato_emergencia_nome || data.contato_emergencia_email || data.contato_emergencia_endereco) && (
+            <>
+              <div className="border-b border-black pb-1">
+                <span className="font-normal mr-2">Contato de emergência e parentesco:</span>
+                <span className="font-bold">{data.contato_emergencia_nome}</span>
+              </div>
+              {data.contato_emergencia_email && (
+                <div className="border-b border-black pb-1">
+                  <span className="font-normal mr-2">Email (emergência):</span>
+                  <span className="font-bold">{data.contato_emergencia_email}</span>
+                </div>
+              )}
+              {data.contato_emergencia_endereco && (
+                <div className="border-b border-black pb-1">
+                  <span className="font-normal mr-2">Endereço (emergência):</span>
+                  <span className="font-bold">{data.contato_emergencia_endereco}</span>
+                </div>
+              )}
+            </>
+          )}
+
           <div className="mt-6 pt-4 border-t border-gray-300">
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div><span className="font-bold">Nº SLI:</span> {data.n_sli}</div>
@@ -401,7 +442,12 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     nome_responsavel_organizacao: '', // Responsável da Associação/Federação
     data_assinatura: new Date().toLocaleDateString('pt-BR'),
     portador_necessidade_especial: false,
-    laudo_url: ''
+    pne_descricao: '',
+    pne_medicacao_suporte: '',
+    laudo_url: '',
+    contato_emergencia_nome: '',
+    contato_emergencia_email: '',
+    contato_emergencia_endereco: '',
   });
 
   // Mapeamento de projetos (usado para preencher nome_projeto automaticamente)
@@ -1981,11 +2027,11 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
 
           {/* NECESSIDADE ESPECIAL */}
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-3">
-            <label className="block text-sm font-bold text-purple-900">Portador de Necessidade Especial (PNE)?</label>
+            <label className="block text-sm font-bold text-purple-900">O(a) aluno(a) possui alguma deficiência, transtorno, limitação física, intelectual, sensorial, TEA, condição de saúde ou necessidade específica que demandem acompanhamento, adaptação pedagógica ou atenção especial durante as atividades do projeto?</label>
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setFormData(prev => ({ ...prev, portador_necessidade_especial: false, laudo_url: '' }))}
+                onClick={() => setFormData(prev => ({ ...prev, portador_necessidade_especial: false, pne_descricao: '', pne_medicacao_suporte: '', laudo_url: '' }))}
                 className={`flex-1 py-2.5 rounded-lg font-bold text-sm border-2 transition-all ${!formData.portador_necessidade_especial
                   ? 'bg-gray-200 border-gray-400 text-gray-800'
                   : 'bg-white border-gray-200 text-gray-400 hover:border-gray-300'
@@ -2004,45 +2050,72 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                 Sim
               </button>
             </div>
-            {/* Upload do Laudo (aparece apenas se PNE = Sim) */}
+            {/* Campos expandidos quando PNE = Sim */}
             {formData.portador_necessidade_especial && (
-              <div className="mt-3 animate-pulse-once">
-                <label className="block text-sm font-semibold text-purple-800 mb-2">Laudo Médico (opcional)</label>
-                {formData.laudo_url ? (
-                  <div className="flex items-center gap-3 bg-white rounded-lg border border-purple-300 p-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-green-700">✓ Laudo Anexado</p>
-                      <p className="text-xs text-gray-500 truncate">Arquivo carregado com sucesso</p>
+              <div className="mt-3 space-y-3 animate-pulse-once">
+                <div>
+                  <label className="block text-sm font-semibold text-purple-800 mb-1">Qual?</label>
+                  <textarea
+                    value={formData.pne_descricao || ''}
+                    onChange={e => setFormData({ ...formData, pne_descricao: e.target.value.slice(0, 1000) })}
+                    maxLength={1000}
+                    rows={3}
+                    placeholder="Descreva a deficiência, transtorno, limitação ou condição de saúde..."
+                    className={inputStyle + ' resize-none'}
+                  />
+                  <p className="text-xs text-gray-400 text-right mt-1">{(formData.pne_descricao || '').length}/1000</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-purple-800 mb-1">Em caso positivo, faz uso de medicação contínua, acompanhamento terapêutico ou necessita de algum suporte específico durante as atividades?</label>
+                  <textarea
+                    value={formData.pne_medicacao_suporte || ''}
+                    onChange={e => setFormData({ ...formData, pne_medicacao_suporte: e.target.value.slice(0, 1000) })}
+                    maxLength={1000}
+                    rows={3}
+                    placeholder="Descreva medicação, acompanhamento ou suporte necessário..."
+                    className={inputStyle + ' resize-none'}
+                  />
+                  <p className="text-xs text-gray-400 text-right mt-1">{(formData.pne_medicacao_suporte || '').length}/1000</p>
+                </div>
+                {/* Upload do Laudo */}
+                <div>
+                  <label className="block text-sm font-semibold text-purple-800 mb-2">Laudo Médico (opcional)</label>
+                  {formData.laudo_url ? (
+                    <div className="flex items-center gap-3 bg-white rounded-lg border border-purple-300 p-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-green-700">✓ Laudo Anexado</p>
+                        <p className="text-xs text-gray-500 truncate">Arquivo carregado com sucesso</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, laudo_url: '' }))}
+                        className="text-xs text-red-500 hover:text-red-700 font-bold flex-shrink-0"
+                      >
+                        Remover
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, laudo_url: '' }))}
-                      className="text-xs text-red-500 hover:text-red-700 font-bold flex-shrink-0"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center gap-2 p-5 border-2 border-dashed border-purple-300 rounded-lg bg-white hover:bg-purple-50 cursor-pointer transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                    <span className="text-sm font-semibold text-purple-700">Clique para anexar o Laudo</span>
-                    <span className="text-xs text-gray-400">Imagem ou PDF aceitos</span>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*,application/pdf"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          const file = e.target.files[0];
-                          const reader = new FileReader();
-                          reader.onloadend = () => setFormData(prev => ({ ...prev, laudo_url: reader.result as string }));
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </label>
-                )}
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 p-5 border-2 border-dashed border-purple-300 rounded-lg bg-white hover:bg-purple-50 cursor-pointer transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                      <span className="text-sm font-semibold text-purple-700">Clique para anexar o Laudo</span>
+                      <span className="text-xs text-gray-400">Imagem ou PDF aceitos</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*,application/pdf"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const file = e.target.files[0];
+                            const reader = new FileReader();
+                            reader.onloadend = () => setFormData(prev => ({ ...prev, laudo_url: reader.result as string }));
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -2058,6 +2131,26 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><label className="block text-sm font-semibold text-gray-700 mb-1">Telefone de contato</label><input type="text" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: formatPhone(e.target.value) })} className={inputStyle} placeholder="(11) 99999-9999" /></div>
             <div><label className="block text-sm font-semibold text-gray-700 mb-1">Email</label><input type="email" value={formData.email_contato} onChange={e => setFormData({ ...formData, email_contato: e.target.value.toLowerCase() })} className={inputStyle} placeholder="email@exemplo.com" /></div>
+          </div>
+
+          {/* Contato de Emergência */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3 mt-4">
+            <h4 className="font-bold text-sm text-amber-900 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              Contato de Emergência
+            </h4>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Nome do contato de emergência e parentesco</label>
+              <input type="text" value={formData.contato_emergencia_nome || ''} onChange={e => setFormData({ ...formData, contato_emergencia_nome: e.target.value })} className={inputStyle} placeholder="Ex: Maria Silva - Avó" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Email do contato de emergência</label>
+              <input type="email" value={formData.contato_emergencia_email || ''} onChange={e => setFormData({ ...formData, contato_emergencia_email: e.target.value.toLowerCase() })} className={inputStyle} placeholder="email@exemplo.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Endereço Completo (Rua, nº, CEP, cidade/estado)</label>
+              <input type="text" value={formData.contato_emergencia_endereco || ''} onChange={e => setFormData({ ...formData, contato_emergencia_endereco: e.target.value })} className={inputStyle} placeholder="Rua Exemplo, 123, 01234-567, São Paulo/SP" />
+            </div>
           </div>
         </div>
 

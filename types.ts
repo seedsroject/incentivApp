@@ -154,7 +154,14 @@ export interface StudentDraft {
 
   // Campos de Necessidade Especial
   portador_necessidade_especial?: boolean; // Indica se o aluno é PNE
+  pne_descricao?: string; // Qual deficiência/transtorno/condição (até 1000 chars)
+  pne_medicacao_suporte?: string; // Medicação contínua ou acompanhamento terapêutico (até 1000 chars)
   laudo_url?: string; // Base64 ou URL do laudo médico
+
+  // Contato de Emergência
+  contato_emergencia_nome?: string; // Nome do contato de emergência e parentesco
+  contato_emergencia_email?: string; // Email do contato de emergência
+  contato_emergencia_endereco?: string; // Endereço completo do contato de emergência
 
   // Gestão de Inscrição e Materiais
   status?: 'ATIVO' | 'INATIVO';
