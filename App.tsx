@@ -2413,9 +2413,10 @@ const AppContent: React.FC = () => {
               try {
                 const nucleoId = updatedNucleo.id;
                 const turmas = updatedNucleo.turmas || [];
+                console.log(`[Turmas] Iniciando sync de ${turmas.length} turma(s) para núcleo ${nucleoId}`);
 
                 // 1. Upsert nucleo basic fields
-                await supabase.from('nucleos').upsert({
+                const { error: nucleoErr } = await supabase.from('nucleos').upsert({
                   id: nucleoId,
                   nome: updatedNucleo.nome,
                   address: updatedNucleo.address,
@@ -2428,17 +2429,21 @@ const AppContent: React.FC = () => {
                   data_inicio: updatedNucleo.dataInicio,
                   data_termino: updatedNucleo.dataTermino,
                 }, { onConflict: 'id' });
+                if (nucleoErr) console.error('[Turmas] Erro upsert núcleo:', nucleoErr);
 
                 // 2. Sync turmas: delete removed, upsert existing/new
-                const { data: existingTurmas } = await supabase
+                const { data: existingTurmas, error: selErr } = await supabase
                   .from('nucleo_turmas').select('id').eq('nucleo_id', nucleoId);
+                if (selErr) console.error('[Turmas] Erro select turmas:', selErr);
                 const existingIds = (existingTurmas || []).map((t: any) => t.id);
                 const currentIds = turmas.map(t => t.id);
 
                 // Delete turmas that were removed
                 const toDelete = existingIds.filter(id => !currentIds.includes(id));
                 if (toDelete.length > 0) {
-                  await supabase.from('nucleo_turmas').delete().in('id', toDelete);
+                  const { error: delErr } = await supabase.from('nucleo_turmas').delete().in('id', toDelete);
+                  if (delErr) console.error('[Turmas] Erro delete turmas:', delErr);
+                  else console.log(`[Turmas] Deletadas ${toDelete.length} turma(s)`);
                 }
 
                 // Upsert current turmas
@@ -2451,12 +2456,13 @@ const AppContent: React.FC = () => {
                     horario: t.horario,
                     max_alunos: t.max_alunos || null,
                   }));
-                  await supabase.from('nucleo_turmas').upsert(turmaRows, { onConflict: 'id' });
+                  console.log('[Turmas] Upsert rows:', turmaRows);
+                  const { error: upsertErr } = await supabase.from('nucleo_turmas').upsert(turmaRows, { onConflict: 'id' });
+                  if (upsertErr) console.error('[Turmas] Erro upsert turmas:', upsertErr);
+                  else console.log(`[Turmas] ✓ ${turmas.length} turma(s) sincronizadas com sucesso`);
                 }
-
-                console.log(`[Turmas] Sincronizadas ${turmas.length} turma(s) para núcleo ${nucleoId}`);
               } catch (err) {
-                console.warn('[Turmas] Erro ao sincronizar turmas:', err);
+                console.error('[Turmas] Erro geral ao sincronizar turmas:', err);
               }
             }}
             onDischargeStudent={handleDischargeStudent}

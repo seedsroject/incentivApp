@@ -127,7 +127,9 @@ const NucleoGeralForm: React.FC<NucleoGeralFormProps> = ({ nucleo, employees, on
     }));
 
     const handleSaveGeral = () => {
-        if (onSave) onSave({ ...nucleo, ...geralData });
+        const updatedNucleo = { ...nucleo, ...geralData };
+        console.log(`[NucleoGeral] Salvando ${geralData.turmas.length} turma(s) para núcleo ${nucleo.id}:`, geralData.turmas.map(t => ({ id: t.id, nome: t.nome, max: t.max_alunos })));
+        if (onSave) onSave(updatedNucleo);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     };
