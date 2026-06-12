@@ -2409,32 +2409,37 @@ const AppContent: React.FC = () => {
                 return [...prev, { ...updatedNucleo, project: activeProject }];
               });
 
-              // Sync turmas to Supabase
+              // Sync to Supabase
+              const nucleoId = updatedNucleo.id;
+              const turmas = updatedNucleo.turmas || [];
+              console.log(`[Turmas] Iniciando sync de ${turmas.length} turma(s) para núcleo ${nucleoId}`);
+
               try {
-                const nucleoId = updatedNucleo.id;
-                const turmas = updatedNucleo.turmas || [];
-                console.log(`[Turmas] Iniciando sync de ${turmas.length} turma(s) para núcleo ${nucleoId}`);
+                // 1. Update nucleo basic fields (NOT upsert — avoids project_id NOT NULL error)
+                const updatePayload: Record<string, any> = {};
+                if (updatedNucleo.nome) updatePayload.nome = updatedNucleo.nome;
+                if (updatedNucleo.address !== undefined) updatePayload.address = updatedNucleo.address;
+                if (updatedNucleo.cnpj !== undefined) updatePayload.cnpj = updatedNucleo.cnpj;
+                if (updatedNucleo.city !== undefined) updatePayload.city = updatedNucleo.city;
+                if (updatedNucleo.sliNumber !== undefined) updatePayload.sli_number = updatedNucleo.sliNumber;
+                if (updatedNucleo.dias_aulas !== undefined) updatePayload.dias_aulas = updatedNucleo.dias_aulas;
+                if (updatedNucleo.horario_aulas !== undefined) updatePayload.horario_aulas = updatedNucleo.horario_aulas;
+                if (updatedNucleo.durabilidade !== undefined) updatePayload.durabilidade = updatedNucleo.durabilidade;
+                if (updatedNucleo.dataInicio !== undefined) updatePayload.data_inicio = updatedNucleo.dataInicio || null;
+                if (updatedNucleo.dataTermino !== undefined) updatePayload.data_termino = updatedNucleo.dataTermino || null;
 
-                // 1. Upsert nucleo basic fields
-                const { error: nucleoErr } = await supabase.from('nucleos').upsert({
-                  id: nucleoId,
-                  nome: updatedNucleo.nome,
-                  address: updatedNucleo.address,
-                  cnpj: updatedNucleo.cnpj,
-                  city: updatedNucleo.city,
-                  sli_number: updatedNucleo.sliNumber,
-                  dias_aulas: updatedNucleo.dias_aulas,
-                  horario_aulas: updatedNucleo.horario_aulas,
-                  durabilidade: updatedNucleo.durabilidade,
-                  data_inicio: updatedNucleo.dataInicio,
-                  data_termino: updatedNucleo.dataTermino,
-                }, { onConflict: 'id' });
-                if (nucleoErr) console.error('[Turmas] Erro upsert núcleo:', nucleoErr);
+                if (Object.keys(updatePayload).length > 0) {
+                  const { error: nucleoErr } = await supabase
+                    .from('nucleos').update(updatePayload).eq('id', nucleoId);
+                  if (nucleoErr) console.error('[Nucleo] Erro update núcleo:', nucleoErr);
+                  else console.log('[Nucleo] ✓ Dados gerais atualizados');
+                }
 
-                // 2. Sync turmas: delete removed, upsert existing/new
+                // 2. Sync turmas: get existing, delete removed, upsert current
                 const { data: existingTurmas, error: selErr } = await supabase
                   .from('nucleo_turmas').select('id').eq('nucleo_id', nucleoId);
                 if (selErr) console.error('[Turmas] Erro select turmas:', selErr);
+
                 const existingIds = (existingTurmas || []).map((t: any) => t.id);
                 const currentIds = turmas.map(t => t.id);
 
@@ -2451,18 +2456,23 @@ const AppContent: React.FC = () => {
                   const turmaRows = turmas.map(t => ({
                     id: t.id,
                     nucleo_id: nucleoId,
-                    nome: t.nome,
-                    dias: t.dias,
-                    horario: t.horario,
+                    nome: t.nome || 'Turma',
+                    dias: t.dias || [],
+                    horario: t.horario || '',
                     max_alunos: t.max_alunos || null,
                   }));
-                  console.log('[Turmas] Upsert rows:', turmaRows);
+                  console.log('[Turmas] Upsert rows:', JSON.stringify(turmaRows));
                   const { error: upsertErr } = await supabase.from('nucleo_turmas').upsert(turmaRows, { onConflict: 'id' });
-                  if (upsertErr) console.error('[Turmas] Erro upsert turmas:', upsertErr);
-                  else console.log(`[Turmas] ✓ ${turmas.length} turma(s) sincronizadas com sucesso`);
+                  if (upsertErr) {
+                    console.error('[Turmas] Erro upsert turmas:', upsertErr);
+                    alert(`Erro ao salvar turmas: ${upsertErr.message}`);
+                  } else {
+                    console.log(`[Turmas] ✓ ${turmas.length} turma(s) sincronizadas com sucesso`);
+                  }
                 }
               } catch (err) {
-                console.error('[Turmas] Erro geral ao sincronizar turmas:', err);
+                console.error('[Turmas] Erro geral ao sincronizar:', err);
+                alert(`Erro ao sincronizar turmas: ${err}`);
               }
             }}
             onDischargeStudent={handleDischargeStudent}
