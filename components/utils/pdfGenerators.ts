@@ -188,36 +188,42 @@ export const generateDeclaracaoRelatorioUnicoPDF = (student: any, headerImage: s
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Declaração - ${student.nome}</title>
 <style>
-  body { font-family: 'Times New Roman', Times, serif; font-size: 14pt; line-height: 1.8; margin: 60px 80px; color: #000; text-align: justify; }
-  .header-logos { text-align: center; margin-bottom: 60px; }
-  .header-logos img { max-height: 100px; max-width: 100%; object-fit: contain; }
+  body { font-family: 'Times New Roman', Times, serif; font-size: 14pt; line-height: 1.8; margin: 0; padding: 0; color: #000; text-align: justify; }
+  .content { padding: 40px 80px 60px 80px; }
+  .header-logos { width: 100%; margin: 0; padding: 0; display: block; }
+  .header-logos img { width: 100%; height: auto; display: block; }
   h1 { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 50px; margin-top: 0; }
   .signature { text-align: center; margin-top: 100px; line-height: 1.4; }
   .date { text-align: right; margin-top: 60px; margin-bottom: 60px; }
 </style></head><body>
   ${headerImage ? `<div class="header-logos"><img src="${headerImage}" alt="Logos" onerror="this.style.display='none';" /></div>` : ''}
   
-  <h1>DECLARAÇÃO</h1>
-  
-  <p>
-    Declaramos para os devidos fins, que o aluno(a) ${student.nome || ''}, inscrito no CPF/RG n° ${student.rg_cpf || ''}, está regularmente matriculado no projeto ${projetoNome}, no período das ${horario}, nas terças e quintas-feiras.
-  </p>
-  
-  ${student.portador_necessidade_especial ? `
-  <p>
-    Declaramos ainda que o aluno necessita de acompanhamento de ${supervisorNome}, CPF: ${supervisorCpf}, durante todo o periodo das atividades, devido ás sua necessidades de apoio e supervisão.
-  </p>
-  ` : ''}
-  
-  <p style="margin-top: 40px;">
-    Por ser expressão da verdade, assino a presente
-  </p>
-  
-  <div class="date">${dataFormatada}</div>
-  
-  <div class="signature">
-    Inayara Michele Xavier<br>
-    Cref 050083- G/PR
+  <div class="content">
+    <h1>DECLARAÇÃO</h1>
+    
+    <p>
+      Declaramos para os devidos fins, que o aluno(a) ${student.nome || ''}, inscrito no CPF/RG n° ${student.rg_cpf || ''}, está regularmente matriculado no projeto ${projetoNome}, no período das ${horario}, nas terças e quintas-feiras.
+    </p>
+    
+    ${student.portador_necessidade_especial ? `
+    <p>
+      Declaramos ainda que o aluno necessita de acompanhamento de ${supervisorNome}, CPF: ${supervisorCpf}, durante todo o periodo das atividades, devido ás sua necessidades de apoio e supervisão.
+    </p>
+    ` : ''}
+    
+    <p>
+      Por ser expressão da verdade, assino a presente
+    </p>
+    
+    <p class="date">
+      ${dataFormatada}
+    </p>
+    
+    <div class="signature">
+      ____________________________________________<br/>
+      Inayara Michele Xavier<br/>
+      Cref 050083- G/PR
+    </div>
   </div>
 
   <script>window.onload = () => { setTimeout(() => { window.print(); }, 500); }</script>
