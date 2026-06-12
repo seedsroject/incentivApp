@@ -182,8 +182,9 @@ export const generateDeclaracaoRelatorioUnicoPDF = (student: any, headerImage: s
                     : student.projectId === 'FUTEBOL' ? 'Meninas do Futebol' 
                     : 'Formando Campeões'; // Triathlon ou padrão
 
-  const supervisorNome = student.pne_supervisor_nome || student.nome_responsavel || '___________';
-  const supervisorCpf = student.pne_supervisor_cpf || '___________';
+  const supervisorNome = student.pne_supervisor_nome || student.nome_responsavel || '___________________________';
+  const supervisorCpf = student.pne_supervisor_cpf || '_________________';
+  const horario = student.turma_horario || student.horario || '___ ás ___';
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Declaração - ${student.nome}</title>
 <style>
@@ -199,12 +200,12 @@ export const generateDeclaracaoRelatorioUnicoPDF = (student: any, headerImage: s
   <h1>DECLARAÇÃO</h1>
   
   <p>
-    Declaramos para os devidos fins, que o aluno(a) ${student.nome || ''}, inscrito no CPF/RG n° ${student.rg_cpf || ''}, está regularmente matriculado no projeto ${projetoNome}, no período das ${student.turma_horario || '___ ás ___'}, nas terças e quintas-feiras.
+    Declaramos para os devidos fins, que o aluno(a) ${student.nome || ''}, inscrito no CPF/RG n° ${student.rg_cpf || ''}, está regularmente matriculado no projeto ${projetoNome}, no período das ${horario}, nas terças e quintas-feiras.
   </p>
   
-  ${student.pne_necessita_supervisao ? `
+  ${student.portador_necessidade_especial ? `
   <p>
-    Declaramos ainda que o aluno necessita de acompanhamento de sua mãe ${supervisorNome} CPF: ${supervisorCpf}, durante todo o periodo das atividades, devido ás sua necessidades de apoio e supervisão.
+    Declaramos ainda que o aluno necessita de acompanhamento de ${supervisorNome}, CPF: ${supervisorCpf}, durante todo o periodo das atividades, devido ás sua necessidades de apoio e supervisão.
   </p>
   ` : ''}
   
