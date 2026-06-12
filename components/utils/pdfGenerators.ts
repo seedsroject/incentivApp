@@ -172,3 +172,59 @@ export const generateQuantitativoPDF = (data: any, headerImage: string = '/heade
   if (win) { win.document.write(html); win.document.close(); }
   return htmlClean;
 };
+
+export const generateDeclaracaoRelatorioUnicoPDF = (student: any, headerImage: string = '/header_full.png', returnHtml: boolean = false): string => {
+  const dataHoje = new Date();
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const dataFormatada = `Curitiba, ${dataHoje.getDate().toString().padStart(2, '0')} de ${meses[dataHoje.getMonth()]} de ${dataHoje.getFullYear()}.`;
+
+  const projetoNome = student.projectId === 'DANIEL_DIAS' ? 'Nadando com Daniel Dias' 
+                    : student.projectId === 'FUTEBOL' ? 'Meninas do Futebol' 
+                    : 'Formando Campeões'; // Triathlon ou padrão
+
+  const supervisorNome = student.pne_supervisor_nome || student.nome_responsavel || '___________';
+  const supervisorCpf = student.pne_supervisor_cpf || '___________';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Declaração - ${student.nome}</title>
+<style>
+  body { font-family: 'Times New Roman', Times, serif; font-size: 14pt; line-height: 1.8; margin: 60px 80px; color: #000; text-align: justify; }
+  .header-logos { text-align: center; margin-bottom: 60px; }
+  .header-logos img { max-height: 100px; max-width: 100%; object-fit: contain; }
+  h1 { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 50px; margin-top: 0; }
+  .signature { text-align: center; margin-top: 100px; line-height: 1.4; }
+  .date { text-align: right; margin-top: 60px; margin-bottom: 60px; }
+</style></head><body>
+  ${headerImage ? `<div class="header-logos"><img src="${headerImage}" alt="Logos" onerror="this.style.display='none';" /></div>` : ''}
+  
+  <h1>DECLARAÇÃO</h1>
+  
+  <p>
+    Declaramos para os devidos fins, que o aluno(a) ${student.nome || ''}, inscrito no CPF/RG n° ${student.rg_cpf || ''}, está regularmente matriculado no projeto ${projetoNome}, no período das ${student.turma_horario || '___ ás ___'}, nas terças e quintas-feiras.
+  </p>
+  
+  ${student.pne_necessita_supervisao ? `
+  <p>
+    Declaramos ainda que o aluno necessita de acompanhamento de sua mãe ${supervisorNome} CPF: ${supervisorCpf}, durante todo o periodo das atividades, devido ás sua necessidades de apoio e supervisão.
+  </p>
+  ` : ''}
+  
+  <p style="margin-top: 40px;">
+    Por ser expressão da verdade, assino a presente
+  </p>
+  
+  <div class="date">${dataFormatada}</div>
+  
+  <div class="signature">
+    Inayara Michele Xavier<br>
+    Cref 050083- G/PR
+  </div>
+
+  <script>window.onload = () => { setTimeout(() => { window.print(); }, 500); }</script>
+</body></html>`;
+
+  const htmlClean = html.replace(/<script>.*?<\/script>/s, '');
+  if (returnHtml) return htmlClean;
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+  return htmlClean;
+};
