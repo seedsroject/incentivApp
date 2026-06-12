@@ -2269,7 +2269,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                               ...prev,
                               pne_supervisor_e_responsavel: isResp,
                               pne_supervisor_nome: isResp ? prev.nome_responsavel : '',
-                              pne_supervisor_cpf: '',
+                              pne_supervisor_cpf: isResp ? prev.rg_cpf : '',
                             }));
                           }}
                           className="h-4 w-4 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
@@ -2294,7 +2294,8 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
                             type="text"
                             value={formData.pne_supervisor_cpf || ''}
                             onChange={e => setFormData({ ...formData, pne_supervisor_cpf: formatCPF(e.target.value) })}
-                            className={inputStyle}
+                            readOnly={formData.pne_supervisor_e_responsavel}
+                            className={`${inputStyle} ${formData.pne_supervisor_e_responsavel ? 'bg-gray-100 text-gray-500' : ''}`}
                             placeholder="000.000.000-00"
                           />
                         </div>
