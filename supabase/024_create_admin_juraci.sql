@@ -1,25 +1,24 @@
 -- ============================================================
--- Script para configurar o usuário admin_juraci como ADMIN
+-- Script para configurar o usuário admin.juraci como ADMIN
 -- em TODOS os projetos existentes.
 --
 -- PRÉ-REQUISITO: O usuário já deve existir no Supabase Auth.
---   Se ainda não foi criado, use o script Node abaixo ou
---   crie manualmente no painel do Supabase (Authentication > Users > Add user).
+--   Crie manualmente no painel: Authentication > Users > Add user
 --
 -- E-mail: admin.juraci@formandocampeoes.org.br
 -- Senha:  535404TRI
 -- ============================================================
 
 -- 1. Inserir no profiles (se não existir)
-INSERT INTO profiles (id, email, nome, role)
+--    A tabela profiles NÃO tem coluna 'role' — role fica em user_project_access
+INSERT INTO profiles (id, email, nome)
 SELECT 
   id, 
   email, 
-  'Juraci (Admin Master)',
-  'ADMIN'
+  'Juraci (Admin Master)'
 FROM auth.users
 WHERE email = 'admin.juraci@formandocampeoes.org.br'
-ON CONFLICT (id) DO UPDATE SET role = 'ADMIN', nome = 'Juraci (Admin Master)';
+ON CONFLICT (id) DO UPDATE SET nome = 'Juraci (Admin Master)';
 
 -- 2. Dar acesso ADMIN a TODOS os projetos
 INSERT INTO user_project_access (user_id, project_id, role, is_default)
