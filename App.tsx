@@ -1212,6 +1212,22 @@ const AppContent: React.FC = () => {
           nucleoId = loginNucleoId;
         }
       } else {
+        // Super Admin global: acesso irrestrito sem precisar de registros no BD
+        const emailLower = (authData.user.email || '').toLowerCase();
+        if (SUPER_ADMIN_EMAILS.includes(emailLower)) {
+          role = 'ADMIN';
+          nucleoId = loginNucleoId || null;
+          // Criar acesso automático no BD para este projeto
+          try {
+            await supabase.from('user_project_access').insert({
+              user_id: authData.user.id,
+              project_id: projectData.id,
+              nucleo_id: null,
+              role: 'ADMIN',
+              is_default: true,
+            });
+          } catch (e) { console.warn('[Login] Super admin auto-access:', e); }
+        } else {
         // Verifica se tem acesso a QUALQUER projeto (pode ser super admin global)
         try {
           const { data: anyAccess } = await supabase
@@ -1265,6 +1281,7 @@ const AppContent: React.FC = () => {
             setLoading(false);
             return;
           }
+        }
         }
       }
 
