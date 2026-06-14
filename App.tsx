@@ -819,7 +819,8 @@ const AppContent: React.FC = () => {
             const isPublicRoute = (searchParams.get('token') || hashParams.get('token')) && (searchParams.get('service') || hashParams.get('service'));
             
             if (!isPublicRoute) {
-              if (defaultAccess.status === 'PENDENTE') {
+              const sessionEmail = (session.user.email || '').toLowerCase();
+              if (defaultAccess.status === 'PENDENTE' && !SUPER_ADMIN_EMAILS.includes(sessionEmail)) {
                 setView(AppView.PENDING_APPROVAL);
               } else {
                 setView(defaultAccess.role === 'ADMIN' ? AppView.ADMIN_DASHBOARD : AppView.DASHBOARD);
@@ -1326,7 +1327,8 @@ const AppContent: React.FC = () => {
       });
 
       // 5. Redirecionar
-      if (accessData?.status === 'PENDENTE') {
+      const emailLowerRedirect = (authData.user.email || '').toLowerCase();
+      if (accessData?.status === 'PENDENTE' && !SUPER_ADMIN_EMAILS.includes(emailLowerRedirect)) {
         setView(AppView.PENDING_APPROVAL);
       } else if (role === 'ADMIN') {
         setView(AppView.ADMIN_DASHBOARD);
