@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { AppView, ProjectId, InventoryItem } from '../types';
+import { AppView, ProjectId, InventoryItem, Nucleo } from '../types';
 import { ExternalLinkModal } from './ExternalLinkModal';
 import { GuidedTour, DASHBOARD_TOUR_STEPS } from './GuidedTour';
 
@@ -12,9 +12,14 @@ interface DashboardProps {
   nucleoId?: string;
   professorName?: string;
   inventory?: InventoryItem[];
+  isSuperAdmin?: boolean;
+  allNucleos?: Nucleo[];
+  selectedNucleoId?: string | null;
+  onSelectNucleo?: (nucleoId: string | null) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId, professorName, inventory = [] }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, onBack, projectId = 'FORMANDO_CAMPEOES', nucleoId, professorName, inventory = [], isSuperAdmin = false, allNucleos = [], selectedNucleoId, onSelectNucleo }) => {
+  const [nucleoSearchTerm, setNucleoSearchTerm] = useState('');
   const iconColor = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'text-green-600';
     if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
@@ -203,6 +208,104 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           </div>
         </div>
 
+        {/* Super Admin: Seletor de Núcleo */}
+        {isSuperAdmin && allNucleos.length > 0 && (
+          <div className="mb-6">
+            <div className={`bg-white rounded-2xl shadow-sm border ${selectedNucleoId ? 'border-blue-200' : 'border-amber-200'} overflow-hidden`}>
+              {/* Header */}
+              <div className={`px-4 py-3 flex items-center gap-3 ${selectedNucleoId ? 'bg-gradient-to-r from-blue-50 to-teal-50' : 'bg-gradient-to-r from-amber-50 to-yellow-50'}`}>
+                <div className={`p-2 rounded-lg ${selectedNucleoId ? 'bg-blue-100' : 'bg-amber-100'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${selectedNucleoId ? 'text-blue-600' : 'text-amber-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-gray-700">Núcleo de Atuação</h3>
+                  <p className="text-[10px] text-gray-400">
+                    {selectedNucleoId
+                      ? `Visualizando: ${allNucleos.find(n => n.id === selectedNucleoId)?.nome || 'Núcleo'}`
+                      : 'Selecione um núcleo para filtrar os dados'
+                    }
+                  </p>
+                </div>
+                {selectedNucleoId && (
+                  <button
+                    onClick={() => { onSelectNucleo?.(null); setNucleoSearchTerm(''); }}
+                    className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-2.5 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Limpar
+                  </button>
+                )}
+              </div>
+
+              {/* Search */}
+              <div className="px-4 py-2 border-t border-gray-100">
+                <div className="relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={nucleoSearchTerm}
+                    onChange={(e) => setNucleoSearchTerm(e.target.value)}
+                    placeholder="Buscar núcleo por nome ou cidade..."
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Nucleo List */}
+              <div className="max-h-[200px] overflow-y-auto px-2 py-2 space-y-1">
+                {allNucleos
+                  .filter(n => {
+                    if (!nucleoSearchTerm) return true;
+                    const term = nucleoSearchTerm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const nome = (n.nome || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const city = (n.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const estado = (n.estado || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    return nome.includes(term) || city.includes(term) || estado.includes(term);
+                  })
+                  .map(n => (
+                    <button
+                      key={n.id}
+                      onClick={() => { onSelectNucleo?.(n.id); setNucleoSearchTerm(''); }}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 ${
+                        selectedNucleoId === n.id
+                          ? 'bg-blue-100 text-blue-800 font-bold ring-1 ring-blue-300'
+                          : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                      }`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                        selectedNucleoId === n.id ? 'bg-blue-500' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate text-xs font-semibold">{n.nome}</span>
+                        {n.city && <span className="block text-[10px] text-gray-400 truncate">{n.city}{n.estado ? ` - ${n.estado}` : ''}</span>}
+                      </div>
+                      {selectedNucleoId === n.id && (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  ))
+                }
+                {allNucleos.filter(n => {
+                  if (!nucleoSearchTerm) return true;
+                  const term = nucleoSearchTerm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                  const nome = (n.nome || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                  return nome.includes(term);
+                }).length === 0 && (
+                  <p className="text-center text-xs text-gray-400 py-4">Nenhum núcleo encontrado</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-24">
           {menuItems.map((item, index) => (
             <div key={index} className="relative group" data-tour={`service-${item.id}`}>

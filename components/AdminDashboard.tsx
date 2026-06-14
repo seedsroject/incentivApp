@@ -8,6 +8,12 @@ import { NucleoDetailModal } from './NucleoDetailModal';
 import { NucleoAddModal } from './NucleoAddModal';
 import { supabase } from '../services/supabaseClient';
 
+// E-mails de Super Admins (deve ser o mesmo array do App.tsx)
+const SUPER_ADMIN_EMAILS = [
+  'admin.geral@formandocampeoes.org.br',
+  'admin.juraci@formandocampeoes.org.br',
+];
+
 interface AdminDashboardProps {
     nucleos: Nucleo[];
     onNavigateToServices: () => void;
@@ -141,15 +147,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 }
 
                 if (data) {
-                    const isSuperAdmin = currentUser.email === 'admin.geral@formandocampeoes.org.br';
+                    const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(currentUser.email);
                     const adminEstado = currentUser.estado_responsavel;
 
                     let filteredData = data.filter((req: any) => {
                         // 1. Não mostrar o próprio usuário logado
                         if (req.user_id === currentUser.uid || req.profiles?.email === currentUser.email) return false;
                         
-                        // 2. Não mostrar o Super Admin para os outros admins
-                        if (!isSuperAdmin && req.profiles?.email === 'admin.geral@formandocampeoes.org.br') return false;
+                        // 2. Não mostrar outros Super Admins para admins regulares
+                        if (!isSuperAdmin && SUPER_ADMIN_EMAILS.includes(req.profiles?.email)) return false;
 
                         // 3. Super Admin vê tudo
                         if (isSuperAdmin) return true;

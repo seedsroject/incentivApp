@@ -907,8 +907,26 @@ const AppContent: React.FC = () => {
   }, [students, activeProject, user, filteredNucleos]);
   const projectPreCadastros = useMemo(() => preCadastros.filter(p => !p.projectId || p.projectId === activeProject), [preCadastros, activeProject]);
 
-  // Alunos filtrados pelo núcleo do usuário logado
+  // --- Super Admin Nucleo Selector ---
+  const [superAdminNucleoId, setSuperAdminNucleoId] = useState<string | null>(null);
+  const isSuperAdminGlobal = useMemo(() => {
+    return user?.role === 'ADMIN' && SUPER_ADMIN_EMAILS.includes(user?.email) && !user?.estado_responsavel;
+  }, [user]);
+
+  // Alunos filtrados pelo núcleo do usuário logado (ou pelo seletor do super admin)
   const nucleoStudents = useMemo(() => {
+    // Super admin com núcleo selecionado via dropdown
+    if (isSuperAdminGlobal && superAdminNucleoId) {
+      const selectedNuc = filteredNucleos.find(n => n.id === superAdminNucleoId);
+      const selectedNucNome = selectedNuc?.nome;
+      return projectStudents.filter(s => {
+        if (s.nucleo_id === superAdminNucleoId) return true;
+        if (selectedNucNome && s.nucleo_nome === selectedNucNome) return true;
+        return false;
+      });
+    }
+    // Super admin sem núcleo selecionado: mostra todos
+    if (isSuperAdminGlobal && !superAdminNucleoId) return projectStudents;
     if (!user?.nucleo_id && !user?.nucleo_nome) return projectStudents;
     const userNuc = filteredNucleos.find(n => n.id === user?.nucleo_id);
     const userNucNome = user?.nucleo_nome || userNuc?.nome;
@@ -922,7 +940,7 @@ const AppContent: React.FC = () => {
       }
       return false;
     });
-  }, [projectStudents, user?.nucleo_id, user?.nucleo_nome, filteredNucleos]);
+  }, [projectStudents, user?.nucleo_id, user?.nucleo_nome, filteredNucleos, isSuperAdminGlobal, superAdminNucleoId]);
 
   // Navigation Params
   const [navParams, setNavParams] = useState<any>({});
@@ -2574,9 +2592,13 @@ const AppContent: React.FC = () => {
             itemsCount={students.length + collectedEvidence.length + collectedDocuments.length}
             onBack={user?.role === 'ADMIN' ? () => setView(AppView.ADMIN_DASHBOARD) : undefined}
             projectId={activeProject}
-            nucleoId={user?.nucleo_id || undefined}
+            nucleoId={isSuperAdminGlobal ? (superAdminNucleoId || undefined) : (user?.nucleo_id || undefined)}
             professorName={user?.nome || undefined}
             inventory={inventory}
+            isSuperAdmin={isSuperAdminGlobal}
+            allNucleos={filteredNucleos}
+            selectedNucleoId={superAdminNucleoId}
+            onSelectNucleo={(id) => setSuperAdminNucleoId(id)}
           />
         )}
 
