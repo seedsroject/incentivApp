@@ -6,7 +6,7 @@
 --   Se ainda não foi criado, use o script Node abaixo ou
 --   crie manualmente no painel do Supabase (Authentication > Users > Add user).
 --
--- E-mail: admin_juraci@admin.com
+-- E-mail: admin.juraci@formandocampeoes.org.br
 -- Senha:  535404TRI
 -- ============================================================
 
@@ -18,7 +18,7 @@ SELECT
   'Juraci (Admin Master)',
   'ADMIN'
 FROM auth.users
-WHERE email = 'admin_juraci@admin.com'
+WHERE email = 'admin.juraci@formandocampeoes.org.br'
 ON CONFLICT (id) DO UPDATE SET role = 'ADMIN', nome = 'Juraci (Admin Master)';
 
 -- 2. Dar acesso ADMIN a TODOS os projetos
@@ -30,5 +30,5 @@ SELECT
   (p.slug = 'FORMANDO_CAMPEOES') -- Default = primeiro projeto
 FROM auth.users u
 CROSS JOIN projects p
-WHERE u.email = 'admin_juraci@admin.com'
+WHERE u.email = 'admin.juraci@formandocampeoes.org.br'
 ON CONFLICT (user_id, project_id) DO UPDATE SET role = 'ADMIN';

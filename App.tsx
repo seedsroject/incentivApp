@@ -40,7 +40,7 @@ const isValidUUID = (uuid?: string | null) => {
 // E-mails de Super Admins que possuem acesso irrestrito a todos os núcleos/projetos
 const SUPER_ADMIN_EMAILS = [
   'admin.geral@formandocampeoes.org.br',
-  'admin_juraci@admin.com',
+  'admin.juraci@formandocampeoes.org.br',
 ];
 
 /**
