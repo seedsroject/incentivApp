@@ -37,6 +37,12 @@ const isValidUUID = (uuid?: string | null) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
 };
 
+// E-mails de Super Admins que possuem acesso irrestrito a todos os núcleos/projetos
+const SUPER_ADMIN_EMAILS = [
+  'admin.geral@formandocampeoes.org.br',
+  'admin_juraci@admin.com',
+];
+
 /**
  * Resolve um nucleoId que pode ser um UUID real ou um slug antigo (ex: "nuc_ilheus", "dd_cajuru").
  * Retorna o objeto Nucleo correspondente buscando primeiro por UUID, depois por padrão no email.
@@ -880,7 +886,7 @@ const AppContent: React.FC = () => {
   // --- PROJECT-SCOPED DATA ---
   const filteredNucleos = useMemo(() => {
     let list = nucleos.filter(n => n.project === activeProject);
-    if (user && user.role === 'ADMIN' && user.estado_responsavel && user.email !== 'admin.geral@formandocampeoes.org.br') {
+    if (user && user.role === 'ADMIN' && user.estado_responsavel && !SUPER_ADMIN_EMAILS.includes(user.email)) {
       list = list.filter(n => n.estado === user.estado_responsavel);
     }
     return list;
@@ -888,7 +894,7 @@ const AppContent: React.FC = () => {
 
   const projectStudents = useMemo(() => {
     let list = students.filter(s => !s.projectId || s.projectId === activeProject);
-    if (user && user.role === 'ADMIN' && user.estado_responsavel && user.email !== 'admin.geral@formandocampeoes.org.br') {
+    if (user && user.role === 'ADMIN' && user.estado_responsavel && !SUPER_ADMIN_EMAILS.includes(user.email)) {
       const allowedNucleos = new Set(filteredNucleos.map(n => n.id));
       const allowedNomes = new Set(filteredNucleos.map(n => n.nome));
       list = list.filter(s => 
@@ -974,7 +980,7 @@ const AppContent: React.FC = () => {
     }
 
     // Super admin vê todos
-    if (loginEmail.trim().toLowerCase() === 'admin.geral@formandocampeoes.org.br') {
+    if (SUPER_ADMIN_EMAILS.includes(loginEmail.trim().toLowerCase())) {
       setLoginEstado(null);
       return;
     }
