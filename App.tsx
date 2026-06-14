@@ -2462,7 +2462,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && view !== AppView.ASSIDUIDADE_REPORT && view !== AppView.PESQUISA_REPORT && (view as string) !== 'REPORT_BUILDER' && <Header user={user} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && view !== AppView.ASSIDUIDADE_REPORT && view !== AppView.PESQUISA_REPORT && (view as string) !== 'REPORT_BUILDER' && <Header user={{ ...user, nucleo_nome: isSuperAdminGlobal ? (filteredNucleos.find(n => n.id === superAdminNucleoId)?.nome || user.nucleo_nome) : user.nucleo_nome }} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'} />}
 
       <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT || view === AppView.INSCRICAO_REPORT || view === AppView.ASSIDUIDADE_REPORT || view === AppView.PESQUISA_REPORT || (view as string) === 'REPORT_BUILDER') ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (
