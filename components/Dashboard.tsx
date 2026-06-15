@@ -195,17 +195,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
             )}
             <button
               onClick={() => setShowTour(true)}
-              className="bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 p-2 rounded-full transition-colors shadow-sm border border-blue-200"
-              title="Tutorial Interativo"
+              className="bg-blue-100 hover:bg-blue-200 text-blue-700 hover:text-blue-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm border border-blue-200 flex items-center gap-1"
+              title="Tutorial passo a passo indicando a pessoa que vai fazer o uso"
               data-tour="info-button"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
+              Tutorial passo a passo
             </button>
-            <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-[10px] font-bold border border-yellow-200 animate-pulse hidden md:block">
-              Links Externos Disponíveis
-            </div>
           </div>
         </div>
 
