@@ -314,28 +314,28 @@ const AppContent: React.FC = () => {
               }));
 
             return {
-            id: n.id,
-            nome: n.nome,
-            project: projectSlug,
-            coordinates: n.coordinates ? [parseFloat(n.coordinates.split(',')[1]?.replace(')','') || '0'), parseFloat(n.coordinates.split('(')[1]?.split(',')[0] || '0')] as [number, number] : undefined,
-            address: n.address || '',
-            phone: n.phone || '(00) 0000-0000',
-            email: n.email || `contato@${projectSlug.toLowerCase()}.org.br`,
-            cnpj: n.cnpj,
-            razaoSocial: n.razao_social,
-            city: n.city,
-            estado,
-            sliNumber: n.sli_number,
-            dias_aulas: n.dias_aulas,
-            horario_aulas: n.horario_aulas,
-            durabilidade: n.durabilidade,
-            dataInicio: n.data_inicio,
-            dataTermino: n.data_termino,
-            turmas: nucleoTurmas.length > 0 ? nucleoTurmas : undefined,
-            stockStatus: (n.stock_status || 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH',
-            stockDetails: generateStockDetails((n.stock_status || 'MEDIUM') as any),
-            employees: [],
-          };
+              id: n.id,
+              nome: n.nome,
+              project: projectSlug,
+              coordinates: n.coordinates ? [parseFloat(n.coordinates.split(',')[1]?.replace(')', '') || '0'), parseFloat(n.coordinates.split('(')[1]?.split(',')[0] || '0')] as [number, number] : undefined,
+              address: n.address || '',
+              phone: n.phone || '(00) 0000-0000',
+              email: n.email || `contato@${projectSlug.toLowerCase()}.org.br`,
+              cnpj: n.cnpj,
+              razaoSocial: n.razao_social,
+              city: n.city,
+              estado,
+              sliNumber: n.sli_number,
+              dias_aulas: n.dias_aulas,
+              horario_aulas: n.horario_aulas,
+              durabilidade: n.durabilidade,
+              dataInicio: n.data_inicio,
+              dataTermino: n.data_termino,
+              turmas: nucleoTurmas.length > 0 ? nucleoTurmas : undefined,
+              stockStatus: (n.stock_status || 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH',
+              stockDetails: generateStockDetails((n.stock_status || 'MEDIUM') as any),
+              employees: [],
+            };
           });
           // Debug: mostrar núcleos carregados e seus estados
           console.log('[Nucleos] Carregados (' + mapped.length + '):', mapped.map(n => ({
@@ -623,7 +623,7 @@ const AppContent: React.FC = () => {
       }, (payload) => {
         console.log('[Realtime] Novo documento recebido:', payload.new?.type);
         const doc = payload.new as any;
-        
+
         // Adicionar ao estado de documentos
         const newDoc: DocumentLog = {
           id: doc.id,
@@ -741,7 +741,7 @@ const AppContent: React.FC = () => {
             const brandNew = newDocs.filter(d => !existingIds.has(d.id));
             if (brandNew.length === 0) return prev;
             console.log(`[Polling] ${brandNew.length} novos documentos detectados`);
-            
+
             // Atualizar badges dos alunos
             for (const doc of brandNew) {
               if (doc.student_id && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM'].includes(doc.type)) {
@@ -784,12 +784,12 @@ const AppContent: React.FC = () => {
             .from('user_project_access')
             .select('*, projects(slug, nome)')
             .eq('user_id', session.user.id);
-          
+
           if (accessData && accessData.length > 0) {
             const defaultAccess = accessData.find((a: any) => a.is_default) || accessData[0];
             const projectSlug = (defaultAccess as any).projects?.slug as ProjectId;
             if (projectSlug) setActiveProject(projectSlug);
-            
+
             const selectedNucleo = nucleos.find(n => n.id === defaultAccess.nucleo_id);
             setUser({
               uid: session.user.id,
@@ -811,13 +811,13 @@ const AppContent: React.FC = () => {
             } else {
               await loadNucleosFromSupabase(projectSlug);
             }
-            
+
             // Se estiver numa rota pública de formulário, não redireciona para o dashboard
             const searchParams = new URLSearchParams(window.location.search);
             const hashContent = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : window.location.hash.substring(1);
             const hashParams = new URLSearchParams(hashContent);
             const isPublicRoute = (searchParams.get('token') || hashParams.get('token')) && (searchParams.get('service') || hashParams.get('service'));
-            
+
             if (!isPublicRoute) {
               const sessionEmail = (session.user.email || '').toLowerCase();
               if (defaultAccess.status === 'PENDENTE' && !SUPER_ADMIN_EMAILS.includes(sessionEmail)) {
@@ -833,14 +833,14 @@ const AppContent: React.FC = () => {
               .select('nome, estado_responsavel')
               .eq('id', session.user.id)
               .maybeSingle();
-            
+
             // Buscar nucleo salvo ou usar o primeiro do projeto
             const savedNucleoId = localStorage.getItem('lastNucleoId');
             const projectSlug = activeProject;
-            
+
             const { data: projectData } = await supabase
               .from('projects').select('id').eq('slug', projectSlug).single();
-            
+
             if (projectData) {
               setSupabaseProjectId(projectData.id);
               await Promise.all([
@@ -898,8 +898,8 @@ const AppContent: React.FC = () => {
     if (user && user.role === 'ADMIN' && user.estado_responsavel && !SUPER_ADMIN_EMAILS.includes(user.email)) {
       const allowedNucleos = new Set(filteredNucleos.map(n => n.id));
       const allowedNomes = new Set(filteredNucleos.map(n => n.nome));
-      list = list.filter(s => 
-        (s.nucleo_id && allowedNucleos.has(s.nucleo_id)) || 
+      list = list.filter(s =>
+        (s.nucleo_id && allowedNucleos.has(s.nucleo_id)) ||
         (s.nucleo_nome && allowedNomes.has(s.nucleo_nome)) ||
         (s.nucleo_id && s.nucleo_id.startsWith('nuc_') && s.nucleo_nome && allowedNomes.has(s.nucleo_nome))
       );
@@ -1013,7 +1013,7 @@ const AppContent: React.FC = () => {
           .select('id, estado_responsavel')
           .eq('email', email)
           .maybeSingle();
-        
+
         if (profileData?.estado_responsavel) {
           console.log('[Login] Estado encontrado em profiles:', profileData.estado_responsavel);
           setLoginEstado(profileData.estado_responsavel);
@@ -1030,7 +1030,7 @@ const AppContent: React.FC = () => {
             .not('estado_responsavel', 'is', null)
             .limit(1)
             .maybeSingle();
-          
+
           if (accessData?.estado_responsavel) {
             console.log('[Login] Estado encontrado em user_project_access:', accessData.estado_responsavel);
             setLoginEstado(accessData.estado_responsavel);
@@ -1247,60 +1247,60 @@ const AppContent: React.FC = () => {
             });
           } catch (e) { console.warn('[Login] Super admin auto-access:', e); }
         } else {
-        // Verifica se tem acesso a QUALQUER projeto (pode ser super admin global)
-        try {
-          const { data: anyAccess } = await supabase
-            .from('user_project_access')
-            .select('*')
-            .eq('user_id', authData.user.id);
-          
-          if (anyAccess && anyAccess.length > 0) {
-            // Tem acesso a outro projeto — criar acesso cross-project para admins
-            const isAdmin = anyAccess.some((a: any) => a.role === 'ADMIN' || a.role === 'SUPER_ADMIN');
-            if (isAdmin) {
-              // Admin pode acessar qualquer projeto: cria acesso automático
-              role = 'ADMIN';
-              nucleoId = loginNucleoId || null;
-              try {
-                await supabase.from('user_project_access').insert({
-                  user_id: authData.user.id,
-                  project_id: projectData.id,
-                  nucleo_id: nucleoId,
-                  role: 'ADMIN',
-                  is_default: false,
-                });
-              } catch (insertErr) {
-                console.warn('[Login] Erro ao criar acesso cross-project:', insertErr);
+          // Verifica se tem acesso a QUALQUER projeto (pode ser super admin global)
+          try {
+            const { data: anyAccess } = await supabase
+              .from('user_project_access')
+              .select('*')
+              .eq('user_id', authData.user.id);
+
+            if (anyAccess && anyAccess.length > 0) {
+              // Tem acesso a outro projeto — criar acesso cross-project para admins
+              const isAdmin = anyAccess.some((a: any) => a.role === 'ADMIN' || a.role === 'SUPER_ADMIN');
+              if (isAdmin) {
+                // Admin pode acessar qualquer projeto: cria acesso automático
+                role = 'ADMIN';
+                nucleoId = loginNucleoId || null;
+                try {
+                  await supabase.from('user_project_access').insert({
+                    user_id: authData.user.id,
+                    project_id: projectData.id,
+                    nucleo_id: nucleoId,
+                    role: 'ADMIN',
+                    is_default: false,
+                  });
+                } catch (insertErr) {
+                  console.warn('[Login] Erro ao criar acesso cross-project:', insertErr);
+                }
+              } else {
+                setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
+                setLoading(false);
+                return;
               }
             } else {
-              setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
-              setLoading(false);
-              return;
+              // Sem acesso a nenhum projeto — permitir login como PROFESSOR se tem núcleo selecionado
+              if (loginNucleoId) {
+                role = 'PROFESSOR';
+                nucleoId = loginNucleoId;
+              } else {
+                setLoginError('Você não tem acesso a nenhum projeto. Selecione um núcleo ou contate o administrador.');
+                await supabase.auth.signOut();
+                setLoading(false);
+                return;
+              }
             }
-          } else {
-            // Sem acesso a nenhum projeto — permitir login como PROFESSOR se tem núcleo selecionado
+          } catch (crossErr) {
+            console.warn('[Login] Erro ao verificar acesso cross-project:', crossErr);
+            // Fallback: permitir como professor com o núcleo selecionado
             if (loginNucleoId) {
               role = 'PROFESSOR';
               nucleoId = loginNucleoId;
             } else {
-              setLoginError('Você não tem acesso a nenhum projeto. Selecione um núcleo ou contate o administrador.');
-              await supabase.auth.signOut();
+              setLoginError('Erro ao verificar permissões. Tente novamente.');
               setLoading(false);
               return;
             }
           }
-        } catch (crossErr) {
-          console.warn('[Login] Erro ao verificar acesso cross-project:', crossErr);
-          // Fallback: permitir como professor com o núcleo selecionado
-          if (loginNucleoId) {
-            role = 'PROFESSOR';
-            nucleoId = loginNucleoId;
-          } else {
-            setLoginError('Erro ao verificar permissões. Tente novamente.');
-            setLoading(false);
-            return;
-          }
-        }
         }
       }
 
@@ -1347,7 +1347,7 @@ const AppContent: React.FC = () => {
 
   const handleDemoAccess = async () => {
     const demoNucleo = filteredNucleos.find(n => n.id === loginNucleoId) || filteredNucleos[0] || nucleos[0];
-    
+
     try {
       const { data: projectData } = await supabase
         .from('projects').select('id').eq('slug', activeProject).single();
@@ -1482,12 +1482,12 @@ const AppContent: React.FC = () => {
           const assinaturaValue = data.assinatura && data.assinatura.length < 500000 ? data.assinatura : null;
           const fichaValue = data.fichaUrl;
           const fichaForDb = fichaValue && fichaValue.length < 500000 ? fichaValue : null;
-          
+
           if (fichaValue && fichaValue.length >= 500000) {
-            console.warn(`⚠️ ficha_url muito grande (${(fichaValue.length/1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
+            console.warn(`⚠️ ficha_url muito grande (${(fichaValue.length / 1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
           }
           if (data.assinatura && data.assinatura.length >= 500000) {
-            console.warn(`⚠️ assinatura muito grande (${(data.assinatura.length/1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
+            console.warn(`⚠️ assinatura muito grande (${(data.assinatura.length / 1024).toFixed(0)}KB), não enviado ao banco. Use Storage.`);
           }
 
           const insertPayload = {
@@ -1570,10 +1570,10 @@ const AppContent: React.FC = () => {
     if (data.type === 'LISTA_FREQUENCIA' && data.metaData?.inventoryDeduction) {
       const deductions = data.metaData.inventoryDeduction;
       const deductionList = Array.isArray(deductions) ? deductions : [deductions];
-      
+
       const currentInventory = [...inventory];
       const updates: { localId: string; dbId: string; itemName: string; oldQty: number; newQty: number; amount: number }[] = [];
-      
+
       for (const ded of deductionList) {
         if (!ded?.itemId || !ded?.amount || ded.amount <= 0) continue;
 
@@ -1582,7 +1582,7 @@ const AppContent: React.FC = () => {
         if (!item && ded.itemName) {
           item = currentInventory.find(i => i.name === ded.itemName);
         }
-        
+
         if (item) {
           const newQty = Math.max(0, item.quantity - ded.amount);
           updates.push({ localId: item.id, dbId: item.id, itemName: item.name, oldQty: item.quantity, newQty, amount: ded.amount });
@@ -1601,13 +1601,13 @@ const AppContent: React.FC = () => {
         // Persistir CADA dedução no Supabase
         const itemNames: string[] = [];
         let totalDeducted = 0;
-        
+
         for (const upd of updates) {
           totalDeducted += upd.amount;
           itemNames.push(`${upd.itemName} (${upd.oldQty} → ${upd.newQty})`);
-          
+
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(upd.dbId);
-          
+
           if (isUUID) {
             // ID é UUID válido — update direto
             const { error } = await supabase
@@ -1627,7 +1627,7 @@ const AppContent: React.FC = () => {
                 .eq('project_id', supabaseProjectId)
                 .eq('name', upd.itemName)
                 .single();
-              
+
               if (found) {
                 const { error } = await supabase
                   .from('inventory_items')
@@ -1649,7 +1649,7 @@ const AppContent: React.FC = () => {
     }
 
     setCollectedDocuments(prev => [...prev, data]);
-    
+
     // Atualizar o estado do aluno localmente se for um documento de questionário/boletim
     if (data.studentId && ['PESQUISA_META', 'INDICADORES_SAUDE', 'BOLETIM', 'DECLARACAO_MATRICULA'].includes(data.type)) {
       setStudents(prev => prev.map(s => {
@@ -1751,7 +1751,7 @@ const AppContent: React.FC = () => {
       if (newItem.purchaseDate) payload.purchase_date = newItem.purchaseDate;
 
       let { data: inserted, error } = await supabase.from('inventory_items').insert(payload).select().single();
-      
+
       // Se falhou por causa de purchase_date (coluna não existe), tenta sem
       if (error && newItem.purchaseDate) {
         console.warn('[Inventory] Tentando sem purchase_date:', error.message);
@@ -2122,9 +2122,9 @@ const AppContent: React.FC = () => {
           estado_responsavel: regRole === 'ADMIN' ? regEstado : null,
           status: 'PENDENTE',
         });
-        
+
         if (insertError) {
-            console.error('Erro ao inserir acesso:', insertError);
+          console.error('Erro ao inserir acesso:', insertError);
         }
 
         // Espelhar estado_responsavel na tabela profiles para lookup pré-login
@@ -2445,7 +2445,7 @@ const AppContent: React.FC = () => {
           <p className="text-gray-600 mb-8">
             Seu cadastro foi recebido com sucesso e está aguardando a aprovação do administrador do projeto. Você receberá acesso assim que for autorizado.
           </p>
-          <button 
+          <button
             onClick={handleLogout}
             className="text-gray-500 font-bold hover:text-gray-800 transition"
           >
@@ -2826,19 +2826,19 @@ const AppContent: React.FC = () => {
 
         {view === AppView.REPORT && user && (
           <ReportPreview
-             user={user}
-             students={students}
-             nucleos={filteredNucleos}
-             evidences={projectEvidence}
-             documents={projectDocuments}
-             onUpdateStudent={handleSaveStudent}
-             onBack={() => setView(AppView.DASHBOARD)}
+            user={user}
+            students={students}
+            nucleos={filteredNucleos}
+            evidences={projectEvidence}
+            documents={projectDocuments}
+            onUpdateStudent={handleSaveStudent}
+            onBack={() => setView(AppView.DASHBOARD)}
           />
         )}
 
         {view === AppView.DEV_ENVIRONMENT && user && (
           <div className="pt-20"> {/* Add padding to prevent going under header */}
-            <AmbienteDesenvolvimento 
+            <AmbienteDesenvolvimento
               nucleos={filteredNucleos}
               students={projectStudents}
               history={projectDocuments}
