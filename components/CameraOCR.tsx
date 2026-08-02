@@ -478,6 +478,7 @@ export const CameraOCR: React.FC<CameraOCRProps> = ({
     'FORMANDO_CAMPEOES': 'Escolinha de Triathlon',
     'DANIEL_DIAS': 'Nadando com Daniel Dias',
     'FUTEBOL': 'Escolinha de Futebol',
+    'INCENTIV_APP': 'IncentivApp',
   };
 
   useEffect(() => {

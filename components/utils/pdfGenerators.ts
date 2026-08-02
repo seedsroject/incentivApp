@@ -180,6 +180,7 @@ export const generateDeclaracaoRelatorioUnicoPDF = (student: any, headerImage: s
 
   const projetoNome = student.projectId === 'DANIEL_DIAS' ? 'Nadando com Daniel Dias' 
                     : student.projectId === 'FUTEBOL' ? 'Meninas do Futebol' 
+                    : student.projectId === 'INCENTIV_APP' ? 'IncentivApp'
                     : 'Formando Campeões'; // Triathlon ou padrão
 
   const supervisorNome = student.pne_supervisor_nome || student.nome_responsavel || '___________________________';

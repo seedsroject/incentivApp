@@ -254,8 +254,29 @@ const FUTEBOL_NUCLEOS: Nucleo[] = [
   };
 }) as Nucleo[];
 
+// --- NÚCLEOS INCENTIV APP ---
+const INCENTIV_APP_NUCLEOS: Nucleo[] = [
+  { id: 'inc_sp', nome: 'São Paulo | SP - Sede São Paulo, São Paulo - SP', project: 'INCENTIV_APP', coordinates: [-23.5505, -46.6333], stockStatus: 'HIGH' },
+  { id: 'inc_rj', nome: 'Rio de Janeiro | RJ - Sede Rio de Janeiro, Rio de Janeiro - RJ', project: 'INCENTIV_APP', coordinates: [-22.9068, -43.1729], stockStatus: 'MEDIUM' },
+  { id: 'inc_bh', nome: 'Belo Horizonte | MG - Sede Belo Horizonte, Belo Horizonte - MG', project: 'INCENTIV_APP', coordinates: [-19.9167, -43.9345], stockStatus: 'HIGH' },
+  { id: 'inc_curitiba', nome: 'Curitiba | PR - Sede Curitiba, Curitiba - PR', project: 'INCENTIV_APP', coordinates: [-25.4284, -49.2733], stockStatus: 'MEDIUM' },
+].map(n => {
+  const ufMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})[\s\-–]/);
+  const trailingMatch = n.nome.match(/[\s\-–,|\/]+([A-Z]{2})\s*$/);
+  const estado = ufMatch?.[1] || trailingMatch?.[1] || undefined;
+  return {
+    ...n,
+    estado,
+    stockDetails: generateStockDetails(n.stockStatus as any),
+    address: n.nome.split(' - ')[1]?.trim() || 'Endereço não cadastrado',
+    phone: '(00) 3333-4444',
+    email: `contato.${n.id}@incentivapp.org.br`,
+    employees: generateMockEmployees(n.id, n.nome)
+  };
+}) as Nucleo[];
+
 // ALL_NUCLEOS mantido como fallback para modo Demo/offline
-const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS, ...FUTEBOL_NUCLEOS];
+const ALL_NUCLEOS = [...MOCK_NUCLEOS, ...DANIEL_DIAS_NUCLEOS, ...FUTEBOL_NUCLEOS, ...INCENTIV_APP_NUCLEOS];
 
 // Inventário vazio — dados reais vêm do Supabase
 
@@ -962,10 +983,11 @@ const AppContent: React.FC = () => {
   const projectEvidence = useMemo(() => collectedEvidence.filter(e => !e.projectId || e.projectId === activeProject), [collectedEvidence, activeProject]);
 
   // --- PROJECT ASSETS HELPER ---
-  const PROJECT_LIST: ProjectId[] = ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'];
+  const PROJECT_LIST: ProjectId[] = ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL', 'INCENTIV_APP'];
   const projectAssets = useMemo(() => {
     if (activeProject === 'DANIEL_DIAS') return { logo: '/logo_Daniel_Dias.png', header: '/Banner_Relatorio_Daniel.png', name: 'Nadando com Daniel Dias' };
     if (activeProject === 'FUTEBOL') return { logo: '/logo_futebol.png', header: '/Banner_relatorio_futebol.png', name: 'Escolinha de Futebol' };
+    if (activeProject === 'INCENTIV_APP') return { logo: '/logo2.png', header: '/header_full2.png', name: 'Gestão de Projetos' };
     return { logo: '/logo.png', header: '/header_full.png', name: 'Escolinha de Triathlon' };
   }, [activeProject]);
 
@@ -1129,7 +1151,7 @@ const AppContent: React.FC = () => {
 
       if (token && service) {
         console.log("Rota pública detectada:", { token, service, studentId, project, nucleoId });
-        if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL'].includes(project)) {
+        if (project && ['FORMANDO_CAMPEOES', 'DANIEL_DIAS', 'FUTEBOL', 'INCENTIV_APP'].includes(project)) {
           setActiveProject(project as ProjectId);
           try {
             // Load Nucleos from Supabase instead of just projectData, this sets up the publicNucleo context correctly
@@ -1273,7 +1295,7 @@ const AppContent: React.FC = () => {
                   console.warn('[Login] Erro ao criar acesso cross-project:', insertErr);
                 }
               } else {
-                setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : 'Futebol'}. Selecione outro projeto.`);
+                setLoginError(`Você não tem acesso ao projeto ${activeProject === 'FORMANDO_CAMPEOES' ? 'Triathlon' : activeProject === 'DANIEL_DIAS' ? 'Daniel Dias' : activeProject === 'FUTEBOL' ? 'Futebol' : 'IncentivApp'}. Selecione outro projeto.`);
                 setLoading(false);
                 return;
               }
@@ -2187,7 +2209,7 @@ const AppContent: React.FC = () => {
                   {/* Glow / sombra de fundo */}
                   <div
                     className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-all duration-700 scale-75"
-                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #0ea5e9 0%, #64748b 40%, transparent 70%)' : activeProject === 'FUTEBOL' ? 'radial-gradient(circle, #22c55e 0%, #15803d 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
+                    style={{ background: activeProject === 'DANIEL_DIAS' ? 'radial-gradient(circle, #0ea5e9 0%, #64748b 40%, transparent 70%)' : activeProject === 'FUTEBOL' ? 'radial-gradient(circle, #22c55e 0%, #15803d 40%, transparent 70%)' : activeProject === 'INCENTIV_APP' ? 'radial-gradient(circle, #173eff 0%, #115a8c 40%, transparent 70%)' : 'radial-gradient(circle, #3b82f6 0%, #06b6d4 40%, transparent 70%)' }}
                   />
                   <img
                     key={activeProject}
@@ -2212,9 +2234,10 @@ const AppContent: React.FC = () => {
                 <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'FORMANDO_CAMPEOES' ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('FORMANDO_CAMPEOES'); setLoginNucleoId(''); setRegNucleo(''); }} />
                 <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'DANIEL_DIAS' ? 'bg-sky-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('DANIEL_DIAS'); setLoginNucleoId(''); setRegNucleo(''); }} />
                 <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'FUTEBOL' ? 'bg-green-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('FUTEBOL'); setLoginNucleoId(''); setRegNucleo(''); }} />
+                <span className={`w-2 h-2 rounded-full transition-all duration-500 cursor-pointer ${activeProject === 'INCENTIV_APP' ? 'bg-indigo-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'}`} onClick={() => { setActiveProject('INCENTIV_APP'); setLoginNucleoId(''); setRegNucleo(''); }} />
               </div>
-              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : activeProject === 'FUTEBOL' ? 'Escolinha de Futebol' : 'Escolinha de Triathlon'}</h2>
-              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-sky-600' : activeProject === 'FUTEBOL' ? 'text-green-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
+              <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">{activeProject === 'DANIEL_DIAS' ? 'Instituto Daniel Dias' : activeProject === 'FUTEBOL' ? 'Escolinha de Futebol' : activeProject === 'INCENTIV_APP' ? 'IncentivApp' : 'Escolinha de Triathlon'}</h2>
+              <p className={`mt-1 font-medium text-sm transition-colors duration-500 ${activeProject === 'DANIEL_DIAS' ? 'text-sky-600' : activeProject === 'FUTEBOL' ? 'text-green-600' : activeProject === 'INCENTIV_APP' ? 'text-indigo-600' : 'text-gray-500'}`}>{projectAssets.name}</p>
             </div>
 
             {/* Toggle Login/Cadastro — cores adaptam ao projeto */}
@@ -2222,7 +2245,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(false)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${!isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : activeProject === 'INCENTIV_APP' ? 'text-white bg-gradient-to-r from-indigo-600 to-blue-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Entrar
@@ -2230,7 +2253,7 @@ const AppContent: React.FC = () => {
               <button
                 onClick={() => setIsRegistering(true)}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 z-10 ${isRegistering
-                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
+                  ? (activeProject === 'DANIEL_DIAS' ? 'text-white bg-gradient-to-r from-sky-500 to-slate-400 shadow-sm' : activeProject === 'FUTEBOL' ? 'text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-sm' : activeProject === 'INCENTIV_APP' ? 'text-white bg-gradient-to-r from-indigo-600 to-blue-600 shadow-sm' : 'text-white bg-gradient-to-r from-blue-600 to-teal-500 shadow-sm')
                   : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Cadastrar
@@ -2310,7 +2333,7 @@ const AppContent: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : activeProject === 'INCENTIV_APP' ? 'bg-gradient-to-r from-indigo-600 to-blue-600 shadow-indigo-500/30 hover:from-indigo-700 hover:to-blue-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Acessando...' : 'Entrar no Sistema'}
                   </button>
                   {loginError && (
@@ -2406,7 +2429,7 @@ const AppContent: React.FC = () => {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
+                  <button type="submit" disabled={loading} className={`w-full text-white py-3 rounded-xl font-bold text-base shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98] mt-2 ${activeProject === 'DANIEL_DIAS' ? 'bg-gradient-to-r from-sky-500 to-slate-500 shadow-sky-500/30 hover:from-sky-600 hover:to-slate-600' : activeProject === 'FUTEBOL' ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-green-500/30 hover:from-green-600 hover:to-emerald-700' : activeProject === 'INCENTIV_APP' ? 'bg-gradient-to-r from-indigo-600 to-blue-600 shadow-indigo-500/30 hover:from-indigo-700 hover:to-blue-700' : 'bg-gradient-to-r from-blue-600 to-teal-500 shadow-blue-600/30 hover:from-blue-700 hover:to-teal-600'}`}>
                     {loading ? 'Cadastrando...' : 'Criar Conta'}
                   </button>
                   {loginError && (
@@ -2462,7 +2485,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 print:bg-white">
-      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && view !== AppView.ASSIDUIDADE_REPORT && view !== AppView.PESQUISA_REPORT && (view as string) !== 'REPORT_BUILDER' && <Header user={{ ...user, nucleo_nome: isSuperAdminGlobal ? (filteredNucleos.find(n => n.id === superAdminNucleoId)?.nome || user.nucleo_nome) : user.nucleo_nome }} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'} />}
+      {user && view !== AppView.REPORT && view !== AppView.DEV_ENVIRONMENT && view !== AppView.ADMIN_DASHBOARD && view !== AppView.FREQUENCY_REPORT && view !== AppView.PDLIE_REPORT && view !== AppView.INSCRICAO_REPORT && view !== AppView.ASSIDUIDADE_REPORT && view !== AppView.PESQUISA_REPORT && (view as string) !== 'REPORT_BUILDER' && <Header user={{ ...user, nucleo_nome: isSuperAdminGlobal ? (filteredNucleos.find(n => n.id === superAdminNucleoId)?.nome || user.nucleo_nome) : user.nucleo_nome }} onLogout={handleLogout} projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : user.projectId === 'INCENTIV_APP' ? '/logo2.png' : '/logo.png'} />}
 
       <main className={(view === AppView.REPORT || view === AppView.DEV_ENVIRONMENT || view === AppView.FREQUENCY_REPORT || view === AppView.PDLIE_REPORT || view === AppView.INSCRICAO_REPORT || view === AppView.ASSIDUIDADE_REPORT || view === AppView.PESQUISA_REPORT || (view as string) === 'REPORT_BUILDER') ? "" : (view === AppView.ADMIN_DASHBOARD ? "h-screen" : "py-6 print:py-0 print:m-0")}>
         {user && (
@@ -2555,7 +2578,7 @@ const AppContent: React.FC = () => {
               }
             }}
             onDischargeStudent={handleDischargeStudent}
-            projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : '/logo.png'}
+            projectLogo={user.projectId === 'DANIEL_DIAS' ? '/logo_Daniel_Dias.png' : user.projectId === 'FUTEBOL' ? '/logo_futebol.png' : user.projectId === 'INCENTIV_APP' ? '/logo2.png' : '/logo.png'}
             projectId={activeProject}
             inventory={inventory}
             sliGroups={sliGroups}

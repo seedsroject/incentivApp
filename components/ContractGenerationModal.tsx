@@ -15,6 +15,7 @@ export const ContractGenerationModal: React.FC<ContractGenerationModalProps> = (
     const projectAssets = useMemo(() => {
         if (projectId === 'DANIEL_DIAS') return { name: 'Instituto Daniel Dias', header: '/Banner_Relatorio_Daniel.png' };
         if (projectId === 'FUTEBOL') return { name: 'Instituto Escolinha de Futebol', header: '/Banner_relatorio_futebol.png' };
+        if (projectId === 'INCENTIV_APP') return { name: 'IncentivApp - Gestão de Projetos', header: '/header_full2.png' };
         return { name: 'Instituto Escolinha de Triathlon', header: '/header_full.png' };
     }, [projectId]);
     // Contract State

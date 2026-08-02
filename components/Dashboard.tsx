@@ -24,16 +24,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
   const iconColor = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'text-green-600';
     if (projectId === 'DANIEL_DIAS') return 'text-sky-600';
+    if (projectId === 'INCENTIV_APP') return 'text-indigo-600';
     return 'text-blue-600';
   }, [projectId]);
   const btnBg = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'bg-green-600 hover:bg-green-700';
     if (projectId === 'DANIEL_DIAS') return 'bg-sky-600 hover:bg-sky-700';
+    if (projectId === 'INCENTIV_APP') return 'bg-indigo-600 hover:bg-indigo-700';
     return 'bg-blue-600 hover:bg-blue-700';
   }, [projectId]);
   const hoverCard = useMemo(() => {
     if (projectId === 'FUTEBOL') return 'hover:border-green-300 hover:bg-green-50';
     if (projectId === 'DANIEL_DIAS') return 'hover:border-sky-300 hover:bg-sky-50';
+    if (projectId === 'INCENTIV_APP') return 'hover:border-indigo-300 hover:bg-indigo-50';
     return 'hover:border-blue-300 hover:bg-blue-50';
   }, [projectId]);
   const [sharingService, setSharingService] = useState<{ id: string, title: string } | null>(null);

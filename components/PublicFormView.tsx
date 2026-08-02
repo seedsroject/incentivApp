@@ -150,16 +150,19 @@ export const PublicFormView: React.FC<PublicFormViewProps> = ({ serviceId, stude
   const projectLogo = useMemo(() => {
     if (projectId === 'DANIEL_DIAS') return '/logo_Daniel_Dias.png';
     if (projectId === 'FUTEBOL') return '/logo_futebol.png';
+    if (projectId === 'INCENTIV_APP') return '/logo2.png';
     return '/logo.png';
   }, [projectId]);
   const projectName = useMemo(() => {
     if (projectId === 'DANIEL_DIAS') return 'Nadando com Daniel Dias';
     if (projectId === 'FUTEBOL') return 'Escolinha de Futebol';
+    if (projectId === 'INCENTIV_APP') return 'IncentivApp';
     return 'Escolinha de Triathlon';
   }, [projectId]);
   const projectHeader = useMemo(() => {
     if (projectId === 'DANIEL_DIAS') return '/Banner_Relatorio_Daniel.png';
     if (projectId === 'FUTEBOL') return '/Banner_relatorio_futebol.png';
+    if (projectId === 'INCENTIV_APP') return '/header_full2.png';
     return '/header_full.png';
   }, [projectId]);
 

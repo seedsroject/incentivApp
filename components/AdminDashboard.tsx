@@ -69,6 +69,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             overlayBg: 'group-hover:bg-green-500/5',
             overlayBtn: 'bg-green-600',
         };
+        if (projectId === 'INCENTIV_APP') return {
+            gradient: 'from-indigo-600 to-blue-600',
+            gradientHover: 'hover:from-indigo-700 hover:to-blue-700',
+            shadow: 'shadow-indigo-200',
+            shadowHover: 'hover:shadow-blue-300',
+            bgLight: 'bg-indigo-50',
+            bgMedium: 'bg-indigo-100',
+            ring: 'ring-indigo-500',
+            text: 'text-indigo-600',
+            textLight: 'text-indigo-400',
+            textSubtle: 'text-indigo-100',
+            border: 'border-indigo-200',
+            borderHover: 'hover:border-indigo-300',
+            hoverBg: 'hover:bg-indigo-50/30',
+            badgeBg: 'bg-indigo-100',
+            badgeText: 'text-indigo-600',
+            hoverText: 'hover:text-indigo-700',
+            overlayBg: 'group-hover:bg-indigo-500/5',
+            overlayBtn: 'bg-indigo-600',
+        };
         if (projectId === 'DANIEL_DIAS') return {
             gradient: 'from-sky-500 to-slate-500',
             gradientHover: 'hover:from-sky-600 hover:to-slate-600',
@@ -674,7 +694,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                                 draggable
                                                 onDragStart={(e) => handleStudentsDragStart(e, nucleo, nucleoStudents)}
                                                 onClick={() => setSelectedNucleoId(nucleo.id)}
-                                                className={`p-3 rounded-lg border cursor-grab transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : 'blue'}-300` : `bg-white border-gray-100 hover:bg-gray-50 ${theme.borderHover}`}`}
+                                                className={`p-3 rounded-lg border cursor-grab transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : projectId === 'INCENTIV_APP' ? 'indigo' : 'blue'}-300` : `bg-white border-gray-100 hover:bg-gray-50 ${theme.borderHover}`}`}
                                                 title="Arraste para criar relatório de alunos"
                                             >
                                                 <div className="flex justify-between items-center mb-2">
@@ -796,7 +816,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         <div
                                             key={nucleo.id}
                                             onClick={() => { setSelectedNucleoId(nucleo.id); setIsNucleoDetailOpen(true); }}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : 'blue'}-300` : `bg-white border-gray-100 ${theme.borderHover}`}`}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all group hover:shadow-md ${selectedNucleoId === nucleo.id ? `${theme.bgLight} border-${projectId === 'FUTEBOL' ? 'green' : projectId === 'DANIEL_DIAS' ? 'sky' : projectId === 'INCENTIV_APP' ? 'indigo' : 'blue'}-300` : `bg-white border-gray-100 ${theme.borderHover}`}`}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>

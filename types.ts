@@ -3,7 +3,7 @@
  * FIRESTORE DATA MODELING (SCHEMA)
  */
 
-export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS' | 'FUTEBOL';
+export type ProjectId = 'FORMANDO_CAMPEOES' | 'DANIEL_DIAS' | 'FUTEBOL' | 'INCENTIV_APP';
 
 export interface SliGroup {
   sliNumber: string;          // Ex: "2201254"
