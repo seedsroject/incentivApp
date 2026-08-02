@@ -176,6 +176,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
     },
   ];
 
+  const activeMenuItems = useMemo(() => {
+    if (projectId === 'INCENTIV_APP') {
+      return menuItems.filter(item => item.id !== 'rel_7' && item.id !== 'rel_8');
+    }
+    return menuItems;
+  }, [menuItems, projectId]);
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 p-4 max-w-4xl mx-auto w-full">
@@ -309,7 +316,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, itemsCount, on
           </div>
         )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-24">
-          {menuItems.map((item, index) => (
+          {activeMenuItems.map((item, index) => (
             <div key={index} className="relative group" data-tour={`service-${item.id}`}>
               <button
                 onClick={item.action}
